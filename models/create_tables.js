@@ -17,6 +17,8 @@ async function create_tables(db) {
   // These tables should already exist from prior homeworks.
   // We include them in case you need to recreate the database.
 
+  // do we uncomment them and create a new one for the project?
+
   // You'll need to define the names table.
   // var qa = db.create_tables('...');
 

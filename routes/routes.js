@@ -43,21 +43,34 @@ var getVectorStore = async function(req) {
     return vectorStore;
 }
 
+/** postRegister
+ * 
+ * @param {*} req  - contains login name (username), password, first & last name, email, affiliation, birthday
+ * @param {*} res 
+ * description: new users sign up/register for an account
+ * @returns returns user name upon success?
+ *          error handling: 409 if username is already taken
+ *          
+ */
 
 // POST /register 
 var postRegister = async function(req, res) {
     // TODO: register a user with given body parameters
     console.log('reg');
-    if (!req.body.username || !req.body.password || !req.body.linked_id) {
-        console.log('empty');
+
+    if (!req.body.username || !req.body.password || !req.body.firstname || !req.body.lastname || !req.body.email || !req.body.affiliation || !req.body.birthday) {
         return res.status(400).json({ error: 'One or more of the fields you entered was empty, please try again.' });
     }
-    
+
     const username = req.body.username;
     const password = req.body.password;
-    const linked_id = req.body.linked_id;
+    const firstname = req.body.firstname;
+    const lastname = req.body.lastname;
+    const email = req.body.email;
+    const affiliation = req.body.affiliation;
+    const birthday = req.body.birthday;
     
-        // check if the account with username already exists or not:
+    // check if the account with username already exists or not:
     const exists = await db.send_sql(`SELECT * FROM users WHERE username = '${username}'`);
     if (exists.length > 0) {
         console.log('alr exist');
@@ -74,10 +87,12 @@ var postRegister = async function(req, res) {
         return res.status(500).json({ error: 'Error hashing password.' });
     }
 
-        // changed check
+    // creating new user
+    // maybe we should also have a check for whether the birthday is valid or not?
     try {
         console.log('inserting user');
-        await db.send_sql('INSERT INTO users (username, hashed_password, linked_nconst) VALUES (?, ?, ?)', [username, hashedPassword, linked_id]);
+        await db.send_sql('INSERT INTO users (username, firstname, lastname, affiliation, password, birthday) VALUES (?, ?, ?, ?, ?, ?)', [username, firstname, lastname, affiliation, hashedPassword, birthday]);
+        // what about photos
         console.log('done');
         return res.status(200).json({ username: username });
     } catch (error) {
@@ -90,6 +105,14 @@ var postRegister = async function(req, res) {
 
 
 // POST /login
+/** postLogin
+ * 
+ * @param {*} req 
+ * @param {*} res 
+ * description: user should be able to log in with their user ID and password
+ * @returns returns username upon success -> maybe we should return user object instead?
+ */
+
 var postLogin = async function(req, res) {
     // TODO: check username and password and login
     
@@ -103,10 +126,8 @@ var postLogin = async function(req, res) {
     console.log('password: ', password);
 
     try {
-        console.log('querying');
         const findUserQuery = `SELECT * FROM users WHERE username = '${username}'`;
         const user = await db.send_sql(findUserQuery);
-        // const user = await db.send_sql('SELECT * FROM users WHERE username = ${username}', [username]);
 
         if (user.length === 0) {
             console.log('user has zero length');
@@ -137,11 +158,59 @@ var postLogin = async function(req, res) {
 
 // GET /logout
 var postLogout = function(req, res) {
-  // TODO: fill in log out logic to disable session info
     req.session.user_id = null;
-    // Send a response indicating successful logout
     res.status(200).json({ message: "You were successfully logged out." });
 
+};
+
+/** postTags
+ * 
+ * @param {*} req 
+ * @param {*} res 
+ * description: allow users to 
+ * @returns returns username upon success -> maybe we should return user object instead?
+ */
+
+var postLogin = async function(req, res) {
+    // TODO: check username and password and login
+    
+    if (!req.body.username || !req.body.password) {
+        return res.status(400).json({ error: 'One or more of the fields you entered was empty, please try again.' });
+    }
+
+    const username = req.body.username;
+    const password = req.body.password;
+    console.log('username: ', username);
+    console.log('password: ', password);
+
+    try {
+        const findUserQuery = `SELECT * FROM users WHERE username = '${username}'`;
+        const user = await db.send_sql(findUserQuery);
+
+        if (user.length === 0) {
+            console.log('user has zero length');
+            return res.status(401).json({ error: 'Username and/or password are invalid.' });
+        }
+
+        bcrypt.compare(password, user[0].hashed_password, function(err, result) {
+            if (err) {
+                console.error('Error comparing passwords:', err);
+                return res.status(500).json({ error: 'Error comparing passwords.' });
+            }
+            if (result) {
+                // successful
+                console.log('success');
+                req.session.user_id = user[0].user_id; // check this
+                console.log('user id:, req.session.user_id');
+                return res.status(200).json({ username: username });
+            } else {
+                return res.status(401).json({ error: 'Username and/or password are invalid.' });
+            }
+        });
+    } catch (error) {
+        console.error('Error querying database:', error);
+        return res.status(500).json({ error: 'Error querying database.' });
+    }
 };
 
 

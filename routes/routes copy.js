@@ -21,6 +21,7 @@ const dbsingleton = require('../models/db_access.js');
 const config = require('../config.json'); // Load configuration
 const bcrypt = require('bcrypt'); 
 const helper = require('../routes/route_helper.js');
+const fs = require('fs'); // Include the 'fs' module to read the file
 
 // Database connection setup
 const db = dbsingleton;
@@ -129,12 +130,30 @@ var uploadPhoto = async function(req, res) {
             return res.status(400).json({ error: 'No file uploaded' });
         }
 
-        // Process the uploaded file, for example, save it to the database or filesystem
-        var filePath = req.file.path;
-        // You can use filePath to save the file location to the database or process it further
+        // Read the uploaded file as a buffer
+        const photoBuffer = fs.readFileSync(req.file.path);
+
+        // Check if the user exists
+        const { username } = req.body; // Assuming you have the username available in the request body
+        const user = await db.send_sql(`SELECT * FROM users WHERE username = ${username}`);
+
+        if (user.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // If the user exists, update the user table with the photo data
+        const updateQuery = `UPDATE users SET profile_photo = ? WHERE username = ?`;
+        db.send_sql(updateQuery, [photoBuffer, username], function(err, result) {
+            if (err) {
+                console.error('Error updating user profile photo:', err);
+                return res.status(500).json({ error: 'Internal server error' });
+            }
+            console.log('Profile photo updated successfully');
+            res.status(200).json({ message: 'Profile photo uploaded and updated successfully' });
+        });
 
         // Send a success response
-        return res.status(200).json({ message: 'File uploaded successfully', filePath: filePath });
+        return res.status(200).json({ message: 'File uploaded successfully' });
     } catch (error) {
         console.error('Error uploading file:', error);
         return res.status(500).json({ error: 'Internal server error' });

@@ -85,6 +85,11 @@ async function create_tables(db) {
       FOREIGN KEY (hashtag_id) REFERENCES hashtags(hashtag_id) \
     );')
 
+    var qusertags = db.create_tables('CREATE TABLE IF NOT EXISTS hashtags ( \
+      hashtag_id INT AUTO_INCREMENT PRIMARY KEY,\
+      hashtagname VARCHAR(255), \
+    );')
+
     /**** chat-related table ***/
     var qchats = db.create_tables('CREATE TABLE IF NOT EXISTS chats ( \
       chat_id INT AUTO_INCREMENT PRIMARY KEY, \

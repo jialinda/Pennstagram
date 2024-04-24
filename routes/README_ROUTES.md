@@ -12,8 +12,10 @@
 ## User Onboarding-Related Routes
 * registerUser - sign ups
 * login - The user should be able to log in with their user ID and password.
-* uploadPhoto
-* userTag 
+* uploadPhoto - Users should be able to *upload a profile photo* -- on mobile, perhaps even taking a selfie for that photo -- as a starting point.
+* matchPhoto (with actors photo) - The user should be able to link to a given *actor account* from IMDB by matching the *embedding* of their selfie with the *profile photos* of the 5 most similar actors.  They will be able to choose from those actors.
+* userTag - users should include a number of hashtags of interests
+* getHashtags - return top-10 most popular hash tags (by occurrence) to be shown to users
 
 
 

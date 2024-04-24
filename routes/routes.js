@@ -69,6 +69,9 @@ var postRegister = async function(req, res) {
     const email = req.body.email;
     const affiliation = req.body.affiliation;
     const birthday = req.body.birthday;
+
+    // get BLOB from upload
+
     
     // check if the account with username already exists or not:
     const exists = await db.send_sql(`SELECT * FROM users WHERE username = '${username}'`);
@@ -163,55 +166,159 @@ var postLogout = function(req, res) {
 
 };
 
-/** postTags
+/** createTags
  * 
  * @param {*} req 
  * @param {*} res 
- * description: allow users to 
- * @returns returns username upon success -> maybe we should return user object instead?
+ * description: allow users to create new tags or search if the tag already exists or not
+ * @returns returns hashtag upon success
  */
+var createTags = async function(req, res) {
 
-var postLogin = async function(req, res) {
-    // TODO: check username and password and login
-    
-    if (!req.body.username || !req.body.password) {
+    if (!req.body.hashtagname) {
         return res.status(400).json({ error: 'One or more of the fields you entered was empty, please try again.' });
     }
 
-    const username = req.body.username;
-    const password = req.body.password;
-    console.log('username: ', username);
-    console.log('password: ', password);
-
+    const findUserQuery = `SELECT * FROM hashtags WHERE hashtagname = '${hashtagname}'`;
     try {
-        const findUserQuery = `SELECT * FROM users WHERE username = '${username}'`;
-        const user = await db.send_sql(findUserQuery);
-
-        if (user.length === 0) {
-            console.log('user has zero length');
-            return res.status(401).json({ error: 'Username and/or password are invalid.' });
+        const existingTag = await db.send_sql(findUserQuery);
+        
+        if (existingTag.length === 0) {
+            // hashtag doesn't exist from before so you have to insert
+            const createTagQuery = `INSERT INTO hashtags (hashtagname) VALUES ('${hashtagname}')`;
+            const res = await db.send_sql(createTagQuery);
+            console.log('success: ', res);
         }
 
-        bcrypt.compare(password, user[0].hashed_password, function(err, result) {
-            if (err) {
-                console.error('Error comparing passwords:', err);
-                return res.status(500).json({ error: 'Error comparing passwords.' });
-            }
-            if (result) {
-                // successful
-                console.log('success');
-                req.session.user_id = user[0].user_id; // check this
-                console.log('user id:, req.session.user_id');
-                return res.status(200).json({ username: username });
-            } else {
-                return res.status(401).json({ error: 'Username and/or password are invalid.' });
-            }
-        });
+        res.status(200).json({hashtagname : existingTag});
     } catch (error) {
         console.error('Error querying database:', error);
         return res.status(500).json({ error: 'Error querying database.' });
     }
 };
+
+/** postTags
+ * 
+ * @param {*} req 
+ * @param {*} res 
+ * description: adds the relationship between user and hashtag
+ * @returns returns username and hashtag upon success
+ */
+
+var postTags = async function(req, res) {
+    // SHOULD I CHECK IF USER IS LOGGED IN OR NOT?
+    
+    if (!req.body.hashtagname) {
+        return res.status(400).json({ error: 'One or more of the fields you entered was empty, please try again.' });
+    }
+
+    const hashtagname = req.body.hashtagname;
+    console.log('hashtag: ', hashtagname);
+
+    try {
+        const findTagQuery = `SELECT * FROM hashtags WHERE hashtagname = '${hashtagname}'`;
+        const existingTag = await db.send_sql(findTagQuery);
+        console.log('tag: ', existingTag);
+        // CHECK THIS
+        const hashtag_id = existingTag.hashtag_id
+        console.log('tag id: ', hashtag_id);
+        
+        const postTagQuery = `INSERT INTO hashtag_by (hashtag_id, user_id) VALUES ('${hashtag_id}','${req.session.user_id}')`;
+        try {
+            const existingTag = await db.send_sql(postTagQuery);
+            return res.status(200).json({ hashtagid : hashtag_id, user_id : req.session.user_id});
+        } catch (error) {
+            console.error('Error querying database:', error);
+            return res.status(500).json({ error: 'Error querying database.' });
+        }
+    } catch (error) {
+        console.error('Error querying database:', error);
+        return res.status(500).json({ error: 'Error querying database.' });
+    }
+};
+
+/** getTags
+ * 
+ * @param {*} req 
+ * @param {*} res 
+ * @returns returns the top ten most popular hashtags
+ */
+var getTags = async function(req, res) {
+
+    try {
+        // check this query
+
+        const findTagQuery = `
+        WITH occurrence AS (
+            SELECT DISTINCT hashtag_id,
+            COUNT(*) AS freq
+            FROM hashtag_by
+            GROUP BY hashtag_id
+        ),
+        top_ten AS (
+            SELECT hashtag_id FROM occurrence
+            SORT BY freq
+            LIMIT 10 DESC
+        )
+        SELECT DISTINCT hashtagname
+        FROM hashtags
+        INNER JOIN top_ten ON top_ten.hashtag_id = hashtags.hashtag_id'`;
+
+        const topTenTags = await db.send_sql(findTagQuery);
+        console.log('tags: ', topTenTags);
+
+        const results = topTenTags.map(item => ({
+            hashtag_id: item.hashtag_id,
+            hashtagname: item.hashtagname
+        }));
+
+        res.status(200).json({results});
+    } catch (error) {
+        console.error('Error querying database:', error);
+        return res.status(500).json({ error: 'Error querying database.' });
+    }
+};
+
+
+//https://dev.to/przpiw/file-upload-with-react-nodejs-2ho7
+
+var uploadPhoto = async function(req, res) {
+    try {
+        // Check if a file was uploaded
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
+
+        // Read the uploaded file as a buffer
+        const photoBuffer = fs.readFileSync(req.file.path);
+
+        // Check if the user exists
+        const { username } = req.body; // Assuming you have the username available in the request body
+        const user = await db.send_sql(`SELECT * FROM users WHERE username = ${username}`);
+
+        if (user.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // If the user exists, update the user table with the photo data
+        const updateQuery = `UPDATE users SET profile_photo = ? WHERE username = ?`;
+        db.send_sql(updateQuery, [photoBuffer, username], function(err, result) {
+            if (err) {
+                console.error('Error updating user profile photo:', err);
+                return res.status(500).json({ error: 'Internal server error' });
+            }
+            console.log('Profile photo updated successfully');
+            res.status(200).json({ message: 'Profile photo uploaded and updated successfully' });
+        });
+
+        // Send a success response
+        return res.status(200).json({ message: 'File uploaded successfully' });
+    } catch (error) {
+        console.error('Error uploading file:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
 
 
 // GET /friends
@@ -413,7 +520,8 @@ var routes = {
     get_friend_recs: getFriendRecs,
     get_movie: getMovie,
     create_post: createPost,
-    get_feed: getFeed
+    get_feed: getFeed,
+    upload_photo : uploadPhoto
   };
 
 

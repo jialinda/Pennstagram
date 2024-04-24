@@ -3,8 +3,6 @@ const bcrypt = require('bcrypt');
 
 var route_helper = function() {
     return {
-
-
         // Function for encrypting passwords WITH SALT
         // Look at the bcrypt hashing routines
         encryptPassword: (password, callback) => {

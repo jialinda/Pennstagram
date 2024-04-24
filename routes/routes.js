@@ -87,38 +87,6 @@ var postRegister = async function(req, res) {
     
     
     };
-    /*
-    console.log('registering');
-    if (!req.body.username || !req.body.password || !req.body.linked_nconst) {
-        console.log('null');
-        return res.status(400).json({ error: 'One or more of the fields you entered was empty, please try again.' });
-    }
-
-    const username = req.body.username;
-    const password = req.body.password;
-    const linked_nconst = req.body.linked_nconst;
-
-    // check if the account with username already exists or not:
-    const exists = await db.send_sql('SELECT * FROM users WHERE username = ?', [username]);
-    if (exists.length > 0) {
-        return res.status(409).json({ error: 'An account with this username already exists, please try again.' });
-    }
-
-    try {
-        const hashedPassword = await helper.encryptPassword(password);
-        console.log('Hashed password:', hashedPassword);
-        try {
-            await db.send_sql('INSERT INTO users (username, hashed_password, linked_nconst) VALUES (?, ?, ?)', [username, hashedPassword, linked_nconst]);
-            return res.status(200).json({ username: username });
-        } catch (error) {
-            console.error('Error querying database:', error);
-            return res.status(500).json({ error: 'Error querying database.' });
-        }
-    } catch (err) {
-        console.error('Error hashing password:', err);
-        return res.status(500).json({ error: 'Error hashing password.' });
-    }*/
-
 
 
 // POST /login

@@ -4,10 +4,15 @@ module.exports = {
     register_routes
 }
 
+
+// Initialize multer upload middleware with the storage configuration
+const upload = multer({ storage: storage });
+
 function register_routes(app) {
     app.get('/hello', routes.get_helloworld);
     app.post('/login', routes.post_login);
     app.post('/signup', routes.post_register); 
+    app.post('/uploadPhoto', routes.upload_photo);
     // app.post('/register', routes.post_register); 
     app.get('/:username/friends', routes.get_friends);
     app.get('/:username/recommendations', routes.get_friend_recs);

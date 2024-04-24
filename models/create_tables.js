@@ -22,23 +22,23 @@ async function create_tables(db) {
   // You'll need to define the names table.
   // var qa = db.create_tables('...');
 
-    var qrecs = db.create_tables('CREATE TABLE IF NOT EXISTS recommendations ( \
-      person VARCHAR(10), \
-      recommendation VARCHAR(10), \
-      strength int, \
-      FOREIGN KEY (person) REFERENCES users(users_id), \
-      FOREIGN KEY (recommendation) REFERENCES users(user_id) \
-    );')
-    
     var qusers = db.create_tables('CREATE TABLE IF NOT EXISTS users ( \
       user_id INT AUTO_INCREMENT PRIMARY KEY, \
       username VARCHAR(255), \
       firstname VARCHAR(255), \
       lastname VARCHAR(255), \
       affiliation VARCHAR(255), \
-      password int, \
+      password VARCHAR(255), \
       birthday date, \
       profile_photo BLOB, \
+    );')
+
+    var qrecs = db.create_tables('CREATE TABLE IF NOT EXISTS recommendations ( \
+      person INT, \
+      recommendation INT, \
+      strength int, \
+      FOREIGN KEY (person) REFERENCES users(users_id), \
+      FOREIGN KEY (recommendation) REFERENCES users(user_id) \
     );')
   
     var qposts = db.create_tables('CREATE TABLE IF NOT EXISTS posts ( \
@@ -161,5 +161,4 @@ console.log('Tables created');
 //db.close_db();
 
 const PORT = config.serverPort;
-
 

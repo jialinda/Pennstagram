@@ -75,7 +75,7 @@ export default function Signup() {
     <div className='w-screen h-screen flex items-center justify-center'>
       <form onSubmit={handleSubmit}>
         <div className='rounded-md bg-slate-50 p-6 space-y-4 w-full max-w-md'>
-          <div className='font-bold text-2xl mb-4 text-center'>Sign Up to Pennstagram</div>
+          <div className='font-bold text-2xl mb-4 text-center'>Make an Account</div>
           <input
             id="username"
             type="text"

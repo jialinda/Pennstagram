@@ -25,7 +25,7 @@ const HomePage = () => {
   }, [rootURL]);
 
   const handleGetStarted = () => {
-    navigate("/signup"); // Navigate to the sign-up page
+    navigate("/signup"); // Route to the sign-up page
   };
 
   return (
@@ -40,33 +40,53 @@ const HomePage = () => {
           Where Fun Stuff Happens.
         </h2>
         <div className='flex space-x-6'>
+          <button
+            className='px-6 py-3 rounded-md bg-blue-500 text-white font-bold transition-colors duration-300 hover:bg-blue-600'
+            onClick={handleGetStarted} // Route to sign-up when clicked
+          >
+            Get Started
+          </button>
           <Link
             to="/login"
-            className='px-6 py-3 rounded-md bg-blue text-blue-500 font-bold'
+            className='px-6 py-3 rounded-md bg-white text-blue-500 font-bold'
           >
             Log In
-          </Link>
-          <Link
-            to="/about"
-            className='px-6 py-3 rounded-md bg-gray-300 text-black font-bold'
-          >
-            About Us
           </Link>
         </div>
       </div>
 
-      {/* Main content with lively features */}
+      {/* Section for app values and descriptions */}
       <div className='flex-1 flex flex-col items-center justify-around p-6'>
-        <div className='text-center'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full'>
+          {/* First box */}
+          <div className='bg-sky-200 rounded-lg shadow-lg p-4 text-center'>
+            <h3 className='text-2xl font-bold mb-2 text-blue-400'>Community</h3>
+            <p>Pennstagram allows you to connect with friends, family, and like-minded people.</p>
+          </div>
+          
+          {/* Second box */}
+          <div className='bg-sky-200 rounded-lg shadow-lg p-4 text-center'>
+            <h3 className='text-2xl font-bold mb-2 text-blue-400'>Creativity</h3>
+            <p>Express yourself with photos, videos, and stories. Our platform is designed for creative expression.</p>
+          </div>
+          
+          {/* Third box */}
+          <div className='bg-sky-200 rounded-lg shadow-lg p-4 text-center'>
+            <h3 className='text-2xl font-bold mb-2 text-blue-400'>Exploration</h3>
+            <p>Discover new content, ideas, and meet new people. There's a world of possibilities on Pennstagram.</p>
+          </div>
+        </div>
+
+        {/* Main content with posts */}
+        <div className='text-center mt-6'>
           <h3 className='text-3xl font-bold mb-4 text-blue-400'>Share Your Moments with a Welcoming Community</h3>
-          <p>Check out the latest posts and chat with your friends!</p>
         </div>
 
         <div className='grid grid-cols-1 sm:grid-cols-2 lg-grid-cols-3 gap-6 w-full'>
           {posts.map((post, index) => (
             <div
               key={index}
-              className='bg-blue rounded-lg shadow-lg p-4 transition-transform duration-300 hover:scale-105'
+              className='bg-sky-200 rounded-lg shadow-lg p-4 transition-transform duration-300 hover:scale-105'
             >
               <img
                 src={post.image}
@@ -76,16 +96,6 @@ const HomePage = () => {
               <p className='text-lg font-medium text-center'>{post.caption}</p>
             </div>
           ))}
-        </div>
-
-        <div className='flex space-x-6 mt-6'>
-          <h3 className='text-2xl font-bold mb-4 text-blue-500'>Don't have an account?</h3>
-          <button
-            className='px-6 py-3 rounded-md bg-gray-300 text-black font-bold transition-colors duration-300 hover:bg-gray-400'
-            onClick={handleGetStarted} // Route to sign-up when clicked
-          >
-            Get Started
-          </button>
         </div>
       </div>
     </div>

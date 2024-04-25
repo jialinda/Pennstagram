@@ -6,34 +6,34 @@ import { useNavigate } from 'react-router-dom';
 export default function Login() {
   const navigate = useNavigate(); 
 
-  // TODO: set appropriate state variables for username and password 
-
   const rootURL = config.serverRootURL;
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  // const [linked_nconst, setLinkedNconst] = useState('');
 
   const handleLogin = async () => {
-    // TODO: check username and password using /login route 
     try {
       const response = await axios.post(`${rootURL}/login`, {
-          username,
-          password
+        username,
+        password,
       });
 
       if (response.status === 200) {
-          navigate('/${username}/home');
+        navigate(`/${username}/home`);
       } else {
-          alert("Log in failed.");
+        alert("Log in failed.");
       }
-  } catch (error) {
+    } catch (error) {
       console.error("Log in error:", error);
       alert("Log in failed. Please try again later.");
-  }
+    }
   };
 
   const signup = () => {
     navigate("/signup");
+  };
+
+  const backToHome = () => {
+    navigate("/");
   };
 
   return (
@@ -45,24 +45,49 @@ export default function Login() {
           </div>
           <div className='flex space-x-4 items-center justify-between'>
             <label htmlFor="username" className='font-semibold'>Username</label>
-            <input id="username" type="text" className='outline-none bg-white rounded-md border border-slate-100 p-2'
-              value={username} onChange={(e) => setUsername(e.target.value)} />
+            <input
+              id="username"
+              type="text"
+              className='outline-none bg-white rounded-md border border-slate-100 p-2'
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
           </div>
           <div className='flex space-x-4 items-center justify-between'>
             <label htmlFor="password" className='font-semibold'>Password</label>
-            <input id="password" type="password" className='outline-none bg-white rounded-md border border-slate-100 p-2'
-              value={password} onChange={(e) => setPassword(e.target.value)} />
+            <input
+              id="password"
+              type="password"
+              className='outline-none bg-white rounded-md border border-slate-100 p-2'
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
           </div>
-          <div className='w-full flex justify-center'>
-            <button type="button" className='px-4 py-2 rounded-md bg-indigo-500 outline-none font-bold text-white'
-              onClick={handleLogin}>Log in</button>
-          </div>
-          <div className='w-full flex justify-center'>
-            <button type="button" className='px-4 py-2 rounded-md bg-indigo-500 outline-none text-white'
-              onClick={signup}>Sign up</button>
+          <div className='w-full flex justify-center space-x-4'>
+            <button
+              type="button"
+              className='px-4 py-2 rounded-md bg-indigo-500 outline-none font-bold text-white'
+              onClick={handleLogin}
+            >
+              Log in
+            </button>
+            <button
+              type="button"
+              className='px-4 py-2 rounded-md bg-indigo-500 outline-none text-white'
+              onClick={signup}
+            >
+              Sign up
+            </button>
+            <button
+              type="button"
+              className='px-4 py-2 rounded-md bg-gray-300 outline-none text-black'
+              onClick={backToHome}
+            >
+              Back to Home
+            </button>
           </div>
         </div>
       </form>
     </div>
-  )
+  );
 }

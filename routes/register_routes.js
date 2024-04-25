@@ -6,7 +6,7 @@ module.exports = {
 
 
 // Initialize multer upload middleware with the storage configuration
-const upload = multer({ storage: storage });
+// const upload = multer({ storage: storage });
 
 function register_routes(app) {
     app.get('/hello', routes.get_helloworld);

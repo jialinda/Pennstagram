@@ -109,6 +109,7 @@ export default function Signup() {
             type="text"
             placeholder="Affiliation"
             value={affiliation}
+            onChange={(e) => setAffiliation(e.target.value)}
           />
           <input
             id="birthday"

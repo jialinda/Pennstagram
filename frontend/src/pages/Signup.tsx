@@ -42,12 +42,14 @@ export default function Signup() {
     }
 
     try {
-      const response = await axios.post(`${rootURL}/register`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const response = await axios.post(`${rootURL}/register`, formData);
 
       if (response.status === 200) {
-        navigate(`/${username}/home`);
+        const { username, actors } = response.data;
+        // console.log('Actor matches:', actors);
+        // console.log("Username:", username);
+        // TO DO: ADD ACTORS TO HOMEPAGE
+        navigate(`/${username}/home`, { state: { actors } });
       } else {
         alert("Registration failed.");
       }
@@ -61,6 +63,7 @@ export default function Signup() {
   const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
       setPhoto(event.target.files[0]);
+      console.log("photo set to:",event.target.files[0] )
     } else {
       setPhoto(null);
     }
@@ -109,6 +112,7 @@ export default function Signup() {
             type="text"
             placeholder="Affiliation"
             value={affiliation}
+            onChange={(e) => setAffiliation(e.target.value)}
           />
           <input
             id="birthday"

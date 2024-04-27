@@ -1,4 +1,18 @@
 const routes = require('./routes.js');
+const multer = require('multer');
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, 'uploads/')
+    },
+    filename: (req, file, cb) => {
+      // You might want to set the file name to something unique like below:
+      cb(null, Date.now() + '-' + file.originalname)
+    }
+  });
+  
+  const upload = multer({ storage: storage });
+  
+
 
 module.exports = {
     register_routes
@@ -11,7 +25,7 @@ module.exports = {
 function register_routes(app) {
     app.get('/hello', routes.get_helloworld);
     app.post('/login', routes.post_login);
-    app.post('/signup', routes.post_register); 
+    app.post('/register', upload.single('photo'), routes.post_register); 
     app.post('/uploadPhoto', routes.upload_photo);
     // app.post('/register', routes.post_register); 
     app.get('/:username/friends', routes.get_friends);

@@ -14,97 +14,245 @@ const { formatDocumentsAsString } = require("langchain/util/document");
 const {
     RunnableSequence,
     RunnablePassthrough,
-  } = require("@langchain/core/runnables");
-const { Chroma } = require("@langchain/community/vectorstores/chroma");
-
+} = require("@langchain/core/runnables");
+// const { Chroma } = require("@langchain/community/vectorstores/chroma");
+const AWS = require('aws-sdk');
 const dbsingleton = require('../models/db_access.js');
 const config = require('../config.json'); // Load configuration
-const bcrypt = require('bcrypt'); 
+const bcrypt = require('bcrypt');
 const helper = require('../routes/route_helper.js');
+var path = require('path');
+const { ChromaClient } = require("chromadb");
+const fs = require('fs');
+// const tf = require('@tensorflow/tfjs-node');
+const faceapi = require('@vladmandic/face-api');
+const facehelper = require('../models/faceapp.js');
+
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' }); // Temporary storage
+const mysql = require('mysql2');
+const client = new ChromaClient();
+
+
+// AWS.config.update({
+//     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+//     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+//     region: process.env.AWS_REGION
+// });
+// const s3 = new AWS.S3();
 
 // Database connection setup
 const db = dbsingleton;
 
-const PORT = config.serverPort;
-
-
-var getHelloWorld = function(req, res) {
-    res.status(200).send({message: "Hello, world!"});
+var getHelloWorld = function (req, res) {
+    res.status(200).send({ message: "Hello, world!" });
 }
 
 
-var getVectorStore = async function(req) {
+var getVectorStore = async function (req) {
     if (vectorStore == null) {
         vectorStore = await Chroma.fromExistingCollection(new OpenAIEmbeddings(), {
             collectionName: "imdb_reviews2",
             url: "http://localhost:8000", // Optional, will default to this value
-            });
+        });
     }
     return vectorStore;
 }
 
-/** postRegister
- * 
- * @param {*} req  - contains login name (username), password, first & last name, email, affiliation, birthday
- * @param {*} res 
- * description: new users sign up/register for an account
- * @returns returns user name upon success?
- *          error handling: 409 if username is already taken
- *          
- */
 
 // POST /register 
-var postRegister = async function(req, res) {
-    // TODO: register a user with given body parameters
-    console.log('reg');
-
+var postRegister = async function (req, res) {
     if (!req.body.username || !req.body.password || !req.body.firstname || !req.body.lastname || !req.body.email || !req.body.affiliation || !req.body.birthday) {
         return res.status(400).json({ error: 'One or more of the fields you entered was empty, please try again.' });
     }
 
-    const username = req.body.username;
-    const password = req.body.password;
-    const firstname = req.body.firstname;
-    const lastname = req.body.lastname;
-    const email = req.body.email;
-    const affiliation = req.body.affiliation;
-    const birthday = req.body.birthday;
+    const { username, password, firstname, lastname, email, affiliation, birthday } = req.body;
+    console.log(username);
+    const imagePath = req.file.path;
 
-    // get BLOB from upload
-
-    
-    // check if the account with username already exists or not:
+    // Check if the username already exists
     const exists = await db.send_sql(`SELECT * FROM users WHERE username = '${username}'`);
     if (exists.length > 0) {
-        console.log('alr exist');
+        console.log('User already exists');
         return res.status(409).json({ error: 'An account with this username already exists, please try again.' });
     }
 
-    let hashedPassword = password;
-    
     try {
-        hashedPassword = await helper.encryptPassword(password);
-        console.log('Hashed password:', hashedPassword);
-    } catch (err) {
-        console.error('Error hashing password:', err);
-        return res.status(500).json({ error: 'Error hashing password.' });
-    }
+        await facehelper.initializeFaceModels();
 
-    // creating new user
-    // maybe we should also have a check for whether the birthday is valid or not?
-    try {
-        console.log('inserting user');
-        await db.send_sql('INSERT INTO users (username, firstname, lastname, affiliation, password, birthday) VALUES (?, ?, ?, ?, ?, ?)', [username, firstname, lastname, affiliation, hashedPassword, birthday]);
-        // what about photos
-        console.log('done');
-        return res.status(200).json({ username: username });
+        const collection = await client.getOrCreateCollection({
+            name: "face-api",
+            embeddingFunction: null,
+            metadata: { "hnsw:space": "l2" },
+        });
+
+        console.info("Looking for files");
+        const promises = [];
+        const files = await fs.promises.readdir("/nets2120/project-steam-team/models/images");
+
+        files.forEach(function (file) {
+            console.info("Adding task for " + file + " to index.");
+            promises.push(facehelper.indexAllFaces(path.join("/nets2120/project-steam-team/models/images", file), file, collection));
+        });
+
+        console.info("Done adding promises, waiting for completion.");
+        await Promise.all(promises);
+        console.log("All images indexed.");
+
+        const topMatches = await facehelper.findTopKMatches(collection, req.file.path, 5);
+        for (var item of topMatches) {
+            for (var i = 0; i < item.ids[0].length; i++) {
+                console.log(item.ids[0][i] + " (Euclidean distance = " + Math.sqrt(item.distances[0][i]) + ") in " + item.documents[0][i]);
+                }
+            }
+            
+        console.log(item.documents[0]);
+        actors = item.documents[0];
+
+        console.log('User created, sending actor matches');
+        console.log('actors:', actors);
+
+        const hashedPassword = await helper.encryptPassword(password);
+        await db.send_sql('INSERT INTO users (username, firstname, lastname, email, affiliation, password, birthday, imageUrl) VALUES ('${username}', '${firstname}', '${lastname}', '${email}', '${affiliation}', '${hashedPassword}', '${birthday}', '${imagePath}')';  
+
+        res.status(200).json({ username, actors });
     } catch (error) {
-        console.error('Error querying database:', error);
-        return res.status(500).json({ error: 'Error querying database.' });
+        console.error('Registration failed:', error);
+        res.status(500).json({ error: 'Failed to register user' });
     }
-    
-    
-    };
+};
+
+
+// /** postRegister
+//  * 
+//  * @param {*} req  - contains login name (username), password, first & last name, email, affiliation, birthday
+//  * @param {*} res 
+//  * description: new users sign up/register for an account
+//  * @returns returns user name upon success?
+//  *          error handling: 409 if username is already taken
+//  *          
+//  */
+
+// // POST /register 
+// var postRegister = async function (req, res) {
+//     // TODO: register a user with given body parameters
+
+//     if (!req.body.username || !req.body.password || !req.body.firstname || !req.body.lastname || !req.body.email || !req.body.affiliation || !req.body.birthday) {
+//         return res.status(400).json({ error: 'One or more of the fields you entered was empty, please try again.' });
+//     }
+
+//     const username = req.body.username;
+//     const password = req.body.password;
+//     const firstname = req.body.firstname;
+//     const lastname = req.body.lastname;
+//     const email = req.body.email;
+//     const affiliation = req.body.affiliation;
+//     const birthday = req.body.birthday;
+//     console.log(username);
+
+//     const imagePath = req.file.path;
+//     console.log(typeof imagePath, imagePath);
+//     console.log(req.file);
+//     const imageName = req.file.filename;
+
+//     //read file
+//     const photoBuffer = req.file;
+//     const actors = [];
+
+
+
+//     // check if the account with username already exists or not:
+//     const exists = await db.send_sql(`SELECT * FROM users WHERE username = '${username}'`);
+//     if (exists.length > 0) {
+//         console.log('alr exist');
+//         return res.status(409).json({ error: 'An account with this username already exists, please try again.' });
+//     }
+
+//     try {
+//         facehelper.initializeFaceModels()
+//             .then(async () => {
+
+//                 const collection = await client.getOrCreateCollection({
+//                     name: "face-api",
+//                     embeddingFunction: null,
+//                     // L2 here is squared L2, not Euclidean distance
+//                     metadata: { "hnsw:space": "l2" },
+//                 });
+
+//                 console.info("Looking for files");
+//                 const promises = [];
+//                 // Loop through all the files in the images directory
+//                 fs.readdir("/nets2120/project-steam-team/models/images", function (err, files) {
+//                     if (err) {
+//                         console.error("Could not list the directory.", err);
+//                         process.exit(1);
+//                     }
+
+//                     files.forEach(function (file, index) {
+//                         console.info("Adding task for " + file + " to index.");
+//                         promises.push(facehelper.indexAllFaces(path.join("/nets2120/project-steam-team/models/images", file), file, collection));
+//                     });
+//                     console.info("Done adding promises, waiting for completion.");
+//                     console.log(imagePath);
+//                     await Promise.all(promises);
+
+//                     Promise.all(promises)
+//                         .then(async (results) => {
+//                             console.log("All images indexed.");
+
+//                             // const search = 'query.jpg';
+
+//                             console.log('\nTop-k indexed matches to ' + imagePath + ':');
+//                             for (var item of await facehelper.findTopKMatches(collection, imagePath, 5)) {
+//                                 for (var i = 0; i < item.ids[0].length; i++) {
+//                                     console.log(item.ids[0][i] + " (Euclidean distance = " + Math.sqrt(item.distances[0][i]) + ") in " + item.documents[0][i]);
+//                                 }
+//                             }
+
+//                             console.log(item.documents[0]);
+//                             actors = item.documents[0];
+//                         })
+//                         .catch((err) => {
+//                             console.error("Error indexing images:", err);
+//                         });
+//                 });
+
+//                 const hashedPassword = await helper.encryptPassword(password);
+
+//                 // await db.send_sql('INSERT INTO users (username, firstname, lastname, email, affiliation, password, birthday, imageUrl) VALUES (?, ?, ?, ?, ?, ?, ?, ?);',
+//                 // [username, firstname, lastname, email, affiliation, hashedPassword, birthday, imagePath]);
+
+//                 // const actors = topMatches.map(match => ({
+//                 //     id: match.ids[0],
+//                 //     distance: Math.sqrt(match.distances[0]),
+//                 //     imageUrl: match.documents[0] 
+//                 // }));
+//                 console.log('User created, sending actor matches');
+//                 console.log('actors:', actors);
+//                 res.status(200).json({ username, actors });
+
+
+//             });
+
+
+//     } catch (error) {
+//         console.error('Registration failed:', error);
+//         res.status(500).json({ error: 'Failed to register user' });
+//     }
+// }
+
+// // };
+
+// //     // Function to upload file to S3
+// //     async function uploadToS3(filePath, fileName) {
+// //         const fileContent = fs.readFileSync(filePath);
+// //         const params = {
+// //             Bucket: process.env.S3_BUCKET_NAME,
+// //             Key: `profile_images/${fileName}`,
+// //             Body: fileContent
+// //         };
+// //         return s3.upload(params).promise();
+// //     }
 
 
 // POST /login
@@ -116,9 +264,9 @@ var postRegister = async function(req, res) {
  * @returns returns username upon success -> maybe we should return user object instead?
  */
 
-var postLogin = async function(req, res) {
+var postLogin = async function (req, res) {
     // TODO: check username and password and login
-    
+
     if (!req.body.username || !req.body.password) {
         return res.status(400).json({ error: 'One or more of the fields you entered was empty, please try again.' });
     }
@@ -137,7 +285,7 @@ var postLogin = async function(req, res) {
             return res.status(401).json({ error: 'Username and/or password are invalid.' });
         }
 
-        bcrypt.compare(password, user[0].hashed_password, function(err, result) {
+        bcrypt.compare(password, user[0].hashed_password, function (err, result) {
             if (err) {
                 console.error('Error comparing passwords:', err);
                 return res.status(500).json({ error: 'Error comparing passwords.' });
@@ -160,7 +308,7 @@ var postLogin = async function(req, res) {
 
 
 // GET /logout
-var postLogout = function(req, res) {
+var postLogout = function (req, res) {
     req.session.user_id = null;
     res.status(200).json({ message: "You were successfully logged out." });
 
@@ -173,7 +321,7 @@ var postLogout = function(req, res) {
  * description: allow users to create new tags or search if the tag already exists or not
  * @returns returns hashtag upon success
  */
-var createTags = async function(req, res) {
+var createTags = async function (req, res) {
 
     if (!req.body.hashtagname) {
         return res.status(400).json({ error: 'One or more of the fields you entered was empty, please try again.' });
@@ -182,7 +330,7 @@ var createTags = async function(req, res) {
     const findUserQuery = `SELECT * FROM hashtags WHERE hashtagname = '${hashtagname}'`;
     try {
         const existingTag = await db.send_sql(findUserQuery);
-        
+
         if (existingTag.length === 0) {
             // hashtag doesn't exist from before so you have to insert
             const createTagQuery = `INSERT INTO hashtags (hashtagname) VALUES ('${hashtagname}')`;
@@ -190,7 +338,7 @@ var createTags = async function(req, res) {
             console.log('success: ', res);
         }
 
-        res.status(200).json({hashtagname : existingTag});
+        res.status(200).json({ hashtagname: existingTag });
     } catch (error) {
         console.error('Error querying database:', error);
         return res.status(500).json({ error: 'Error querying database.' });
@@ -205,9 +353,9 @@ var createTags = async function(req, res) {
  * @returns returns username and hashtag upon success
  */
 
-var postTags = async function(req, res) {
+var postTags = async function (req, res) {
     // SHOULD I CHECK IF USER IS LOGGED IN OR NOT?
-    
+
     if (!req.body.hashtagname) {
         return res.status(400).json({ error: 'One or more of the fields you entered was empty, please try again.' });
     }
@@ -222,11 +370,11 @@ var postTags = async function(req, res) {
         // CHECK THIS
         const hashtag_id = existingTag.hashtag_id
         console.log('tag id: ', hashtag_id);
-        
+
         const postTagQuery = `INSERT INTO hashtag_by (hashtag_id, user_id) VALUES ('${hashtag_id}','${req.session.user_id}')`;
         try {
             const existingTag = await db.send_sql(postTagQuery);
-            return res.status(200).json({ hashtagid : hashtag_id, user_id : req.session.user_id});
+            return res.status(200).json({ hashtagid: hashtag_id, user_id: req.session.user_id });
         } catch (error) {
             console.error('Error querying database:', error);
             return res.status(500).json({ error: 'Error querying database.' });
@@ -243,7 +391,7 @@ var postTags = async function(req, res) {
  * @param {*} res 
  * @returns returns the top ten most popular hashtags
  */
-var getTags = async function(req, res) {
+var getTags = async function (req, res) {
 
     try {
         // check this query
@@ -272,7 +420,7 @@ var getTags = async function(req, res) {
             hashtagname: item.hashtagname
         }));
 
-        res.status(200).json({results});
+        res.status(200).json({ results });
     } catch (error) {
         console.error('Error querying database:', error);
         return res.status(500).json({ error: 'Error querying database.' });
@@ -282,7 +430,7 @@ var getTags = async function(req, res) {
 
 //https://dev.to/przpiw/file-upload-with-react-nodejs-2ho7
 
-var uploadPhoto = async function(req, res) {
+var uploadPhoto = async function (req, res) {
     try {
         // Check if a file was uploaded
         if (!req.file) {
@@ -302,7 +450,7 @@ var uploadPhoto = async function(req, res) {
 
         // If the user exists, update the user table with the photo data
         const updateQuery = `UPDATE users SET profile_photo = ? WHERE username = ?`;
-        db.send_sql(updateQuery, [photoBuffer, username], function(err, result) {
+        db.send_sql(updateQuery, [photoBuffer, username], function (err, result) {
             if (err) {
                 console.error('Error updating user profile photo:', err);
                 return res.status(500).json({ error: 'Internal server error' });
@@ -322,7 +470,7 @@ var uploadPhoto = async function(req, res) {
 
 
 // GET /friends
-var getFriends = async function(req, res) {
+var getFriends = async function (req, res) {
 
     console.log('getting friends');
 
@@ -331,15 +479,15 @@ var getFriends = async function(req, res) {
     }
 
     const username = req.params.username;
-      
+
     // TODO: get all friends of current user
     if (!helper.isLoggedIn(req.session.user_id) || !helper.isOK(username)) {
-    // if (!req.session.user_id) {
+        // if (!req.session.user_id) {
         return res.status(403).json({ error: 'Not logged in.' });
     }
 
     try {
-        const friends =  await db.send_sql(`SELECT DISTINCT friends.followed, nFriend.primaryName
+        const friends = await db.send_sql(`SELECT DISTINCT friends.followed, nFriend.primaryName
         FROM names nUser
         JOIN users user1 ON user1.linked_nconst = nUser.nconst
         JOIN friends ON nUser.nconst = friends.follower
@@ -350,7 +498,7 @@ var getFriends = async function(req, res) {
             followed: friend.followed,
             primaryName: friend.primaryName
         }));
-        res.status(200).json({results});
+        res.status(200).json({ results });
     } catch (error) {
         console.error('Error querying database:', error);
         return res.status(500).json({ error: 'Error querying database.' });
@@ -359,13 +507,13 @@ var getFriends = async function(req, res) {
 }
 
 // GET /recommendations
-var getFriendRecs = async function(req, res) {
-    
+var getFriendRecs = async function (req, res) {
+
     // TODO: get all friend recommendations of current user
 
-    const {username} = req.params;
+    const { username } = req.params;
 
-    
+
     if (!helper.isLoggedIn(req, req.session.user_id) || !helper.isOK(username)) {
         return res.status(403).json({ error: 'Not logged in.' });
     }
@@ -388,7 +536,7 @@ var getFriendRecs = async function(req, res) {
             primaryName: item.primaryName
         }));
 
-        res.status(200).json({results});
+        res.status(200).json({ results });
     } catch (error) {
         console.error('Error querying database:', error);
         return res.status(500).json({ error: 'Error querying database.' });
@@ -398,11 +546,11 @@ var getFriendRecs = async function(req, res) {
 
 
 // POST /createPost
-var createPost = async function(req, res) {
+var createPost = async function (req, res) {
 
     // TODO: add to posts table
     if (!req.session.user_id || !helper.isLoggedIn(req.session.user_id)) {
-    // if (!req.session.user_id) {
+        // if (!req.session.user_id) {
         return res.status(403).json({ error: 'Not logged in.' });
     }
 
@@ -440,9 +588,9 @@ var createPost = async function(req, res) {
 // GET /feed
 //Yes, authors that the current user follows, as well as
 //any posts that the current user made. (just like how you can see your own posts in your Instagram feed)
-var getFeed = async function(req, res) {
+var getFeed = async function (req, res) {
     console.log('getFeed is called');
-    
+
     // TODO: get the correct posts to show on current user's feed
     if (!helper.isLoggedIn(req.session.user_id)) {
         return res.status(403).json({ error: 'Not logged in.' });
@@ -470,60 +618,59 @@ var getFeed = async function(req, res) {
             tite: post.title,
             content: post.content
         }));
-        res.status(200).json({results});
+        res.status(200).json({ results });
 
     } catch (error) {
         console.error('Error querying database:', error);
         return res.status(500).json({ error: 'Error querying database.' });
-    } 
+    }
 
 }
 
-var getMovie = async function(req, res) {
+var getMovie = async function (req, res) {
     const vs = await getVectorStore();
     const retriever = vs.asRetriever();
 
     const prompt =
-    PromptTemplate.fromTemplate({
-        context: 'Based on the context: {context}, answer the question: {question}',
-        contextParams: { context: req.body.context, question: req.body.question }
-    });
+        PromptTemplate.fromTemplate({
+            context: 'Based on the context: {context}, answer the question: {question}',
+            contextParams: { context: req.body.context, question: req.body.question }
+        });
     //const llm = null; // TODO: replace with your language model
-    const llm = new ChatOpenAI({ apiKey: process.env.OPENAI_API_KEY, modelName: 'gpt-3.5-turbo', temperature: 0});
+    const llm = new ChatOpenAI({ apiKey: process.env.OPENAI_API_KEY, modelName: 'gpt-3.5-turbo', temperature: 0 });
 
     const ragChain = RunnableSequence.from([
         {
             context: retriever.pipe(formatDocumentsAsString),
             question: new RunnablePassthrough(),
-          },
-      prompt,
-      llm,
-      new StringOutputParser(),
+        },
+        prompt,
+        llm,
+        new StringOutputParser(),
     ]);
 
     console.log(req.body.question);
 
     result = await ragChain.invoke(req.body.question);
     console.log(result);
-    res.status(200).json({message:result});
+    res.status(200).json({ message: result });
 }
 
 /* Here we construct an object that contains a field for each route
    we've defined, so we can call the routes from app.js. */
 
-var routes = { 
+var routes = {
     get_helloworld: getHelloWorld,
     post_login: postLogin,
     post_register: postRegister,
-    post_logout: postLogout, 
+    post_logout: postLogout,
     get_friends: getFriends,
     get_friend_recs: getFriendRecs,
     get_movie: getMovie,
     create_post: createPost,
     get_feed: getFeed,
-    upload_photo : uploadPhoto
-  };
+    upload_photo: uploadPhoto
+};
 
 
 module.exports = routes;
-

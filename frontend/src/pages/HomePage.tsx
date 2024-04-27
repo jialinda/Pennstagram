@@ -25,7 +25,7 @@ const HomePage = () => {
   }, [rootURL]);
 
   const handleGetStarted = () => {
-    navigate("/signup"); // Route to the sign-up page
+    navigate("/register"); // Route to the sign-up page
   };
 
   return (

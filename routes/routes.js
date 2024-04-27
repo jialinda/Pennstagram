@@ -656,6 +656,118 @@ var getMovie = async function (req, res) {
     res.status(200).json({ message: result });
 }
 
+// GET /chat
+/** getChat 
+ * 
+ * @param {*} req 
+ * @param {*} res 
+ * @returns -> retrieves all the current chats that users have
+ */
+var getChatAll = async function(req, res) {
+    console.log('getChat is called');
+    
+    // TODO: get the correct posts to show on current user's feed
+    if (!helper.isLoggedIn(req.session.user_id)) {
+        return res.status(403).json({ error: 'Not logged in.' });
+    }
+    const userId = req.session.user_id;
+    const username = req.body.username;
+
+    console.log('curr id: ', req.session.user_id);
+    // GRACE TODO: Check the tables
+    try {
+        // maybe I should add a last text entry to chat so we can keep track?
+        // last text id so that it is easier to display too
+        const getChatQuery = `
+        SELECT c1.chat_id, c1.chatname, c1.latest_text_id
+        FROM chats c1
+        JOIN (SELECT * FROM user_chats WHERE user_id = ${req.session.user_id}) c2
+        ON c1.chat_id = c2.chat_id
+        `;
+        const allChats = await db.send_sql();
+
+        // Send the response with the list of posts for the feed
+        const results = allChats.map(chat => ({
+            chat_id: chat.chat_id,
+            chatname: chat.chatname,
+            latest_text_id: chat.latest_text_id,
+        }));
+        res.status(200).json({results});
+
+    } catch (error) {
+        console.error('Error querying database:', error);
+        return res.status(500).json({ error: 'Error querying database.' });
+    } 
+
+}
+
+// GET /chat/{chatId}
+/** getChat 
+ * 
+ * @param {*} req 
+ * @param {*} res 
+ * @returns -> retrieves all the current chats that users have
+ */
+// check how the id should be 
+var getChatById = async function(req, res) {
+    console.log('getChat is called');
+    
+    // TODO: get the correct posts to show on current user's feed
+    if (!helper.isLoggedIn(req.session.user_id)) {
+        return res.status(403).json({ error: 'Not logged in.' });
+    }
+    if (!req.body.username || !req.body.chatId) {
+        return res.status(400).json({ error: 'One or more of the fields you entered was empty, please try again.' });
+    }
+
+    const userId = req.session.user_id;
+    const username = req.body.username;
+    const chatId = req.body.chatId;
+
+    // first check if the user is a part of that chat?
+    const checkUserQuery = `
+    SELECT *
+    FROM user_chats
+    WHERE user_id = ${userId} AND chat_id = ${chatId}`;
+    // let userChats = [];
+
+    try {
+        const userChats = await db.send_sql(checkUserQuery);
+        if (userChats.length <= 0) {
+            // check error - maybe do an alert as well?
+            return res.status(409).json({ error: 'USER IS NOT IN THIS CHAT'});
+        }
+        console.log('user and chat are valid next');
+    } catch (err) {
+        console.error('Error querying database:', error);
+        return res.status(500).json({ error: 'Error querying database.' });
+    }
+
+    const getChatInfo = `
+    SELECT *
+    FROM texts
+    WHERE chat_id = ${chatId}`;
+
+    try {
+        const chatInfo = await db.send_sql(checkUserQuery);
+
+        const results = chatInfo.map(chat => ({
+            text_id: chat.text_id,
+            sender: chat.author_id,
+            chat_id: chat.chat_id,
+            content: chat.content,
+            timestamp: chat.timestamp
+        }));
+        res.status(200).json({results});
+
+    } catch (err) {
+        console.error('Error querying database:', error);
+        return res.status(500).json({ error: 'Error querying database.' });
+    }
+
+}
+
+
 /* Here we construct an object that contains a field for each route
    we've defined, so we can call the routes from app.js. */
 

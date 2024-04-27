@@ -93,9 +93,13 @@ async function create_tables(db) {
     );')
 
     /**** chat-related table ***/
+    // ADDED CHECK
+    // update it whenever you send somethiing
     var qchats = db.create_tables('CREATE TABLE IF NOT EXISTS chats ( \
       chat_id INT AUTO_INCREMENT PRIMARY KEY, \
       chatname VARCHAR(255), \
+      latest_text_id INT,\
+      FOREIGN KEY (latest_text_id) REFERENCES texts(text_id) \
     );')
 
     // establishing the chat users in there

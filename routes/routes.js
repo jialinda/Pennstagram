@@ -103,9 +103,9 @@ var postRegister = async function (req, res) {
         for (var item of topMatches) {
             for (var i = 0; i < item.ids[0].length; i++) {
                 console.log(item.ids[0][i] + " (Euclidean distance = " + Math.sqrt(item.distances[0][i]) + ") in " + item.documents[0][i]);
-                }
             }
-            
+        }
+
         console.log(item.documents[0]);
         actors = item.documents[0];
 
@@ -113,146 +113,22 @@ var postRegister = async function (req, res) {
         console.log('actors:', actors);
 
         const hashedPassword = await helper.encryptPassword(password);
-        await db.send_sql('INSERT INTO users (username, firstname, lastname, email, affiliation, password, birthday, imageUrl) VALUES ('${username}', '${firstname}', '${lastname}', '${email}', '${affiliation}', '${hashedPassword}', '${birthday}', '${imagePath}')';  
+        await db.send_sql(`INSERT INTO users (username, firstname, lastname, email, affiliation, password, birthday, imageUrl) VALUES ('${username}', '${firstname}', '${lastname}', '${email}', '${affiliation}', '${hashedPassword}', '${birthday}', '${imagePath}')`);
+        // (`SELECT * FROM users WHERE username = '${username}'`)
+        // const query = 'INSERT INTO users (username, firstname, lastname, email, affiliation, password, birthday, imageUrl) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+        // const values = [username, firstname, lastname, email, affiliation, hashedPassword, birthday, imagePath];
 
+        // // Using the `query` method correctly with parameters
+        // connection.query(query, values, function (error, results, fields) {
+        // if (error) throw error;
+        // // handle your results here
+        // });
         res.status(200).json({ username, actors });
     } catch (error) {
         console.error('Registration failed:', error);
         res.status(500).json({ error: 'Failed to register user' });
     }
 };
-
-
-// /** postRegister
-//  * 
-//  * @param {*} req  - contains login name (username), password, first & last name, email, affiliation, birthday
-//  * @param {*} res 
-//  * description: new users sign up/register for an account
-//  * @returns returns user name upon success?
-//  *          error handling: 409 if username is already taken
-//  *          
-//  */
-
-// // POST /register 
-// var postRegister = async function (req, res) {
-//     // TODO: register a user with given body parameters
-
-//     if (!req.body.username || !req.body.password || !req.body.firstname || !req.body.lastname || !req.body.email || !req.body.affiliation || !req.body.birthday) {
-//         return res.status(400).json({ error: 'One or more of the fields you entered was empty, please try again.' });
-//     }
-
-//     const username = req.body.username;
-//     const password = req.body.password;
-//     const firstname = req.body.firstname;
-//     const lastname = req.body.lastname;
-//     const email = req.body.email;
-//     const affiliation = req.body.affiliation;
-//     const birthday = req.body.birthday;
-//     console.log(username);
-
-//     const imagePath = req.file.path;
-//     console.log(typeof imagePath, imagePath);
-//     console.log(req.file);
-//     const imageName = req.file.filename;
-
-//     //read file
-//     const photoBuffer = req.file;
-//     const actors = [];
-
-
-
-//     // check if the account with username already exists or not:
-//     const exists = await db.send_sql(`SELECT * FROM users WHERE username = '${username}'`);
-//     if (exists.length > 0) {
-//         console.log('alr exist');
-//         return res.status(409).json({ error: 'An account with this username already exists, please try again.' });
-//     }
-
-//     try {
-//         facehelper.initializeFaceModels()
-//             .then(async () => {
-
-//                 const collection = await client.getOrCreateCollection({
-//                     name: "face-api",
-//                     embeddingFunction: null,
-//                     // L2 here is squared L2, not Euclidean distance
-//                     metadata: { "hnsw:space": "l2" },
-//                 });
-
-//                 console.info("Looking for files");
-//                 const promises = [];
-//                 // Loop through all the files in the images directory
-//                 fs.readdir("/nets2120/project-steam-team/models/images", function (err, files) {
-//                     if (err) {
-//                         console.error("Could not list the directory.", err);
-//                         process.exit(1);
-//                     }
-
-//                     files.forEach(function (file, index) {
-//                         console.info("Adding task for " + file + " to index.");
-//                         promises.push(facehelper.indexAllFaces(path.join("/nets2120/project-steam-team/models/images", file), file, collection));
-//                     });
-//                     console.info("Done adding promises, waiting for completion.");
-//                     console.log(imagePath);
-//                     await Promise.all(promises);
-
-//                     Promise.all(promises)
-//                         .then(async (results) => {
-//                             console.log("All images indexed.");
-
-//                             // const search = 'query.jpg';
-
-//                             console.log('\nTop-k indexed matches to ' + imagePath + ':');
-//                             for (var item of await facehelper.findTopKMatches(collection, imagePath, 5)) {
-//                                 for (var i = 0; i < item.ids[0].length; i++) {
-//                                     console.log(item.ids[0][i] + " (Euclidean distance = " + Math.sqrt(item.distances[0][i]) + ") in " + item.documents[0][i]);
-//                                 }
-//                             }
-
-//                             console.log(item.documents[0]);
-//                             actors = item.documents[0];
-//                         })
-//                         .catch((err) => {
-//                             console.error("Error indexing images:", err);
-//                         });
-//                 });
-
-//                 const hashedPassword = await helper.encryptPassword(password);
-
-//                 // await db.send_sql('INSERT INTO users (username, firstname, lastname, email, affiliation, password, birthday, imageUrl) VALUES (?, ?, ?, ?, ?, ?, ?, ?);',
-//                 // [username, firstname, lastname, email, affiliation, hashedPassword, birthday, imagePath]);
-
-//                 // const actors = topMatches.map(match => ({
-//                 //     id: match.ids[0],
-//                 //     distance: Math.sqrt(match.distances[0]),
-//                 //     imageUrl: match.documents[0] 
-//                 // }));
-//                 console.log('User created, sending actor matches');
-//                 console.log('actors:', actors);
-//                 res.status(200).json({ username, actors });
-
-
-//             });
-
-
-//     } catch (error) {
-//         console.error('Registration failed:', error);
-//         res.status(500).json({ error: 'Failed to register user' });
-//     }
-// }
-
-// // };
-
-// //     // Function to upload file to S3
-// //     async function uploadToS3(filePath, fileName) {
-// //         const fileContent = fs.readFileSync(filePath);
-// //         const params = {
-// //             Bucket: process.env.S3_BUCKET_NAME,
-// //             Key: `profile_images/${fileName}`,
-// //             Body: fileContent
-// //         };
-// //         return s3.upload(params).promise();
-// //     }
 
 
 // POST /login
@@ -663,9 +539,9 @@ var getMovie = async function (req, res) {
  * @param {*} res 
  * @returns -> retrieves all the current chats that users have
  */
-var getChatAll = async function(req, res) {
+var getChatAll = async function (req, res) {
     console.log('getChat is called');
-    
+
     // TODO: get the correct posts to show on current user's feed
     if (!helper.isLoggedIn(req.session.user_id)) {
         return res.status(403).json({ error: 'Not logged in.' });
@@ -692,12 +568,12 @@ var getChatAll = async function(req, res) {
             chatname: chat.chatname,
             latest_text_id: chat.latest_text_id,
         }));
-        res.status(200).json({results});
+        res.status(200).json({ results });
 
     } catch (error) {
         console.error('Error querying database:', error);
         return res.status(500).json({ error: 'Error querying database.' });
-    } 
+    }
 
 }
 
@@ -709,9 +585,9 @@ var getChatAll = async function(req, res) {
  * @returns -> retrieves all the current chats that users have
  */
 // check how the id should be 
-var getChatById = async function(req, res) {
+var getChatById = async function (req, res) {
     console.log('getChat is called');
-    
+
     // TODO: get the correct posts to show on current user's feed
     if (!helper.isLoggedIn(req.session.user_id)) {
         return res.status(403).json({ error: 'Not logged in.' });
@@ -735,7 +611,7 @@ var getChatById = async function(req, res) {
         const userChats = await db.send_sql(checkUserQuery);
         if (userChats.length <= 0) {
             // check error - maybe do an alert as well?
-            return res.status(409).json({ error: 'USER IS NOT IN THIS CHAT'});
+            return res.status(409).json({ error: 'USER IS NOT IN THIS CHAT' });
         }
         console.log('user and chat are valid next');
     } catch (err) {
@@ -758,7 +634,7 @@ var getChatById = async function(req, res) {
             content: chat.content,
             timestamp: chat.timestamp
         }));
-        res.status(200).json({results});
+        res.status(200).json({ results });
 
     } catch (err) {
         console.error('Error querying database:', error);

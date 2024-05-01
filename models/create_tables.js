@@ -97,7 +97,9 @@ async function create_tables(db) {
       chat_id INT AUTO_INCREMENT PRIMARY KEY, \
       chatname VARCHAR(255), \
       latest_text_id INT,\
-      FOREIGN KEY (latest_text_id) REFERENCES texts(text_id) \
+      admin_id INT, \
+      FOREIGN KEY (latest_text_id) REFERENCES texts(text_id), \
+      FOREIGN KEY (admin_id) REFERENCES chats(user_id) \
     );')
 
     // establishing the chat users in there

@@ -81,6 +81,8 @@ As an example, here is a version that worked for us:
 ssh -i ~/.ssh/tunnel.pem -4 -L 3306:database-2.czkkqa8wuy3r.us-east-1.rds.amazonaws.com:3306 ubuntu@ec2-3-86-71-131.compute-1.amazonaws.com
 ```
 
+ssh -i ~/.ssh/tunnel.pem -4 -L 3306:imdbdatabase.cfeu8au62c9f.us-east-1.rds.amazonaws.com:3306 ubuntu@ec2-3-88-170-21.compute-1.amazonaws.com
+
 **First-Time You Connect to the New Tunnel**. The first time you create the tunnel server, may need to answer `yes` to whether you trust the server.  You'll be logged into an Amazon EC2 node at this point.
 
 **Only do this if you re-created your RDS instance, rather than restarting it**.
@@ -89,7 +91,7 @@ Run `sudo apt update` and then `sudo apt install mysql-client-core-8.0` so you h
 ```
 mysql --host=imdbdatabase.cfeu8au62c9f.us-east-1.rds.amazonaws.com --user=admin --password=rds-password
 ```
-
+<!-- instadb.cbbt2woocf66.us-east-1.rds.amazonaws.com -->
 <!-- my imdb link: imdbdatabase.cfeu8au62c9f.us-east-1.rds.amazonaws.com -->
 
 Until `ssh` exits, you'll have a "tunnel" set up so requests in your container for `localhost` port `3306` get redirected to the tunnel server; then it makes requests to the database server on your behalf.

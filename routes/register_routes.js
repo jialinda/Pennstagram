@@ -21,5 +21,14 @@ function register_routes(app) {
     // TODO: register getMovie, which does not need a :username
     //       Make it compatible with the call from ChatInterface.tsx
     app.get('/:username/movies', routes.get_movie); 
+    // CHECK because u have to update it
+    app.get('/chat/:chatId', routes.get_chat_by_id); // check
+    app.get('/chat', routes.get_chat_all); // check
+    app.get('/:username/movies', routes.post_chat); 
+    app.get('/:username/movies', routes.post_text); 
+    app.get('/:username/movies', routes.post_invite); 
+    app.get('/:username/movies', routes.confirm_invite); 
+    app.get('/:username/movies', routes.get_friend_by_username: getFriendName
+); 
   }
   

@@ -16,6 +16,9 @@ const MessageComponent = ({ sender, message }: { sender: string, message: string
     )
 }
 
+// TODO: in ChatInterface, let's also add another section for invites
+// decline invite option -> create a delete invites route
+
 export default function ChatInterface() {
     const [messages, setMessages] = useState([{ sender: 'chatbot', message: 'Hi there! What movie review questions do you have?' }]);
     const [input, setInput] = useState<string>('');
@@ -29,11 +32,26 @@ export default function ChatInterface() {
         navigate("/"+ username+"/friends");
     };
 
+    const createChatroom = () => {
+        navigate('/' + username + '/createChat');
+    };
+
+    // create a function called getChats or something here
+
     const sendMessage = async () => {
         // TODO: add the user's message to the messages state 
         setMessages([...messages, {sender : username, message: input}]);
         console.log('input: ', input);
         console.log('messages: ', messages);
+        
+        // TODO: make a call to postText route in backend
+        try {
+            await axios.post('/postText', {
+                message: input
+            });
+        } catch (error) {
+            console.error('Error sending message:', error);
+        }
 
         // TODO: make a call to the getMovies route 
         // try {
@@ -52,22 +70,30 @@ export default function ChatInterface() {
     return (
         <div className='w-screen h-screen flex flex-col items-center'>
         <div className='w-full h-16 bg-slate-50 flex justify-center mb-2'>
-            <div className='text-2xl max-w-[1800px] w-full flex items-center'>
-            Chat with your PennstaFriends!, - {username} &nbsp;
-            <button type="button" className='px-2 py-2 rounded-md bg-gray-500 outline-none text-white'
+            <div className='font-bold text-2xl max-w-[1800px] w-full flex items-center'>
+                Chat with your PennstaFriends, {username} ! &nbsp;
+            <button type="button" className='px-2 py-2 rounded-md bg-blue-500 outline-none text-white'
               onClick={feed}>Feed</button>&nbsp;
-            <button type="button" className='px-2 py-2 rounded-md bg-gray-500 outline-none text-white'
+            <button type="button" className='px-2 py-2 rounded-md bg-blue-500 outline-none text-white'
               onClick={friends}>Friends</button>
             </div>
         </div>
             <div className='font-bold text-3xl'>Chatroom</div>
+            <div className="p-4 w-full flex items-center justify-between bg-blue-200">
+            <button className='px-2 py-2 rounded-md bg-blue-500 outline-none text-white' onClick = {createChatroom}>Create Chatroom</button>
+            {/* You can add toolbar content here */}
+            </div>
             <div className='flex'> {/* Add a container div */}
-                <div className='w-1/2'> {/* First div */}
-                    <div>Your Chats</div>
+            <div className='w-1/3'> {/* First div */}
+                    <div className='font-bold text-2xl'>Your Invites</div>
+                    <div className='h-[40rem] w-100% bg-slate-100 p-3'></div>
                 </div>
-                <div className='w-1/2'> {/* Second div */}
-                    <div>INSERT CHAT TITLE</div>
-                    <div className='h-[40rem] w-[30rem] bg-slate-100 p-3'>
+                <div className='w-1/3'> {/* First div */}
+                    <div className='font-bold text-2xl'>Your Chats</div>
+                </div>
+                <div className='w-1/3'> {/* Second div */}
+                    <div className='font-bold text-2xl'>INSERT CHAT TITLE</div>
+                    <div className='h-100% w-[30rem] bg-slate-100 p-3'>
                 <div className='h-[90%] overflow-scroll'>
                     <div className='space-y-2'>
                         {messages.map(msg => {

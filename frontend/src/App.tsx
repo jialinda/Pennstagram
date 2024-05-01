@@ -5,6 +5,7 @@ import Signup from "./pages/Signup";
 import Friends from "./pages/Friends";
 import ChatInterface from "./pages/ChatInterface";
 import HomePage from "./pages/HomePage";
+import CreateChat from "./pages/CreateChat";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path='/:username/home' element={<Home />} />
         <Route path='/:username/friends' element={<Friends />} />
         <Route path="/:username/chat" element={<ChatInterface />} />
+        <Route path="/:username/createChat" element={<CreateChat />} />
       </Routes>
     </BrowserRouter>
   )

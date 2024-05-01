@@ -3,6 +3,8 @@ import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 
+// npm run dev --host
+
 const MessageComponent = ({ sender, message }: { sender: string, message: string }) => {
     const { username } = useParams();
     const messageStyle = sender === username ? 'justify-end bg-blue-100' : 'bg-slate-200';

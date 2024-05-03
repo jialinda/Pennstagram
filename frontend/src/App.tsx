@@ -7,13 +7,14 @@ import ChatInterface from "./pages/ChatInterface";
 import HomePage from "./pages/HomePage";
 import CreateChat from "./pages/CreateChat";
 
+
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
-        <Route path='/signup' element={<Signup />} />
+        <Route path='/register' element={<Signup />} />
         <Route path='/:username/home' element={<Home />} />
         <Route path='/:username/friends' element={<Friends />} />
         <Route path="/:username/chat" element={<ChatInterface />} />

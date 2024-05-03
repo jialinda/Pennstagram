@@ -724,6 +724,7 @@ var confirmInvite = async function(req, res) {
         return res.status(403).json({ error: 'Not logged in.' });
     }
 
+    // check about chatId
     if (!req.body.inviteId || !req.body.chatId) {
         return res.status(400).json({ error: 'One or more of the fields you entered was empty, please try again.' });
     }
@@ -746,6 +747,31 @@ var confirmInvite = async function(req, res) {
     } catch (error) {
         console.error('Error updating invite confirmation:', error);
         return res.status(500).json({ error: 'Error updating invite confirmation.' });
+    }
+}
+
+
+// DELETE /deleteInvite
+var deleteInvite = async function(req, res) {
+    // Check if the user is logged in
+    if (!req.session.user_id || !helper.isLoggedIn(req.session.user_id)) {
+        return res.status(403).json({ error: 'Not logged in.' });
+    }
+
+    if (!req.body.inviteId) {
+        return res.status(400).json({ error: 'Invite ID is missing.' });
+    }
+
+    const inviteId = req.body.inviteId;
+
+    try {
+        const deleteQuery = `DELETE FROM invites WHERE invite_id = ${inviteId}`;
+        await db.send_sql(deleteQuery);
+
+        res.status(200).json({ message: "Invite deleted successfully." });
+    } catch (error) {
+        console.error('Error deleting invite:', error);
+        return res.status(500).json({ error: 'Error deleting invite.' });
     }
 }
 
@@ -847,7 +873,7 @@ var routes = {
     post_text: postText,
     post_invite: postInvite,
     confirm_invite: confirmInvite,
-    get_friend_by_username: getFriendName
+    // get_friend_by_username: getFriendName
   };
 
 

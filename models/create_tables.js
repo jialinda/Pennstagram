@@ -30,14 +30,14 @@ async function create_tables(db) {
       affiliation VARCHAR(255), \
       password VARCHAR(255), \
       birthday date, \
-      profile_photo BLOB, \
+      profile_photo BLOB \
     );')
 
     var qrecs = db.create_tables('CREATE TABLE IF NOT EXISTS recommendations ( \
       person INT, \
       recommendation INT, \
       strength int, \
-      FOREIGN KEY (person) REFERENCES users(users_id), \
+      FOREIGN KEY (person) REFERENCES users(user_id), \
       FOREIGN KEY (recommendation) REFERENCES users(user_id) \
     );')
   
@@ -50,6 +50,23 @@ async function create_tables(db) {
       FOREIGN KEY (author_id) REFERENCES users(user_id) \
       );'
     );
+
+    var qcomments = db.create_tables('CREATE TABLE IF NOT EXISTS comments ( \
+      comment_id INT AUTO_INCREMENT PRIMARY KEY, \
+      content VARCHAR(500),\
+      timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP, \
+      post_id INT, \
+      author_id INT, \
+      FOREIGN KEY (post_id) REFERENCES posts(post_id), \
+      FOREIGN KEY (author_id) REFERENCES users(user_id) \
+      ); '
+    );
+
+
+    var qusertags = db.create_tables('CREATE TABLE IF NOT EXISTS hashtags ( \
+      hashtag_id INT AUTO_INCREMENT PRIMARY KEY,\
+      hashtagname VARCHAR(255) \
+    );')
 
     // establishing the likes relationship
     var qpostslikers = db.create_tables('CREATE TABLE IF NOT EXISTS posts_liked_by ( \
@@ -85,10 +102,16 @@ async function create_tables(db) {
       FOREIGN KEY (hashtag_id) REFERENCES hashtags(hashtag_id) \
     );')
 
-    var qusertags = db.create_tables('CREATE TABLE IF NOT EXISTS hashtags ( \
-      hashtag_id INT AUTO_INCREMENT PRIMARY KEY,\
-      hashtagname VARCHAR(255), \
+    var qtexts = db.create_tables('CREATE TABLE IF NOT EXISTS texts ( \
+      text_id INT AUTO_INCREMENT PRIMARY KEY, \
+      author_id INT, \
+      chat_id INT, \
+      content VARCHAR(500), \
+      timestamp DATE, \
+      FOREIGN KEY (author_id) REFERENCES users(user_id), \
+      FOREIGN KEY (chat_id) REFERENCES chats(chat_id) \
     );')
+
 
     /**** chat-related table ***/
     // ADDED CHECK
@@ -110,31 +133,21 @@ async function create_tables(db) {
       FOREIGN KEY (chat_id) REFERENCES chats(chat_id) \
     );')
 
-    var qtexts = db.create_tables('CREATE TABLE IF NOT EXISTS texts ( \
-      text_id INT AUTO_INCREMENT PRIMARY KEY, \
-      author_id INT, \
-      chat_id INT, \
-      content VARCHAR(500), \
-      timestamp DATE, \
-      FOREIGN KEY (author_id) REFERENCES users(users_id), \
-      FOREIGN KEY (chat_id) REFERENCES chats(chat_id) \
-    );')
-
     var qinvites = db.create_tables('CREATE TABLE IF NOT EXISTS invites ( \
       invite_id INT AUTO_INCREMENT PRIMARY KEY, \
       chat_id INT, \
       invitee_id INT, \
       inviter_id INT, \
       confirmed BOOLEAN, \
-      FOREIGN KEY (invitee_id) REFERENCES users(users_id), \
-      FOREIGN KEY (inviter_id) REFERENCES users(users_id), \
+      FOREIGN KEY (invitee_id) REFERENCES users(user_id), \
+      FOREIGN KEY (inviter_id) REFERENCES users(user_id), \
       FOREIGN KEY (chat_id) REFERENCES chats(chat_id) \
     );')
 
     var quserinvites = db.create_tables('CREATE TABLE IF NOT EXISTS user_invites ( \
       user_id INT, \
       invite_id INT, \
-      FOREIGN KEY (user_id) REFERENCES users(users_id) \
+      FOREIGN KEY (user_id) REFERENCES users(user_id) \
       FOREIGN KEY (invite_id) REFERENCES invites(invite_id) \
     );')
 
@@ -145,16 +158,7 @@ async function create_tables(db) {
       FOREIGN KEY (followed) REFERENCES users(user_id) \
       );')
   
-    var qcomments = db.create_tables('CREATE TABLE IF NOT EXISTS comments ( \
-      comment_id INT AUTO_INCREMENT PRIMARY KEY, \
-      content VARCHAR(500),\
-      timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP, \
-      post_id INT, \
-      author_id INT, \
-      FOREIGN KEY (post_id) REFERENCES posts(post_id), \
-      FOREIGN KEY (author_id) REFERENCES users(user_id) \
-      ); '
-    );
+
 
     return await Promise.all([qrecs, qusers, qposts, qpostslikers, qcommenters, qposttags, qusertags, qchats, quserchats, qtexts, qinvites, quserinvites, qfriends, qcomments]);
 }

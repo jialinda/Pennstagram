@@ -28,7 +28,7 @@ function register_routes(app) {
     app.get('/:username/movies', routes.post_text); 
     app.get('/:username/movies', routes.post_invite); 
     app.get('/:username/movies', routes.confirm_invite); 
-    app.get('/:username/movies', routes.get_friend_by_username: getFriendName
-); 
+    // app.get('/:username/movies', routes.get_friend_by_username: getFriendName
+// ); 
   }
   

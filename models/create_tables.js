@@ -32,7 +32,9 @@ async function create_tables(db) {
       affiliation VARCHAR(255), \
       password VARCHAR(255), \
       birthday date, \
-      imageUrl VARCHAR(500)\
+      imageUrl VARCHAR(500),\
+      linkedActor VARCHAR(500), \
+      actorsList VARCHAR(700) \
     );')
 
     var qrecs = db.create_tables('CREATE TABLE IF NOT EXISTS recommendations ( \

@@ -2,8 +2,11 @@ import { useState } from 'react';
 import axios from 'axios'; // Import Axios
 import config from '../../config.json';
 import { useNavigate } from 'react-router-dom';
+axios.defaults.withCredentials = true;
+
 
 export default function Login() {
+  axios.defaults.withCredentials = true;
   const navigate = useNavigate(); 
 
   const rootURL = config.serverRootURL;

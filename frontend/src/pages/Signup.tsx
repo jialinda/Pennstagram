@@ -49,7 +49,7 @@ export default function Signup() {
         // console.log('Actor matches:', actors);
         // console.log("Username:", username);
         // TO DO: ADD ACTORS TO HOMEPAGE
-        navigate(`/${username}/home`, { state: { actors } });
+        navigate(`/${username}/setupprofile`, { state: { actors } });
       } else {
         alert("Registration failed.");
       }

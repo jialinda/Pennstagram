@@ -156,6 +156,10 @@ var postSelections = async function (req, res) {
     const { username } = req.params;
     const { actor, hashtags } = req.body;
 
+
+    console.log('postSelection:', actor);
+    console.log('postSelection:', hashtags);
+
     // Validate request parameters
     if (!username || !actor || !hashtags) {
         return res.status(400).json({ error: 'Missing required parameters.' });
@@ -169,15 +173,20 @@ var postSelections = async function (req, res) {
         }
         const userId = userResult[0].user_id;
 
-        // Update the user's linked actor
-        await db.send_sql(`UPDATE users SET linkedActor = '${actor.id}' WHERE user_id = '${userId}'`);
+        const hashtagIds = await Promise.all(hashtags.map(async (hashtagName) => {
+            const result = await db.send_sql(`SELECT hashtag_id FROM hashtags WHERE hashtagname = '${hashtagName}'`);
+            return result.length > 0 ? result[0].hashtag_id : null;
+        }));
 
-        // Insert user-hashtag relationships
-        hashtags.forEach(async (hashtag) => {
-            await db.send_sql(`INSERT INTO user_hashtags (user_id, hashtag_id) VALUES ('${userId}', '${hashtag}')`);
-        });
+        const validHashtagIds = hashtagIds.filter(id => id != null);
 
-        // Return success response
+        //change linked actor
+        await db.send_sql(`UPDATE users SET linkedActor = '${actor}' WHERE username = '${username}'`);
+
+        await Promise.all(validHashtagIds.map(async (hashtagId) => {
+            await db.send_sql(`INSERT INTO hashtag_by (user_id, hashtag_id) VALUES ('${userId}', '${hashtagId}')`);
+        }));
+
         res.status(200).json({ message: 'Selections updated successfully' });
     } catch (error) {
         console.error('Database error:', error);

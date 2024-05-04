@@ -129,3 +129,18 @@
 [31mERROR[0m:    [04-05-2024 17:51:06] [Errno 98] error while attempting to bind on address ('0.0.0.0', 8000): address already in use
 [32mINFO[0m:     [04-05-2024 17:51:06] Waiting for application shutdown.
 [32mINFO[0m:     [04-05-2024 17:51:06] Application shutdown complete.
+[33mWARNING[0m:  [04-05-2024 21:38:20] chroma_server_nofile is set to 65535, but this is less than current soft limit of 1048576. chroma_server_nofile will not be set.
+[32mINFO[0m:     [04-05-2024 21:38:20] Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+[36mDEBUG[0m:    [04-05-2024 21:38:20] Starting component System
+[36mDEBUG[0m:    [04-05-2024 21:38:20] Starting component OpenTelemetryClient
+[36mDEBUG[0m:    [04-05-2024 21:38:20] Starting component SimpleAssignmentPolicy
+[36mDEBUG[0m:    [04-05-2024 21:38:20] Starting component SqliteDB
+[36mDEBUG[0m:    [04-05-2024 21:38:20] Starting component Posthog
+[36mDEBUG[0m:    [04-05-2024 21:38:20] Starting component LocalSegmentManager
+[36mDEBUG[0m:    [04-05-2024 21:38:20] Starting component SegmentAPI
+[32mINFO[0m:     [04-05-2024 21:38:20] Started server process [[36m70202[0m]
+[32mINFO[0m:     [04-05-2024 21:38:20] Waiting for application startup.
+[32mINFO[0m:     [04-05-2024 21:38:20] Application startup complete.
+[31mERROR[0m:    [04-05-2024 21:38:20] [Errno 98] error while attempting to bind on address ('0.0.0.0', 8000): address already in use
+[32mINFO[0m:     [04-05-2024 21:38:20] Waiting for application shutdown.
+[32mINFO[0m:     [04-05-2024 21:38:20] Application shutdown complete.

@@ -51,6 +51,7 @@ To run Kafka (load all posts from beginning):
 3. !!!DANGER!!! (Do not change this without saving the previous value, otherwise we will lose our data queue checkpoint) 
     Go to config.json and change kafka.groupId to a random string
 4. Run 'node ./models/kafka.js' 
+5. ^^^in our program, we'll run index.js (since it's not in any folder)
 
 Note: A route to post to Kafka will be added soon!
 
@@ -59,7 +60,29 @@ Note: A route to post to Kafka will be added soon!
 - put kafka.js into db_access.js 
 - they're eimplementing as express server but redo it 
 
+##
+Here are some notes about what i should do to get kafka working and running:
+// You just need to hook up a consumer to the Kafka topic.
+// Federated Posts
+// Your site should have a unique ID distinguishing it from all other NETS 2120 sites. This will be your team number (e.g. g01). Through the Kafka FederatedPosts channel, your site should both read and send posts that can be used by other projects' InstaLite sites. Posts should have a JSON component called post_json:
 
-// import that i might need 
-<!-- const SnappyCodec = require('kafkajs-snappy')
-CompressionCodecs[CompressionTypes.Snappy] = SnappyCodec -->
+// {
+//     username: '...',
+//     source_site: '...',
+//     post_uuid_within_site: '...',
+//     post_text: '...',
+//     content_type: '...'
+// }
+// as well as a binary component, attach, including an optional image. The content_type field in the JSON should be the HTTP content-type associated with the binary data.
+  
+// need to create helper function to parse the data
+  // also need to deal w/ malformed texts, bad formatted posts that are sent through kafka
+  // convert it to json first as well (because Kafka takes stuff in as strings)
+  // check if post has hashtags, caption, etc...
+  // first time we run it, want evreything from kafka to populate database
+  // not in routes.js
+  // put in index.js (root file of our express server); do a set timer thing for like 1 hour
+  // producer function goes in routes file
+  // consumer and produer (consumer is once every hour), producer (every single post we make on our app should be put in our kafka)
+
+  // for post tables, whenever we upload a post from kafka, set post id to some neg number so whenever we seee post table, we know that it has come from kafka 

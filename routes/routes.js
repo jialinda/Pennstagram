@@ -25,7 +25,7 @@ var path = require('path');
 const { ChromaClient } = require("chromadb");
 const fs = require('fs');
 const tf = require('@tensorflow/tfjs-node');
-//const faceapi = require('@vladmandic/face-api');
+const faceapi = require('@vladmandic/face-api');
 const facehelper = require('../models/faceapp.js');
 
 const multer = require('multer');
@@ -231,7 +231,6 @@ var createTags = async function (req, res) {
 
 var postTags = async function (req, res) {
     // SHOULD I CHECK IF USER IS LOGGED IN OR NOT?
-
     if (!req.body.hashtagname) {
         return res.status(400).json({ error: 'One or more of the fields you entered was empty, please try again.' });
     }
@@ -423,10 +422,8 @@ var getFriendRecs = async function (req, res) {
 
 // POST /createPost
 var createPost = async function (req, res) {
-
     // TODO: add to posts table
     if (!req.session.user_id || !helper.isLoggedIn(req.session.user_id)) {
-        // if (!req.session.user_id) {
         return res.status(403).json({ error: 'Not logged in.' });
     }
 
@@ -437,6 +434,13 @@ var createPost = async function (req, res) {
     const title = req.body.title;
     const content = req.body.content;
     let parent_id = req.body.parent_id;
+
+    // TODO, FORMAT POST AND THEN SEND IT TO KAFKA PRODUCER FUNCTION
+    // const post = SOMETHING HERE;
+
+    // producer send to kafka 
+    // sendPostToKafka(post);
+
     if (!parent_id) {
         parent_id = "null";
     }
@@ -458,7 +462,6 @@ var createPost = async function (req, res) {
         console.error('Error querying database:', error);
         return res.status(500).json({ error: 'Error querying database.' });
     }
-
 }
 
 // GET /feed

@@ -436,9 +436,24 @@ var createPost = async function (req, res) {
 
     const title = req.body.title;
     const content = req.body.content;
-    let parent_id = req.body.parent_id;
-    if (!parent_id) {
-        parent_id = "null";
+    let hashtags = req.body.hashtags;
+
+    if (hashtags) {
+        // Remove spaces and split by commas
+        hashtags = hashtags.replace(/\s/g, '').split(',');
+        // Ensure each hashtag starts with '#'
+        hashtags = hashtags.map(tag => {
+            // Trim any leading or trailing whitespace
+            tag = tag.trim();
+            // Add '#' if missing
+            if (!tag.startsWith('#')) {
+                tag = '#' + tag;
+            }
+            return tag;
+        });
+    } else {
+        // If no hashtags provided, initialize as an empty array
+        hashtags = [];
     }
 
     // screen the title and content to be alphanumeric
@@ -448,12 +463,43 @@ var createPost = async function (req, res) {
 
     try {
         // Insert the post into the database
-        const postQuery = `INSERT INTO posts (author_id, title, content, parent_post) VALUES ('${req.session.user_id}', '${title}', '${content}', '${parent_id}')`;
-        await db.send_sql(postQuery);
+        const postQuery = `INSERT INTO posts (author_id, title, content) VALUES ('${req.session.user_id}', '${title}', '${content}')`;
+        const result = await db.send_sql(postQuery);
+        const newPostId = result[1][0].new_post_id;
         // 'INSERT INTO posts (parent_post, title, content, author_id) VALUES (?, ?, ?, ?)';
         // await db.send_sql(postQuery, [parent_id, title, content, author_id]);
         // Send the response indicating successful post creation
-        res.status(201).send({ message: "Post created." });
+
+        // Constructing the SQL query dynamically
+        let tagsQuery = `INSERT INTO hashtags (hashtagname) VALUES `;
+        hashtags.forEach((tag, index) => {
+            tagsQuery += `('${tag}')`;
+            if (index !== hashtags.length - 1) {
+                tagsQuery += ', ';
+            }
+        });
+        const resultTags = await db.send_sql(tagsQuery);
+        // Get the number of rows affected by the insertion
+        const numRowsInserted = resultTags.affectedRows;
+
+        // Get the ID of the first newly inserted tag
+        const firstTagId = resultTags.insertId;
+
+        // Calculate the IDs of all newly inserted tags
+        const newTagIds = Array.from({ length: numRowsInserted }, (_, index) => firstTagId + index);
+
+        let postTagsQuery = `INSERT INTO post_tagged_with (post_id, hashtag_id) VALUES `;
+        newTagIds.forEach((tagId, index) => {
+            postTagsQuery += `('${newPostId}', '${tagId}')`;
+            if (index !== newTagIds.length - 1) {
+                postTagsQuery += ', ';
+            }
+        });
+
+        // Execute the query to insert into post_tagged_with table
+        await db.send_sql(postTagsQuery);
+
+        res.status(200).send({ message: "Post created." });
     } catch (error) {
         console.error('Error querying database:', error);
         return res.status(500).json({ error: 'Error querying database.' });
@@ -475,24 +521,78 @@ var getFeed = async function (req, res) {
 
     console.log('curr id: ', req.session.user_id);
     // GRACE TODO: Check the tables
+    // TODO: sql query is WRONG
+    // TODO: also retrieve hashtags
     try {
         console.log('trying');
         const feed = await db.send_sql(`
-            SELECT posts.post_id, users.username, posts.parent_post, posts.title, posts.content
-            FROM posts
-            JOIN users ON posts.author_id = users.user_id
-            WHERE posts.author_id = '${userId}' OR posts.author_id IN (
-                SELECT followed FROM friends WHERE follower = '${userId}'
-            )
-            ORDER BY posts.post_id DESC
+            SELECT 
+                posts.post_id AS post_id, 
+                posts.timestamp AS post_timestamp,
+                post_users.username AS post_author, 
+                posts.parent_post AS parent_post, 
+                posts.title AS title, 
+                posts.content AS content, 
+                CONCAT_WS(' | ', hashtags.hashtagname) AS hashtags, 
+                CONCAT_WS(' | ', GROUP_CONCAT(CONCAT(comments.content, ',', comments.timestamp, ',', comments_users.username) ORDER BY comments.timestamp ASC SEPARATOR ' | ')) AS comments
+            FROM 
+                posts
+            JOIN 
+                users AS post_users ON posts.author_id = post_users.user_id
+            JOIN 
+                post_tagged_with ON post_tagged_with.post_id = posts.post_id
+            JOIN 
+                hashtags ON hashtags.hashtag_id = post_tagged_with.hashtag_id
+            LEFT JOIN 
+                (
+                    SELECT 
+                        comments_on_post_by.post_id,
+                        comments.content,
+                        comments.timestamp,
+                        comments_users.username
+                    FROM 
+                        comments_on_post_by
+                    LEFT JOIN 
+                        comments ON comments_on_post_by.comment_id = comments.comment_id
+                    LEFT JOIN 
+                        users AS comments_users ON comments.author_id = comments_users.user_id
+                    ORDER BY 
+                        comments.timestamp ASC
+                ) AS comments ON comments.post_id = posts.post_id
+            WHERE 
+                posts.author_id = '${userId}' 
+                OR posts.author_id IN (
+                    SELECT 
+                        followed 
+                    FROM 
+                        friends 
+                    WHERE 
+                        follower = '${userId}'
+                )
+            GROUP BY
+                posts.post_id
+            ORDER BY 
+                posts.post_id DESC;
+
         `);
 
         // Send the response with the list of posts for the feed
         const results = feed.map(post => ({
-            username: post.recommendation,
+            username: post.post_author,
             parent_post: post.parent_post,
-            tite: post.title,
-            content: post.content
+            post_author: post.post_author,
+            post_timestamp: post.post_timestamp,
+            title: post.title,
+            content: post.content,
+            hashtags: post.hashtags.split(' | '),
+            comments: post.comments.split(' | ').map(commentString => {
+                const [content, timestamp, author] = commentString.split(',');
+                return {
+                    content: content.trim(),
+                    timestamp: timestamp.trim(),
+                    author: author.trim()
+                };
+            }),
         }));
         res.status(200).json({ results });
 
@@ -500,7 +600,6 @@ var getFeed = async function (req, res) {
         console.error('Error querying database:', error);
         return res.status(500).json({ error: 'Error querying database.' });
     }
-
 }
 
 var getMovie = async function (req, res) {

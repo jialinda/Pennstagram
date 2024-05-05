@@ -24,8 +24,8 @@ const helper = require('../routes/route_helper.js');
 var path = require('path');
 const { ChromaClient } = require("chromadb");
 const fs = require('fs');
-// const tf = require('@tensorflow/tfjs-node');
-const faceapi = require('@vladmandic/face-api');
+const tf = require('@tensorflow/tfjs-node');
+//const faceapi = require('@vladmandic/face-api');
 const facehelper = require('../models/faceapp.js');
 
 const multer = require('multer');
@@ -88,16 +88,16 @@ var postRegister = async function (req, res) {
 
         console.info("Looking for files");
         const promises = [];
-        const files = await fs.promises.readdir("/nets2120/project-steam-team/models/images");
+        const files = await fs.promises.readdir("/nets2120/project-stream-team/models/images");
 
-        files.forEach(function (file) {
-            console.info("Adding task for " + file + " to index.");
-            promises.push(facehelper.indexAllFaces(path.join("/nets2120/project-steam-team/models/images", file), file, collection));
-        });
+        // files.forEach(function (file) {
+        //     console.info("Adding task for " + file + " to index.");
+        //     promises.push(facehelper.indexAllFaces(path.join("/nets2120/project-stream-team/models/images", file), file, collection));
+        // });
 
-        console.info("Done adding promises, waiting for completion.");
-        await Promise.all(promises);
-        console.log("All images indexed.");
+        // console.info("Done adding promises, waiting for completion.");
+        // await Promise.all(promises);
+        // console.log("All images indexed.");
 
         const topMatches = await facehelper.findTopKMatches(collection, req.file.path, 5);
         for (var item of topMatches) {

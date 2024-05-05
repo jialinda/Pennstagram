@@ -6,5 +6,11 @@
       "user": "admin",
       "password": "netsfinalproject"
     },
-    "serverPort": "8080"
+    "serverPort": "8080",
+    "kafka": {
+      "groupId": "lol",
+      "bootstrapServers": ["localhost:9092"],
+      "topic": "sample-topic",
+      "port": 4567
+  }
   }

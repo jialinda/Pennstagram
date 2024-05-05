@@ -2,6 +2,7 @@ const mysql = require('mysql');
 const config = require('../config.json'); // Load configuration
 const process = require('process');
 
+
 /**
  * Implementation of a singleton pattern for database connections
  */

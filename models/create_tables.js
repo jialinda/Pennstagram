@@ -23,8 +23,7 @@ async function create_tables(db) {
   // var qa = db.create_tables('...');
 
     var qusers = db.create_tables('CREATE TABLE IF NOT EXISTS users ( \
-      user_id INT AUTO_INCREMENT PRIMARY, \
-      KEY, \
+      user_id INT AUTO_INCREMENT PRIMARY KEY, \
       username VARCHAR(255), \
       firstname VARCHAR(255), \
       lastname VARCHAR(255), \

@@ -94,11 +94,18 @@ var postRegister = async function (req, res) {
         console.info("Looking for files");
         const promises = [];
         const files = await fs.promises.readdir("/nets2120/project-stream-team/models/images");
+        // const csvContent = fs.readFileSync('/nets2120/project-stream-team/names.csv', 'utf8');
+        // console.log('csvContent', csvContent);
+        const files = await fs.promises.readdir("/nets2120/project-stream-team/models/images");
 <<<<<<< HEAD
 =======
         // const csvContent = fs.readFileSync('/nets2120/project-stream-team/names.csv', 'utf8');
         // console.log('csvContent', csvContent);
 >>>>>>> main
+
+        // const csvContent = fs.readFileSync('/nets2120/project-stream-team/names.csv', 'utf8');
+        // console.log('csvContent', csvContent);
+
 
         // files.forEach(function (file) {
         //     console.info("Adding task for " + file + " to index.");
@@ -484,7 +491,6 @@ var createPost = async function (req, res) {
 
     const title = req.body.title;
     const content = req.body.content;
-<<<<<<< HEAD
     let parent_id = req.body.parent_id;
 
     // TODO, FORMAT POST AND THEN SEND IT TO KAFKA PRODUCER FUNCTION
@@ -495,7 +501,6 @@ var createPost = async function (req, res) {
 
     if (!parent_id) {
         parent_id = "null";
-=======
     let hashtags = req.body.hashtags;
 
     if (hashtags) {
@@ -514,7 +519,6 @@ var createPost = async function (req, res) {
     } else {
         // If no hashtags provided, initialize as an empty array
         hashtags = [];
->>>>>>> main
     }
 
     // screen the title and content to be alphanumeric
@@ -1051,7 +1055,6 @@ var routes = {
     get_movie: getMovie,
     create_post: createPost,
     get_feed: getFeed,
-<<<<<<< HEAD
     upload_photo : uploadPhoto,
     get_chat_by_id: getChatById,
     get_chat_all: getChatAll,
@@ -1061,11 +1064,8 @@ var routes = {
     confirm_invite: confirmInvite,
     // get_friend_by_username: getFriendName
   };
-=======
     post_selections: postSelections, 
     get_top_hashtags: getTopHashtags
 };
->>>>>>> main
-
 
 module.exports = routes;

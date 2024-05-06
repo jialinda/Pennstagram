@@ -5,6 +5,9 @@ import Signup from "./pages/Signup";
 import Friends from "./pages/Friends";
 import ChatInterface from "./pages/ChatInterface";
 import HomePage from "./pages/HomePage";
+import CreateChat from "./pages/CreateChat";
+import Profile from "./pages/Profile";
+import EditProfile from "./pages/EditProfile";
 import Feed from "./pages/Feed";
 import CreatePost from "./pages/CreatePost";
 import SetupProfile from "./pages/SetupProfile";
@@ -19,6 +22,8 @@ function App() {
         <Route path='/register' element={<Signup />} />
         <Route path='/:username/setupprofile' element={<SetupProfile />} />
         <Route path='/:username/home' element={<Home />} />
+        <Route path="/:username/profile" element={<Profile />} />
+        <Route path="/:username/editprofile" element={<EditProfile />} />
         <Route path='/:username/friends' element={<Friends />} />
         <Route path="/:username/chat" element={<ChatInterface />} />
         <Route path="/:username/feed" element={<Feed />} />

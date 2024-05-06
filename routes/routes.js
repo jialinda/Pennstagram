@@ -24,7 +24,7 @@ const helper = require('../routes/route_helper.js');
 var path = require('path');
 const { ChromaClient } = require("chromadb");
 const fs = require('fs');
-// const tf = require('@tensorflow/tfjs-node');
+const tf = require('@tensorflow/tfjs-node');
 const faceapi = require('@vladmandic/face-api');
 const facehelper = require('../models/faceapp.js');
 
@@ -96,6 +96,16 @@ var postRegister = async function (req, res) {
         const files = await fs.promises.readdir("/nets2120/project-stream-team/models/images");
         // const csvContent = fs.readFileSync('/nets2120/project-stream-team/names.csv', 'utf8');
         // console.log('csvContent', csvContent);
+        const files = await fs.promises.readdir("/nets2120/project-stream-team/models/images");
+<<<<<<< HEAD
+=======
+        // const csvContent = fs.readFileSync('/nets2120/project-stream-team/names.csv', 'utf8');
+        // console.log('csvContent', csvContent);
+>>>>>>> main
+
+        // const csvContent = fs.readFileSync('/nets2120/project-stream-team/names.csv', 'utf8');
+        // console.log('csvContent', csvContent);
+
 
         // files.forEach(function (file) {
         //     console.info("Adding task for " + file + " to index.");
@@ -320,7 +330,6 @@ var createTags = async function (req, res) {
 
 var postTags = async function (req, res) {
     // SHOULD I CHECK IF USER IS LOGGED IN OR NOT?
-
     if (!req.body.hashtagname) {
         return res.status(400).json({ error: 'One or more of the fields you entered was empty, please try again.' });
     }
@@ -471,10 +480,8 @@ var getFriendRecs = async function (req, res) {
 
 // POST /createPost
 var createPost = async function (req, res) {
-
     // TODO: add to posts table
     if (!req.session.user_id || !helper.isLoggedIn(req.session.user_id)) {
-        // if (!req.session.user_id) {
         return res.status(403).json({ error: 'Not logged in.' });
     }
 
@@ -484,6 +491,16 @@ var createPost = async function (req, res) {
 
     const title = req.body.title;
     const content = req.body.content;
+    let parent_id = req.body.parent_id;
+
+    // TODO, FORMAT POST AND THEN SEND IT TO KAFKA PRODUCER FUNCTION
+    // const post = SOMETHING HERE;
+
+    // producer send to kafka 
+    // sendPostToKafka(post);
+
+    if (!parent_id) {
+        parent_id = "null";
     let hashtags = req.body.hashtags;
 
     if (hashtags) {
@@ -552,7 +569,6 @@ var createPost = async function (req, res) {
         console.error('Error querying database:', error);
         return res.status(500).json({ error: 'Error querying database.' });
     }
-
 }
 
 // GET /feed
@@ -695,8 +711,8 @@ var getChatAll = async function (req, res) {
     if (!helper.isLoggedIn(req.session.user_id)) {
         return res.status(403).json({ error: 'Not logged in.' });
     }
-    const userId = req.session.user_id;
-    const username = req.body.username;
+    // const userId = req.session.user_id;
+    // const username = req.body.username;
 
     console.log('curr id: ', req.session.user_id);
     // GRACE TODO: Check the tables
@@ -709,7 +725,7 @@ var getChatAll = async function (req, res) {
         JOIN (SELECT * FROM user_chats WHERE user_id = ${req.session.user_id}) c2
         ON c1.chat_id = c2.chat_id
         `;
-        const allChats = await db.send_sql();
+        const allChats = await db.send_sql(getChatQuery);
 
         // Send the response with the list of posts for the feed
         const results = allChats.map(chat => ({
@@ -741,12 +757,12 @@ var getChatById = async function (req, res) {
     if (!helper.isLoggedIn(req.session.user_id)) {
         return res.status(403).json({ error: 'Not logged in.' });
     }
-    if (!req.body.username || !req.body.chatId) {
+    if (req.body.chatId) {
         return res.status(400).json({ error: 'One or more of the fields you entered was empty, please try again.' });
     }
 
     const userId = req.session.user_id;
-    const username = req.body.username;
+    // const username = req.body.username;
     const chatId = req.body.chatId;
 
     // first check if the user is a part of that chat?
@@ -793,6 +809,239 @@ var getChatById = async function (req, res) {
 }
 
 
+
+// POST /postChat
+var postChat = async function(req, res) {
+    // TODO: add to posts table
+    if (!req.session.user_id || !helper.isLoggedIn(req.session.user_id)) {
+        return res.status(403).json({ error: 'Not logged in.' });
+    }
+
+    if (!req.body.title || !req.body.content) {
+        return res.status(400).json({ error: 'One or more of the fields you entered was empty, please try again.' });
+    }
+    const chatAdmin = req.session.user_id;
+    const chatName = req.body.chatName;
+
+    // screen the title and content to be alphanumeric
+    if (!helper.isOK(chatName)) {
+        return res.status(400).json({ error: 'Chatname should only contain alphanumeric characters, spaces, periods, question marks, commas, and underscores.' });
+    }
+
+    try {
+        // Insert the post into the database
+        //  CHECK IF I CAN INSERT A NULL
+        const postQuery = `INSERT INTO posts (chatname, latest_text_id, admin_id) VALUES ('${chatName}', NULL, '${chatAdmin}')`;
+        await db.send_sql(postQuery);
+
+        // retrieve the chat id by finding the number of rows and getting the last one..
+        const countChatsQuery = `SELECT COUNT(*) AS totalChats FROM chats`;
+        const countResult = await db.send_sql(countChatsQuery);
+        const chatId = countResult[0].totalChats;
+
+        // add chat and user relation
+        const postUserChat = `INSERT INTO user_chats (user_id, chat_id) VALUES ('${chatAdmin}', NULL, '${chatId}')`;
+        await db.send_sql(postUserChat);
+        res.status(201).send({ message: "Chat created." });
+    } catch (error) {
+        console.error('Error querying database:', error);
+        return res.status(500).json({ error: 'Error querying database.' });
+    }
+}
+
+// consider having an invite button for people to add friends into it
+// let's do one invite per route
+
+// POST /postChat
+var postInvite = async function(req, res) {
+    // TODO: add to posts table
+    if (!req.session.user_id || !helper.isLoggedIn(req.session.user_id)) {
+        return res.status(403).json({ error: 'Not logged in.' });
+    }
+
+    const inviterId = req.session.user_id;
+
+    if (!req.body.inviteeId || !req.body.chatId) {
+        return res.status(400).json({ error: 'One or more of the fields you entered was empty, please try again.' });
+    }
+    const inviteeId = req.body.inviteeId; // would it be id or name..?
+    const chatId = req.session.chatId;
+
+    try {
+        // Insert the post into the database
+        //  CHECK IF I CAN INSERT A NULL
+        const postInvite = `INSERT INTO invites (chat_id, invitee_id, inviter_id, confirmed) VALUES ('${chatId}', '${inviteeId}', '${inviterId}', 0)`; // FALSE is 0
+        await db.send_sql(postInvite);
+        res.status(201).send({ message: "Invite sent." });
+    } catch (error) {
+        console.error('Error querying database:', error);
+        return res.status(500).json({ error: 'Error querying database.' });
+    }
+}
+
+// POST /postChat
+var postInvite = async function(req, res) {
+    // TODO: add to posts table
+    if (!req.session.user_id || !helper.isLoggedIn(req.session.user_id)) {
+        return res.status(403).json({ error: 'Not logged in.' });
+    }
+
+    const inviterId = req.session.user_id;
+
+    if (!req.body.inviteeId || !req.body.chatId) {
+        return res.status(400).json({ error: 'One or more of the fields you entered was empty, please try again.' });
+    }
+    const inviteeId = req.body.inviteeId; // would it be id or name..?
+    const chatId = req.session.chatId;
+
+    try {
+        // Insert the post into the database
+        //  CHECK IF I CAN INSERT A NULL
+        const postInvite = `INSERT INTO invites (chat_id, invitee_id, inviter_id, confirmed) VALUES ('${chatId}', '${inviteeId}', '${inviterId}', 0)`; // FALSE is 0
+        await db.send_sql(postInvite);
+        res.status(201).send({ message: "Invite sent." });
+    } catch (error) {
+        console.error('Error querying database:', error);
+        return res.status(500).json({ error: 'Error querying database.' });
+    }
+}
+
+// UPDATE /confirmInvite
+var confirmInvite = async function(req, res) {
+    // Check if the user is logged in
+    if (!req.session.user_id || !helper.isLoggedIn(req.session.user_id)) {
+        return res.status(403).json({ error: 'Not logged in.' });
+    }
+
+    // check about chatId
+    if (!req.body.inviteId || !req.body.chatId) {
+        return res.status(400).json({ error: 'One or more of the fields you entered was empty, please try again.' });
+    }
+
+    const inviteId = req.body.inviteId;
+    // either it's included or I might have to include it
+    // maybe when you display it it's already in there
+    const chatId = req.body.chatId;
+
+    try {
+        // Update the confirmation status in the database
+        const updateQuery = `UPDATE invites SET confirmed = 1 WHERE invite_id = ${inviteId}`;
+        await db.send_sql(updateQuery);
+
+        // create new row in user chats
+        const postUserChat = `INSERT INTO user_chats (user_id, chat_id) VALUES ('${req.session.user_id}', NULL, '${chatId}')`;
+        await db.send_sql(postUserChat);
+
+        res.status(200).json({ message: "Invite confirmation updated successfully." });
+    } catch (error) {
+        console.error('Error updating invite confirmation:', error);
+        return res.status(500).json({ error: 'Error updating invite confirmation.' });
+    }
+}
+
+
+// DELETE /deleteInvite
+var deleteInvite = async function(req, res) {
+    // Check if the user is logged in
+    if (!req.session.user_id || !helper.isLoggedIn(req.session.user_id)) {
+        return res.status(403).json({ error: 'Not logged in.' });
+    }
+
+    if (!req.body.inviteId) {
+        return res.status(400).json({ error: 'Invite ID is missing.' });
+    }
+
+    const inviteId = req.body.inviteId;
+
+    try {
+        const deleteQuery = `DELETE FROM invites WHERE invite_id = ${inviteId}`;
+        await db.send_sql(deleteQuery);
+
+        res.status(200).json({ message: "Invite deleted successfully." });
+    } catch (error) {
+        console.error('Error deleting invite:', error);
+        return res.status(500).json({ error: 'Error deleting invite.' });
+    }
+}
+
+// GET /chat/{chatId}
+/** getChat 
+ * 
+ * @param {*} req 
+ * @param {*} res 
+ * @returns -> retrieves all the current chats that users have
+ */
+// check how the id should be 
+var getFriendName = async function(req, res) {
+    
+    if (!helper.isLoggedIn(req.session.user_id)) {
+        return res.status(403).json({ error: 'Not logged in.' });
+    }
+
+    const userId = req.session.user_id;
+    const friendName = req.body.friendName;
+
+    // return a list of people with similar names
+    const findUserQuery = `
+    SELECT *
+    FROM users
+    WHERE username LIKE '%${friendName}%`;
+
+    try {
+        const searchRes = await db.send_sql(findUserQuery);
+        if (searchRes.length <= 0) {
+            // check error - maybe do an alert as well?
+            return res.status(409).json({ error: 'NO USER WITH THIS USERNAME FOUND'});
+        }
+        // Send the response with the list of posts for the feed
+        const results = searchRes.map(res => ({
+            user_id: res.user_id,
+            username: res.username,
+            firstname: res.firstname,
+            lastname: res.lastname,
+            affiliation: res.lastname, 
+            password: res.lastname,
+            birthday: res.birthday,
+            profile_photo: res.profile_photo
+        }));
+        res.status(200).json({results});
+    } catch (err) {
+        console.error('Error querying database:', error);
+        return res.status(500).json({ error: 'Error querying database.' });
+    }
+}
+
+// POST /postText
+var postText = async function(req, res) {
+
+    if (!req.session.user_id || !helper.isLoggedIn(req.session.user_id)) {
+        return res.status(403).json({ error: 'Not logged in.' });
+    }
+
+    const message = req.body.message;
+    const senderId = req.session.user_id; // Assuming the user ID is stored in the session
+    const inviteeId = req.body.inviteeId; // Assuming the invitee ID is provided in the request body
+    const chatId = req.body.chatId; // Assuming the chat ID is provided in the request body
+
+    try {
+        // Insert the message into the database
+        const insertQuery = `INSERT INTO messages (sender_id, message_content, chat_id) VALUES (?, ?, ?)`;
+        await db.send_sql(insertQuery, [senderId, message, chatId]);
+
+        // Insert the message into the invites table
+        const inviteQuery = `INSERT INTO invites (chat_id, invitee_id, inviter_id, confirmed) VALUES (?, ?, ?, 0)`;
+        await db.send_sql(inviteQuery, [chatId, inviteeId, senderId]);
+
+        // Send a success response
+        res.status(201).json({ message: "Message sent successfully." });
+    } catch (error) {
+        console.error('Error querying database:', error);
+        return res.status(500).json({ error: 'Error querying database.' });
+    }
+}
+
+
+
 /* Here we construct an object that contains a field for each route
    we've defined, so we can call the routes from app.js. */
 
@@ -806,9 +1055,17 @@ var routes = {
     get_movie: getMovie,
     create_post: createPost,
     get_feed: getFeed,
+    upload_photo : uploadPhoto,
+    get_chat_by_id: getChatById,
+    get_chat_all: getChatAll,
+    post_chat: postChat,
+    post_text: postText,
+    post_invite: postInvite,
+    confirm_invite: confirmInvite,
+    // get_friend_by_username: getFriendName
+  };
     post_selections: postSelections, 
     get_top_hashtags: getTopHashtags
 };
-
 
 module.exports = routes;

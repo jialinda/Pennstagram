@@ -47,6 +47,7 @@ To run Kafka (load all posts from beginning):
   i. CMD + X, then make sure to click 'Y' to save changes
   j. Now run 'ssh -i ~/.ssh/nets2120-project.pem -4 -L 9092:ip-172-31-29-52.ec2.internal:9092 ubuntu@ec2-44-203-65-104.compute-1.amazonaws.com'
 
+
 2. npm install - there's a small chance that some packages aren't listed on package-lock, so just manually install those with npm install {package}
 3. !!!DANGER!!! (Do not change this without saving the previous value, otherwise we will lose our data queue checkpoint) 
     Go to config.json and change kafka.groupId to a random string

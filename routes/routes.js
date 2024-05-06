@@ -96,25 +96,18 @@ var postRegister = async function (req, res) {
         const files = await fs.promises.readdir("/nets2120/project-stream-team/models/images");
         // const csvContent = fs.readFileSync('/nets2120/project-stream-team/names.csv', 'utf8');
         // console.log('csvContent', csvContent);
-        const files = await fs.promises.readdir("/nets2120/project-stream-team/models/images");
-<<<<<<< HEAD
-=======
-        // const csvContent = fs.readFileSync('/nets2120/project-stream-team/names.csv', 'utf8');
-        // console.log('csvContent', csvContent);
->>>>>>> main
 
-        // const csvContent = fs.readFileSync('/nets2120/project-stream-team/names.csv', 'utf8');
-        // console.log('csvContent', csvContent);
+        const csvContent = fs.readFileSync('/nets2120/project-stream-team/names.csv', 'utf8');
+        console.log('csvContent', csvContent);
 
+        files.forEach(function (file) {
+            console.info("Adding task for " + file + " to index.");
+            promises.push(facehelper.indexAllFaces(path.join("/nets2120/project-stream-team/models/images", file), file, collection));
+        });
 
-        // files.forEach(function (file) {
-        //     console.info("Adding task for " + file + " to index.");
-        //     promises.push(facehelper.indexAllFaces(path.join("/nets2120/project-stream-team/models/images", file), file, collection));
-        // });
-
-        // console.info("Done adding promises, waiting for completion.");
-        // await Promise.all(promises);
-        // console.log("All images indexed.");
+        console.info("Done adding promises, waiting for completion.");
+        await Promise.all(promises);
+        console.log("All images indexed.");
 
         const topMatches = await facehelper.findTopKMatches(collection, req.file.path, 5);
         for (var item of topMatches) {
@@ -569,6 +562,7 @@ var createPost = async function (req, res) {
         console.error('Error querying database:', error);
         return res.status(500).json({ error: 'Error querying database.' });
     }
+}
 }
 
 // GET /feed
@@ -1055,7 +1049,6 @@ var routes = {
     get_movie: getMovie,
     create_post: createPost,
     get_feed: getFeed,
-    upload_photo : uploadPhoto,
     get_chat_by_id: getChatById,
     get_chat_all: getChatAll,
     post_chat: postChat,
@@ -1063,9 +1056,8 @@ var routes = {
     post_invite: postInvite,
     confirm_invite: confirmInvite,
     // get_friend_by_username: getFriendName
-  };
     post_selections: postSelections, 
     get_top_hashtags: getTopHashtags
-};
-
+  };
+    
 module.exports = routes;

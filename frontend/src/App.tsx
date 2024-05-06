@@ -7,6 +7,7 @@ import ChatInterface from "./pages/ChatInterface";
 import HomePage from "./pages/HomePage";
 import CreateChat from "./pages/CreateChat";
 import InviteFriend from "./pages/InviteFriend";
+import InviteIntoChat from "./pages/InviteIntoChat";
 
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
         <Route path="/:username/chat" element={<ChatInterface />} />
         <Route path="/:username/createChat" element={<CreateChat />} />
         <Route path="/:username/createChat/:chat_id/inviteFriend" element={<InviteFriend />} />
+        <Route path="/:username/:chatname/inviteIntoChat" element={<InviteIntoChat />} />
       </Routes>
     </BrowserRouter>
   )

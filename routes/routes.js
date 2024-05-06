@@ -771,15 +771,6 @@ var getInviteAll = async function (req, res) {
         const allInvites = await db.send_sql(getInviteQuery);
         console.log('all invites backend', allInvites);
 
-        // before you can return it, might have to change it to inviterName and chatroom name
-        // const invResults = allInvites.map(invite => ({
-        //     invite_id: invite.invite_id,
-        //     chat_id: invite.chat_id,
-        //     invitee_id: invite.invitee_id,
-        //     inviter_id: invite.inviter_id,
-        //     confirmed: invite.confirmed
-        // }));
-        // Send the response with the list of posts for the feed
         const results = allInvites.map(invite => ({
             inviterName: invite.username,
             inviteId: invite.invite_id,
@@ -799,6 +790,7 @@ var getInviteAll = async function (req, res) {
 // POST /postInvite
 var postInvite = async function(req, res) {
     // TODO: add to posts table
+    console.log('posting invite');
     if (!req.session.user_id || !helper.isLoggedIn(req.session.user_id)) {
         return res.status(403).json({ error: 'Not logged in.' });
     }
@@ -855,32 +847,82 @@ var postInvite = async function(req, res) {
     }
 }
 
-// POST /postChat
-var postInvite = async function(req, res) {
+
+// POST /postInviteChat
+// sends invite for an existing group -> checking condition is slightly different
+// first, cheeck if the user_chats aready has that id with the user
+var postInviteChat = async function(req, res) {
     // TODO: add to posts table
-    if (!req.session.user_id || !helper.isLoggedIn(req.session.user_id)) {
-        return res.status(403).json({ error: 'Not logged in.' });
-    }
+    console.log('posting invite into existing chat');
+    // if (!req.session.user_id || !helper.isLoggedIn(req.session.user_id)) {
+    //     return res.status(403).json({ error: 'Not logged in.' });
+    // }
 
-    const inviterId = req.session.user_id;
+    // const inviterId = req.session.user_id;
+    const inviterId = req.query.user_id;
 
-    if (!req.body.inviteeId || !req.body.chatId) {
+    if (!req.query.inviteeId || !req.query.chatId) {
         return res.status(400).json({ error: 'One or more of the fields you entered was empty, please try again.' });
     }
     const inviteeId = req.body.inviteeId; // would it be id or name..?
     const chatId = req.session.chatId;
 
     try {
+        const checkInvite = `SELECT * FROM user_chats WHERE user_id = ${inviteeId} and chat_id = ${chatId}`;
+        const check = await db.send_sql(checkInvite);
+        if (check.length > 0) {
+            return res.status(409).json({ error: 'User is already in chat! Please add another user!' });
+        } else {
+            try {
+                const postInvite = `INSERT INTO invites (invitee_id, chat_id, inviter_id, confirmed) VALUES ('${inviteeId}', '${chatId}', '${inviterId}', 0)`;
+
+                await db.send_sql(postInvite);
+
+                const getInviteId = `SELECT LAST_INSERT_ID() AS invite_id`;
+                const r1 = await db.send_sql(getInviteId);
+                const inviteId = r1[0].invite_id;
+                try {
+                    //  check if I need quotations for this or not
+                    const postUInvite = `INSERT INTO user_invites (user_id, invite_id) VALUES (${inviteeId}, ${inviteId})`;
+                    const r2 = await db.send_sql(postUInvite);
+
+                } catch(err) {
+                    console.error('Error querying database:', error);
+                    return res.status(500).json({ error: 'Error querying database.' });
+                }
+                // const check = await db.send_sql(checkChat);
+            } catch (err) {
+                console.error('Error querying database:', error);
+                return res.status(500).json({ error: 'Error querying database.' });
+            }
+        }
+    } catch (err) {
+        console.error('Error querying database:', error);
+        return res.status(500).json({ error: 'Error querying database.' });
+    }
+
+    try {
         // Insert the post into the database
-        //  CHECK IF I CAN INSERT A NULL
-        const postInvite = `INSERT INTO invites (chat_id, invitee_id, inviter_id, confirmed) VALUES ('${chatId}', '${inviteeId}', '${inviterId}', 0)`; // FALSE is 0
+        //  DELETE CHAT-ID FROM IT
+        // const postInvite = `INSERT INTO invites (chat_id, invitee_id, inviter_id, confirmed) VALUES ('${chatId}', '${inviteeId}', '${inviterId}', 0)`; // FALSE is 0
+        // check if for the chat_id i can probably just 
+        const postInvite = `INSERT INTO invites (invitee_id, inviter_id, confirmed) VALUES ('${inviteeId}', '${inviterId}', 0)`; // FALSE is 0
+
         await db.send_sql(postInvite);
+
+        const countInvQuery = `SELECT COUNT(*) AS totalInvites FROM invites`;
+        const countResult = await db.send_sql(countInvQuery);
+        const inviteId = countResult[0].totalInvites;
+
+        const postUInvite = `INSERT INTO user_invites (user_id, invite_id) VALUES ('${inviteeId}', '${inviteId}')`; // FALSE is 0
+        await db.send_sql(postUInvite);
         res.status(201).send({ message: "Invite sent." });
     } catch (error) {
         console.error('Error querying database:', error);
         return res.status(500).json({ error: 'Error querying database.' });
     }
 }
+
 
 // UPDATE /confirmInvite
 var confirmInvite = async function(req, res) {
@@ -1085,9 +1127,11 @@ var addFriends = async function (req, res) {
 // POST /postText
 var postText = async function(req, res) {
 
-    if (!req.session.user_id || !helper.isLoggedIn(req.session.user_id)) {
-        return res.status(403).json({ error: 'Not logged in.' });
-    }
+    console.log('sending text');
+
+    // if (!req.session.user_id || !helper.isLoggedIn(req.session.user_id)) {
+    //     return res.status(403).json({ error: 'Not logged in.' });
+    // }
 
     // const message = req.body.message;
     // const senderId = req.session.user_id; // Assuming the user ID is stored in the session
@@ -1186,6 +1230,7 @@ var routes = {
     get_chat_all: getChatAll,
     post_chat: postChat,
     post_text: postText,
+    post_invite_chat: postInviteChat,
     get_invite_all: getInviteAll,
     post_invite: postInvite,
     confirm_invite: confirmInvite,

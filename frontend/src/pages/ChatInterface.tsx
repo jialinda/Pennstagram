@@ -7,6 +7,8 @@ import { useNavigate } from 'react-router-dom';
 import Invites from '../components/invites/Invites'
 import ChatBar from '../components/chats/ChatBar'
 import Chatroom from '../components/chats/Chatroom'
+import $ from 'jquery';
+
 
 const rootURL = config.serverRootURL;
 
@@ -55,12 +57,6 @@ export default function ChatInterface() {
         navigate('/' + username + '/createChat');
     };
 
-    const testInvites = [
-        { inviteeName: 'Joanna', chatroomName: 'NETS2120' },
-        { inviteeName: 'Iain', chatroomName: 'NETS2121' },
-        { inviteeName: 'Linda', chatroomName: 'NETS2122' }
-    ];
-
     const testChats = [
         { chatname: 'CIS tutoring' },
         { chatname: 'every now & then'}
@@ -83,108 +79,106 @@ export default function ChatInterface() {
     }, []);
     // check how I can change this part
 
+    // ajax
     const fetchInvites = async (userId) => {
-        try {
-            console.log('fetching invites');
-            const response = await axios.get(`${rootURL}/getInviteAll`, {
-                params: {
-                    user_id: userId
-                }
-            });
-            const allInvites = response.data.results;
-            console.log('all invites frontend', allInvites);
-            setInvites(allInvites);
-            // setChats(testChats);
-        } catch (error) {
-            console.error('Error fetching invites:', error);
-        }
+        $.ajax({
+            url: `${rootURL}/getInviteAll`,
+            method: 'GET',
+            data: {
+                user_id: userId
+            },
+            success: function(response) {
+                setInvites(response.results);
+            },
+            error: function(error) {
+                console.error('Error fetching invites:', error);
+            }
+        });
     };
 
+    // ajax getTextByChatId
     const handleChatClick = async (chat) => {
-        console.log('handle chat clikc called with chat obj', chat);
+        console.log('handle chat click called with chat obj', chat);
         setCurrChat(chat);
         console.log('this is now curr chat', chat);
-        // try to get the texts from the chats
-        try {
-            const response = await axios.get(`${rootURL}/getTextByChatId`, {
-                params: {
-                    chat_id: chat.chat_id // Pass the chat_id to the backend
-                }
-            });
-            const { results } = response.data;
-            setMessages(results);
-        } catch (error) {
-            console.error('Error fetching messages:', error);
-        }
+        // Try to get the texts from the chats
+        $.ajax({
+            url: `${rootURL}/getTextByChatId`,
+            method: 'GET',
+            data: {
+                chat_id: chat.chat_id
+            },
+            success: function(response) {
+                const { results } = response;
+                setMessages(results);
+            },
+            error: function(error) {
+                console.error('Error fetching messages:', error);
+            }
+        });
     };
 
-    const fetchCurrChat = async () => {
-        try {// edit this later
-            // change later
-        setCurrChat(testCurrChat);
-        console.log('currChat', currChat);
-        } catch (error) {
-            console.error('Error fetching invites:', error);
-        }
-    };
-
+    // ajax fetchchats
     const fetchChats = async (userId) => {
-        try {
-            console.log('fetching chats');
-            const response = await axios.get(`${rootURL}/getChatAll`, {
-                params: {
-                    user_id: userId
-                }
-            });
-            const allChats = response.data.results;
-            console.log('all chats', allChats);
-            setChats(allChats);
-            // setChats(testChats);
-        } catch (error) {
-            console.error('Error fetching invites:', error);
-        }
+        $.ajax({
+            url: `${rootURL}/getChatAll`,
+            method: 'GET',
+            data: {
+                user_id: userId
+            },
+            success: function(response) {
+                const allChats = response.results;
+                console.log('all chats', allChats);
+                setChats(allChats);
+            },
+            error: function(error) {
+                console.error('Error fetching chats:', error);
+            }
+        });
     };
-
-    // create a function called getChats or something here
 
     const sendMessage = async () => {
-        // TODO: add the user's message to the messages state 
         const timestamp = new Date(); // Get the current timestamp
         const newMessage = {
             sender: username,
             message: input,
-            timestamp: timestamp.toISOString() // Convert timestamp to ISO string format
+            timestamp: timestamp.toISOString()
         };
         console.log('adding new message', newMessage);
         setMessages([...messages, newMessage]);
         console.log('input: ', input);
         console.log('messages: ', messages);
-        
-        // TODO: make a call to postText route in backend
-        try {
-            console.log('trying post text');
-            await axios.post('/postText', {
+    
+        // Make a call to postText route in backend
+        $.ajax({
+            url: '/postText', // check
+            method: 'POST',
+            data: {
                 content: input,
                 chat_id: currChat.chat_id,
                 timestamp: timestamp.toISOString()
-                // senderId:
-                // inviteeId
-                // chatId:
-            });
-        } catch (error) {
-            console.error('Error sending message:', error);
-        }
+            },
+            success: function(response) {
+                console.log('Message sent successfully:', response);
+            },
+            error: function(error) {
+                console.error('Error sending message:', error);
+            }
+        });
+    
         setInput('');
-    }
+    };
 
-    const inviteToChat = async () => {
+
+    const inviteToChat = async (chat) => {
         // Implement invite functionality here
         // Example:
         // await axios.post('/inviteToChat', {
         //     chatId: currChat.chat_id,
         //     userId: userId
         // });
-        navigate('/' + username + '/createChat');
+        console.log('this is chatname', chat.chatname);
+        navigate('/' + username + chat.chatname + '/inviteIntoChat');
     }
 
     const leaveChat = async (chatId) => {
@@ -266,7 +260,7 @@ export default function ChatInterface() {
                             sendMessage();
                         }}>Send</button>
                         <button className='outline-none px-3 py-1 rounded-md text-bold bg-green-600 text-white'
-                        onClick={inviteToChat}>Invite</button>
+                        onClick={() => inviteToChat(currChat)}>Invite</button>
                     <button className='outline-none px-3 py-1 rounded-md text-bold bg-red-600 text-white'
                         onClick={() => leaveChat(currChat.chat_id)}>Leave</button>
                 </div>

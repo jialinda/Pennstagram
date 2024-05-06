@@ -1,4 +1,41 @@
 const bcrypt = require('bcrypt'); 
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const fs = require('fs');
+
+var uploadToS3 = async function(username, file) {
+    // Initialize S3 client
+    const client = new S3Client({
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+        region: process.env.AWS_REGION
+    });
+    console.log(file.mimetype)
+    console.log(file.path)
+
+    // Read file and upload to S3
+    fs.readFile(file.path, async (err, data) => {
+        if (err) {
+            console.log("error in reading" + err)
+            return;
+        }
+        // S3 Upload parameters
+        const command = new PutObjectCommand({
+            Bucket: "instas3-group5",
+            Key: username + "/pic",
+            Body: data,
+            ContentType: file.mimetype
+        });
+
+        // Upload to S3
+        try {
+            const response = await client.send(command);
+            console.log("Successfully uploaded file to s3. " + response);
+        } catch (e) {
+            console.log("An error occured while trying to upload to S3. " + e);
+            return;
+        }
+    });
+}
 
 
 var route_helper = function() {
@@ -69,5 +106,6 @@ var isLoggedIn = function(req, obj) {
 module.exports = {
     isOK,
     isLoggedIn,
-    encryptPassword
+    encryptPassword, 
+    uploadToS3
 };

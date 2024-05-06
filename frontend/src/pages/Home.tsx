@@ -6,11 +6,14 @@ import PostComponent from '../components/posts/PostComponent'
 import CreatePostComponent from '../components/posts/CreatePostComponent';
 import { useNavigate } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
+axios.defaults.withCredentials = true;
+
 
 axios.defaults.withCredentials = true;
 
 export default function Home() {
 
+  axios.defaults.withCredentials = true;
   const { username } = useParams();
   const rootURL = config.serverRootURL;
   const location = useLocation();

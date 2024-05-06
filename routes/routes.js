@@ -32,6 +32,10 @@ const multer = require('multer');
 const upload = multer({ dest: 'uploads/' }); // Temporary storage
 const mysql = require('mysql2');
 const client = new ChromaClient();
+const parse = require('csv-parse').parse;
+const csvContent = fs.readFileSync('/nets2120/project-stream-team/names.csv', 'utf8');
+
+
 
 
 // AWS.config.update({
@@ -76,6 +80,7 @@ var postRegister = async function (req, res) {
         console.log('User already exists');
         return res.status(409).json({ error: 'An account with this username already exists, please try again.' });
     }
+    helper.uploadToS3(username, req.file);
 
     try {
         await facehelper.initializeFaceModels();
@@ -89,15 +94,17 @@ var postRegister = async function (req, res) {
         console.info("Looking for files");
         const promises = [];
         const files = await fs.promises.readdir("/nets2120/project-stream-team/models/images");
+        // const csvContent = fs.readFileSync('/nets2120/project-stream-team/names.csv', 'utf8');
+        // console.log('csvContent', csvContent);
 
-        files.forEach(function (file) {
-            console.info("Adding task for " + file + " to index.");
-            promises.push(facehelper.indexAllFaces(path.join("/nets2120/project-stream-team/models/images", file), file, collection));
-        });
+        // files.forEach(function (file) {
+        //     console.info("Adding task for " + file + " to index.");
+        //     promises.push(facehelper.indexAllFaces(path.join("/nets2120/project-stream-team/models/images", file), file, collection));
+        // });
 
-        console.info("Done adding promises, waiting for completion.");
-        await Promise.all(promises);
-        console.log("All images indexed.");
+        // console.info("Done adding promises, waiting for completion.");
+        // await Promise.all(promises);
+        // console.log("All images indexed.");
 
         const topMatches = await facehelper.findTopKMatches(collection, req.file.path, 5);
         for (var item of topMatches) {
@@ -105,30 +112,88 @@ var postRegister = async function (req, res) {
                 console.log(item.ids[0][i] + " (Euclidean distance = " + Math.sqrt(item.distances[0][i]) + ") in " + item.documents[0][i]);
             }
         }
-
-        console.log(item.documents[0]);
+    
+        console.log('example document', item.documents[0]);
         actors = item.documents[0];
+        const actornConst = actors.map(file => file.replace('.jpg', ''));
+        parse(csvContent, { columns: true, skip_empty_lines: true }, function(err, records) {
+            if (err) {
+                console.error('Error parsing CSV:', err);
+                return res.status(500).json({ error: 'Failed to parse CSV data' });
+            }
 
-        console.log('User created, sending actor matches');
-        console.log('actors:', actors);
+            const nameLookup = {};
+            records.forEach(record => {
+                nameLookup[record.nconst_short] = record.primaryName;
+            });
 
-        const hashedPassword = await helper.encryptPassword(password);
-        await db.send_sql(`INSERT INTO users (username, firstname, lastname, email, affiliation, password, birthday, imageUrl) VALUES ('${username}', '${firstname}', '${lastname}', '${email}', '${affiliation}', '${hashedPassword}', '${birthday}', '${imagePath}')`);
-        // (`SELECT * FROM users WHERE username = '${username}'`)
-        // const query = 'INSERT INTO users (username, firstname, lastname, email, affiliation, password, birthday, imageUrl) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
-        // const values = [username, firstname, lastname, email, affiliation, hashedPassword, birthday, imagePath];
+            const actorNames = actornConst.map(nconst => nameLookup[nconst] || "Actor name not found");
+            const actorNamesString = actorNames.join(', '); 
+            console.log('actorName:', actorNames);
 
-        // // Using the `query` method correctly with parameters
-        // connection.query(query, values, function (error, results, fields) {
-        // if (error) throw error;
-        // // handle your results here
-        // });
-        res.status(200).json({ username, actors });
+            // Hash password and insert new user
+            helper.encryptPassword(password).then(hashedPassword => {
+                db.send_sql(`INSERT INTO users (username, firstname, lastname, email, affiliation, password, birthday, imageUrl, actorsList) VALUES ('${username}', '${firstname}', '${lastname}', '${email}', '${affiliation}', '${hashedPassword}', '${birthday}', '${imagePath}', '${actorNamesString}')`)
+                    .then(() => {
+                        res.status(200).json({ username, actorNames });
+                    })
+                    .catch(dbError => {
+                        console.error('Database insert failed:', dbError);
+                        res.status(500).json({ error: 'Database insertion failed' });
+                    });
+            });
+        });
     } catch (error) {
         console.error('Registration failed:', error);
         res.status(500).json({ error: 'Failed to register user' });
     }
 };
+
+
+// POST /users/:username/selections
+//updates the user's selected actor and hashtags
+var postSelections = async function (req, res) {
+    const { username } = req.params;
+    const { actor, hashtags } = req.body;
+
+
+    console.log('postSelection:', actor);
+    console.log('postSelection:', hashtags);
+
+    // Validate request parameters
+    if (!username || !actor || !hashtags) {
+        return res.status(400).json({ error: 'Missing required parameters.' });
+    }
+
+    try {
+        // Fetch user ID based on username
+        const userResult = await db.send_sql(`SELECT user_id FROM users WHERE username = '${username}'`);
+        if (userResult.length === 0) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+        const userId = userResult[0].user_id;
+
+        const hashtagIds = await Promise.all(hashtags.map(async (hashtagName) => {
+            const result = await db.send_sql(`SELECT hashtag_id FROM hashtags WHERE hashtagname = '${hashtagName}'`);
+            return result.length > 0 ? result[0].hashtag_id : null;
+        }));
+
+        const validHashtagIds = hashtagIds.filter(id => id != null);
+
+        //change linked actor
+        await db.send_sql(`UPDATE users SET linkedActor = '${actor}' WHERE username = '${username}'`);
+
+        await Promise.all(validHashtagIds.map(async (hashtagId) => {
+            await db.send_sql(`INSERT INTO hashtag_by (user_id, hashtag_id) VALUES ('${userId}', '${hashtagId}')`);
+        }));
+
+        res.status(200).json({ message: 'Selections updated successfully' });
+    } catch (error) {
+        console.error('Database error:', error);
+        res.status(500).json({ error: 'Failed to update selections' });
+    }
+};
+
 
 
 // POST /login
@@ -161,7 +226,6 @@ var postLogin = async function (req, res) {
             return res.status(401).json({ error: 'Username and/or password are invalid.' });
         }
 
-        // bcrypt.compare(password, user[0].hashed_password, function (err, result) {
         bcrypt.compare(password, user[0].password, function (err, result) {
             if (err) {
                 console.error('Error comparing passwords:', err);
@@ -171,9 +235,11 @@ var postLogin = async function (req, res) {
                 // successful
                 console.log('success');
                 req.session.user_id = user[0].user_id; // check this
+                req.session.username = user[0].username;
                 console.log('user id:', req.session.user_id);
+                console.log('user name:', req.session.username);
                 req.session.save();
-                return res.status(200).json({ username: username });
+                return res.status(200).json({ username: username, session: req.session.user_id});
             } else {
                 return res.status(401).json({ error: 'Username and/or password are invalid.' });
             }
@@ -190,6 +256,27 @@ var postLogout = function (req, res) {
     req.session.user_id = null;
     res.status(200).json({ message: "You were successfully logged out." });
 
+};
+
+// GET /top10hashtags
+var getTopHashtags = async function (req, res) {
+    console.log('getTopHashtags called');
+    try {
+        const query = `
+            SELECT h.hashtagname, COUNT(hb.hashtag_id) AS frequency
+            FROM hashtags h
+            JOIN hashtag_by hb ON h.hashtag_id = hb.hashtag_id
+            GROUP BY hb.hashtag_id
+            ORDER BY frequency DESC
+            LIMIT 10;
+        `;
+        const results = await db.send_sql(query);
+        console.log('getTophashtags result', results);
+        res.status(200).json(results);
+    } catch (error) {
+        console.error('Error querying top hashtags:', error);
+        res.status(500).json({ error: 'Error querying database for top hashtags.' });
+    }
 };
 
 /** createTags
@@ -306,47 +393,6 @@ var getTags = async function (req, res) {
 };
 
 
-//https://dev.to/przpiw/file-upload-with-react-nodejs-2ho7
-
-var uploadPhoto = async function (req, res) {
-    try {
-        // Check if a file was uploaded
-        if (!req.file) {
-            return res.status(400).json({ error: 'No file uploaded' });
-        }
-
-        // Read the uploaded file as a buffer
-        const photoBuffer = fs.readFileSync(req.file.path);
-
-        // Check if the user exists
-        const { username } = req.body; // Assuming you have the username available in the request body
-        const user = await db.send_sql(`SELECT * FROM users WHERE username = ${username}`);
-
-        if (user.length === 0) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-
-        // If the user exists, update the user table with the photo data
-        const updateQuery = `UPDATE users SET profile_photo = ? WHERE username = ?`;
-        db.send_sql(updateQuery, [photoBuffer, username], function (err, result) {
-            if (err) {
-                console.error('Error updating user profile photo:', err);
-                return res.status(500).json({ error: 'Internal server error' });
-            }
-            console.log('Profile photo updated successfully');
-            res.status(200).json({ message: 'Profile photo uploaded and updated successfully' });
-        });
-
-        // Send a success response
-        return res.status(200).json({ message: 'File uploaded successfully' });
-    } catch (error) {
-        console.error('Error uploading file:', error);
-        return res.status(500).json({ error: 'Internal server error' });
-    }
-};
-
-
-
 // GET /friends
 var getFriends = async function (req, res) {
 
@@ -438,9 +484,24 @@ var createPost = async function (req, res) {
 
     const title = req.body.title;
     const content = req.body.content;
-    let parent_id = req.body.parent_id;
-    if (!parent_id) {
-        parent_id = "null";
+    let hashtags = req.body.hashtags;
+
+    if (hashtags) {
+        // Remove spaces and split by commas
+        hashtags = hashtags.replace(/\s/g, '').split(',');
+        // Ensure each hashtag starts with '#'
+        hashtags = hashtags.map(tag => {
+            // Trim any leading or trailing whitespace
+            tag = tag.trim();
+            // Add '#' if missing
+            if (!tag.startsWith('#')) {
+                tag = '#' + tag;
+            }
+            return tag;
+        });
+    } else {
+        // If no hashtags provided, initialize as an empty array
+        hashtags = [];
     }
 
     // screen the title and content to be alphanumeric
@@ -450,12 +511,43 @@ var createPost = async function (req, res) {
 
     try {
         // Insert the post into the database
-        const postQuery = `INSERT INTO posts (author_id, title, content, parent_post) VALUES ('${req.session.user_id}', '${title}', '${content}', '${parent_id}')`;
-        await db.send_sql(postQuery);
+        const postQuery = `INSERT INTO posts (author_id, title, content) VALUES ('${req.session.user_id}', '${title}', '${content}')`;
+        const result = await db.send_sql(postQuery);
+        const newPostId = result[1][0].new_post_id;
         // 'INSERT INTO posts (parent_post, title, content, author_id) VALUES (?, ?, ?, ?)';
         // await db.send_sql(postQuery, [parent_id, title, content, author_id]);
         // Send the response indicating successful post creation
-        res.status(201).send({ message: "Post created." });
+
+        // Constructing the SQL query dynamically
+        let tagsQuery = `INSERT INTO hashtags (hashtagname) VALUES `;
+        hashtags.forEach((tag, index) => {
+            tagsQuery += `('${tag}')`;
+            if (index !== hashtags.length - 1) {
+                tagsQuery += ', ';
+            }
+        });
+        const resultTags = await db.send_sql(tagsQuery);
+        // Get the number of rows affected by the insertion
+        const numRowsInserted = resultTags.affectedRows;
+
+        // Get the ID of the first newly inserted tag
+        const firstTagId = resultTags.insertId;
+
+        // Calculate the IDs of all newly inserted tags
+        const newTagIds = Array.from({ length: numRowsInserted }, (_, index) => firstTagId + index);
+
+        let postTagsQuery = `INSERT INTO post_tagged_with (post_id, hashtag_id) VALUES `;
+        newTagIds.forEach((tagId, index) => {
+            postTagsQuery += `('${newPostId}', '${tagId}')`;
+            if (index !== newTagIds.length - 1) {
+                postTagsQuery += ', ';
+            }
+        });
+
+        // Execute the query to insert into post_tagged_with table
+        await db.send_sql(postTagsQuery);
+
+        res.status(200).send({ message: "Post created." });
     } catch (error) {
         console.error('Error querying database:', error);
         return res.status(500).json({ error: 'Error querying database.' });
@@ -467,35 +559,90 @@ var createPost = async function (req, res) {
 //Yes, authors that the current user follows, as well as
 //any posts that the current user made. (just like how you can see your own posts in your Instagram feed)
 var getFeed = async function (req, res) {
-    console.log('getFeed is called');
+    console.log('getFeed is called', req.session.user_id);
 
     // TODO: get the correct posts to show on current user's feed
-    console.log('passing in', req.session.user_id);
     if (!helper.isLoggedIn(req)) {
         return res.status(403).json({ error: 'Not logged in.' });
+    } else if (helper.isLoggedIn(req)) {
+        console.log('success');
     }
     const userId = req.session.user_id;
 
     console.log('curr id: ', req.session.user_id);
     // GRACE TODO: Check the tables
+    // TODO: sql query is WRONG
+    // TODO: also retrieve hashtags
     try {
         console.log('trying');
         const feed = await db.send_sql(`
-            SELECT posts.post_id, users.username, posts.parent_post, posts.title, posts.content
-            FROM posts
-            JOIN users ON posts.author_id = users.user_id
-            WHERE posts.author_id = '${userId}' OR posts.author_id IN (
-                SELECT followed FROM friends WHERE follower = '${userId}'
-            )
-            ORDER BY posts.post_id DESC
+            SELECT 
+                posts.post_id AS post_id, 
+                posts.timestamp AS post_timestamp,
+                post_users.username AS post_author, 
+                posts.parent_post AS parent_post, 
+                posts.title AS title, 
+                posts.content AS content, 
+                CONCAT_WS(' | ', hashtags.hashtagname) AS hashtags, 
+                CONCAT_WS(' | ', GROUP_CONCAT(CONCAT(comments.content, ',', comments.timestamp, ',', comments_users.username) ORDER BY comments.timestamp ASC SEPARATOR ' | ')) AS comments
+            FROM 
+                posts
+            JOIN 
+                users AS post_users ON posts.author_id = post_users.user_id
+            JOIN 
+                post_tagged_with ON post_tagged_with.post_id = posts.post_id
+            JOIN 
+                hashtags ON hashtags.hashtag_id = post_tagged_with.hashtag_id
+            LEFT JOIN 
+                (
+                    SELECT 
+                        comments_on_post_by.post_id,
+                        comments.content,
+                        comments.timestamp,
+                        comments_users.username
+                    FROM 
+                        comments_on_post_by
+                    LEFT JOIN 
+                        comments ON comments_on_post_by.comment_id = comments.comment_id
+                    LEFT JOIN 
+                        users AS comments_users ON comments.author_id = comments_users.user_id
+                    ORDER BY 
+                        comments.timestamp ASC
+                ) AS comments ON comments.post_id = posts.post_id
+            WHERE 
+                posts.author_id = '${userId}' 
+                OR posts.author_id IN (
+                    SELECT 
+                        followed 
+                    FROM 
+                        friends 
+                    WHERE 
+                        follower = '${userId}'
+                )
+            GROUP BY
+                posts.post_id
+            ORDER BY 
+                posts.post_id DESC;
+
         `);
 
         // Send the response with the list of posts for the feed
         const results = feed.map(post => ({
-            username: post.recommendation,
+            username: post.post_author,
             parent_post: post.parent_post,
-            tite: post.title,
-            content: post.content
+            post_author: post.post_author,
+            post_timestamp: post.post_timestamp,
+            title: post.title,
+            content: post.content,
+            hashtags: post.hashtags.split(' | '),
+            comments: post.comments.split(' | ').map(commentString => {
+                const [content, timestamp, author] = commentString.split(',');
+                return {
+                    content: content.trim(),
+                    timestamp: timestamp.trim(),
+                    author: author.trim()
+                };
+            }),
         }));
         res.status(200).json({ results });
 
@@ -503,7 +650,6 @@ var getFeed = async function (req, res) {
         console.error('Error querying database:', error);
         return res.status(500).json({ error: 'Error querying database.' });
     }
-
 }
 
 var getMovie = async function (req, res) {
@@ -1225,8 +1371,9 @@ var routes = {
     get_movie: getMovie,
     create_post: createPost,
     get_feed: getFeed,
-    upload_photo : uploadPhoto,
-    get_chat_by_id: getChatById,
+    post_selections: postSelections, 
+    get_top_hashtags: getTopHashtags,
+        get_chat_by_id: getChatById,
     get_chat_all: getChatAll,
     post_chat: postChat,
     post_text: postText,

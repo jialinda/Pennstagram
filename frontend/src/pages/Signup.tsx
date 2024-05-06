@@ -45,11 +45,12 @@ export default function Signup() {
       const response = await axios.post(`${rootURL}/register`, formData);
 
       if (response.status === 200) {
-        const { username, actors } = response.data;
+        const { username, actorNames } = response.data;
         // console.log('Actor matches:', actors);
         // console.log("Username:", username);
         // TO DO: ADD ACTORS TO HOMEPAGE
-        navigate(`/${username}/home`, { state: { actors } });
+        console.log('Received actor names:', actorNames);
+        navigate(`/${username}/setupprofile`, { state: { actorNames: actorNames } });
       } else {
         alert("Registration failed.");
       }

@@ -8,6 +8,9 @@ import HomePage from "./pages/HomePage";
 import CreateChat from "./pages/CreateChat";
 import InviteFriend from "./pages/InviteFriend";
 import InviteIntoChat from "./pages/InviteIntoChat";
+import Feed from "./pages/Feed";
+import CreatePost from "./pages/CreatePost";
+import SetupProfile from "./pages/SetupProfile";
 
 
 function App() {
@@ -17,12 +20,15 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path='/register' element={<Signup />} />
+        <Route path='/:username/setupprofile' element={<SetupProfile />} />
         <Route path='/:username/home' element={<Home />} />
         <Route path='/:username/friends' element={<Friends />} />
         <Route path="/:username/chat" element={<ChatInterface />} />
         <Route path="/:username/createChat" element={<CreateChat />} />
         <Route path="/:username/createChat/:chat_id/inviteFriend" element={<InviteFriend />} />
         <Route path="/:username/:chatname/inviteIntoChat" element={<InviteIntoChat />} />
+        <Route path="/:username/feed" element={<Feed />} />
+        <Route path="/:username/createPost" element={<CreatePost />} />
       </Routes>
     </BrowserRouter>
   )

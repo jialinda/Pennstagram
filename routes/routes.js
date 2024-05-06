@@ -97,14 +97,14 @@ var postRegister = async function (req, res) {
         // const csvContent = fs.readFileSync('/nets2120/project-stream-team/names.csv', 'utf8');
         // console.log('csvContent', csvContent);
 
-        // files.forEach(function (file) {
-        //     console.info("Adding task for " + file + " to index.");
-        //     promises.push(facehelper.indexAllFaces(path.join("/nets2120/project-stream-team/models/images", file), file, collection));
-        // });
+        files.forEach(function (file) {
+            console.info("Adding task for " + file + " to index.");
+            promises.push(facehelper.indexAllFaces(path.join("/nets2120/project-stream-team/models/images", file), file, collection));
+        });
 
-        // console.info("Done adding promises, waiting for completion.");
-        // await Promise.all(promises);
-        // console.log("All images indexed.");
+        console.info("Done adding promises, waiting for completion.");
+        await Promise.all(promises);
+        console.log("All images indexed.");
 
         const topMatches = await facehelper.findTopKMatches(collection, req.file.path, 5);
         for (var item of topMatches) {

@@ -144,3 +144,187 @@
 [31mERROR[0m:    [04-05-2024 21:38:20] [Errno 98] error while attempting to bind on address ('0.0.0.0', 8000): address already in use
 [32mINFO[0m:     [04-05-2024 21:38:20] Waiting for application shutdown.
 [32mINFO[0m:     [04-05-2024 21:38:20] Application shutdown complete.
+[33mWARNING[0m:  [06-05-2024 02:13:09] chroma_server_nofile is set to 65535, but this is less than current soft limit of 1048576. chroma_server_nofile will not be set.
+[32mINFO[0m:     [06-05-2024 02:13:10] Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+[36mDEBUG[0m:    [06-05-2024 02:13:10] Starting component System
+[36mDEBUG[0m:    [06-05-2024 02:13:10] Starting component OpenTelemetryClient
+[36mDEBUG[0m:    [06-05-2024 02:13:10] Starting component SimpleAssignmentPolicy
+[36mDEBUG[0m:    [06-05-2024 02:13:10] Starting component SqliteDB
+[36mDEBUG[0m:    [06-05-2024 02:13:10] Starting component Posthog
+[36mDEBUG[0m:    [06-05-2024 02:13:10] Starting component LocalSegmentManager
+[36mDEBUG[0m:    [06-05-2024 02:13:10] Starting component SegmentAPI
+[32mINFO[0m:     [06-05-2024 02:13:10] Started server process [[36m96884[0m]
+[32mINFO[0m:     [06-05-2024 02:13:10] Waiting for application startup.
+[32mINFO[0m:     [06-05-2024 02:13:10] Application startup complete.
+[31mERROR[0m:    [06-05-2024 02:13:10] [Errno 98] error while attempting to bind on address ('0.0.0.0', 8000): address already in use
+[32mINFO[0m:     [06-05-2024 02:13:10] Waiting for application shutdown.
+[32mINFO[0m:     [06-05-2024 02:13:10] Application shutdown complete.
+[33mWARNING[0m:  [06-05-2024 16:12:48] chroma_server_nofile is set to 65535, but this is less than current soft limit of 1048576. chroma_server_nofile will not be set.
+[32mINFO[0m:     [06-05-2024 16:12:48] Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+[36mDEBUG[0m:    [06-05-2024 16:12:48] Starting component System
+[36mDEBUG[0m:    [06-05-2024 16:12:48] Starting component OpenTelemetryClient
+[36mDEBUG[0m:    [06-05-2024 16:12:48] Starting component SimpleAssignmentPolicy
+[36mDEBUG[0m:    [06-05-2024 16:12:48] Starting component SqliteDB
+[36mDEBUG[0m:    [06-05-2024 16:12:48] Starting component Posthog
+[36mDEBUG[0m:    [06-05-2024 16:12:48] Starting component LocalSegmentManager
+[36mDEBUG[0m:    [06-05-2024 16:12:48] Starting component SegmentAPI
+[32mINFO[0m:     [06-05-2024 16:12:48] Started server process [[36m2386[0m]
+[32mINFO[0m:     [06-05-2024 16:12:48] Waiting for application startup.
+[32mINFO[0m:     [06-05-2024 16:12:48] Application startup complete.
+[32mINFO[0m:     [06-05-2024 16:12:48] Uvicorn running on [1mhttp://0.0.0.0:8000[0m (Press CTRL+C to quit)
+[33mWARNING[0m:  [06-05-2024 16:46:17] chroma_server_nofile is set to 65535, but this is less than current soft limit of 1048576. chroma_server_nofile will not be set.
+[32mINFO[0m:     [06-05-2024 16:46:17] Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+[36mDEBUG[0m:    [06-05-2024 16:46:17] Starting component System
+[36mDEBUG[0m:    [06-05-2024 16:46:17] Starting component OpenTelemetryClient
+[36mDEBUG[0m:    [06-05-2024 16:46:17] Starting component SimpleAssignmentPolicy
+[36mDEBUG[0m:    [06-05-2024 16:46:17] Starting component SqliteDB
+[36mDEBUG[0m:    [06-05-2024 16:46:17] Starting component Posthog
+[36mDEBUG[0m:    [06-05-2024 16:46:17] Starting component LocalSegmentManager
+[36mDEBUG[0m:    [06-05-2024 16:46:17] Starting component SegmentAPI
+[32mINFO[0m:     [06-05-2024 16:46:17] Started server process [[36m9068[0m]
+[32mINFO[0m:     [06-05-2024 16:46:17] Waiting for application startup.
+[32mINFO[0m:     [06-05-2024 16:46:17] Application startup complete.
+[32mINFO[0m:     [06-05-2024 16:46:17] Uvicorn running on [1mhttp://0.0.0.0:8000[0m (Press CTRL+C to quit)
+[32mINFO[0m:     [06-05-2024 16:48:31] 127.0.0.1:37600 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [06-05-2024 16:48:32] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [06-05-2024 16:48:32] 127.0.0.1:37600 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/query HTTP/1.1" 200
+[32mINFO[0m:     [06-05-2024 16:49:08] 127.0.0.1:51122 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [06-05-2024 16:49:09] 127.0.0.1:51122 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/query HTTP/1.1" 200
+[32mINFO[0m:     [06-05-2024 16:50:01] 127.0.0.1:40940 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [06-05-2024 16:50:01] 127.0.0.1:40940 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/query HTTP/1.1" 200
+[32mINFO[0m:     [06-05-2024 16:50:56] 127.0.0.1:45232 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [06-05-2024 16:50:56] 127.0.0.1:45232 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/query HTTP/1.1" 200
+[32mINFO[0m:     [06-05-2024 16:52:53] 127.0.0.1:56632 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:56632 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44362 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44388 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44606 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44472 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44520 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44792 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44798 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44820 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44822 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44380 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44840 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44826 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44856 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44878 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44548 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44892 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44902 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44908 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44432 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44810 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44644 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44924 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44930 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44942 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44536 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44958 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44964 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44980 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44996 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45012 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45024 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45028 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45034 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45042 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44614 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44732 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45070 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45072 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45048 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45102 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45114 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44910 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45138 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45142 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45064 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44592 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44692 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45166 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45176 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45182 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45198 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45204 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45218 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45232 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45236 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45248 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45258 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44556 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44710 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45284 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44890 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45286 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45298 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45306 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45312 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45326 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44922 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44502 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44682 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45346 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45376 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45360 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45394 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45396 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45402 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45334 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45434 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45442 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45448 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45464 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45480 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45492 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45508 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45512 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45514 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45522 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45524 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45540 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45418 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45550 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45552 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45556 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45128 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45548 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45378 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45150 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:45272 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:05] 127.0.0.1:44814 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:06] 127.0.0.1:45292 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:06] 127.0.0.1:44488 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:06] 127.0.0.1:44514 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:06] 127.0.0.1:44670 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:06] 127.0.0.1:45338 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:06] 127.0.0.1:45160 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:06] 127.0.0.1:45086 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:06] 127.0.0.1:44402 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:06] 127.0.0.1:44570 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:06] 127.0.0.1:44716 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:06] 127.0.0.1:44952 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:06] 127.0.0.1:44378 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:06] 127.0.0.1:44422 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:06] 127.0.0.1:44586 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:06] 127.0.0.1:44706 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:06] 127.0.0.1:45270 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:06] 127.0.0.1:44410 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:06] 127.0.0.1:44562 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:06] 127.0.0.1:44764 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:06] 127.0.0.1:45156 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:06] 127.0.0.1:44912 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:06] 127.0.0.1:44602 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:06] 127.0.0.1:44862 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:06] 127.0.0.1:44458 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:06] 127.0.0.1:44666 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:06] 127.0.0.1:44762 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:06] 127.0.0.1:44448 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:06] 127.0.0.1:44624 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:06] 127.0.0.1:44754 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:06] 127.0.0.1:44630 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:06] 127.0.0.1:44748 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:06] 127.0.0.1:44650 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:06] 127.0.0.1:44780 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/add HTTP/1.1" 201
+[32mINFO[0m:     [06-05-2024 16:53:07] 127.0.0.1:56632 - "POST /api/v1/collections/b67dbc40-0fb7-4d42-ba38-9526f4eb9db9/query HTTP/1.1" 200

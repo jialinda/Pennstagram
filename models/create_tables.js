@@ -23,8 +23,7 @@ async function create_tables(db) {
   // var qa = db.create_tables('...');
 
     var qusers = db.create_tables('CREATE TABLE IF NOT EXISTS users ( \
-      user_id INT AUTO_INCREMENT PRIMARY, \
-      KEY, \
+      user_id INT AUTO_INCREMENT PRIMARY KEY, \
       username VARCHAR(255), \
       firstname VARCHAR(255), \
       lastname VARCHAR(255), \
@@ -104,6 +103,24 @@ async function create_tables(db) {
       FOREIGN KEY (hashtag_id) REFERENCES hashtags(hashtag_id) \
     );')
 
+    /**** chat-related table ***/
+    // ADDED CHECK
+    // this one has circular dependency might have to delete it
+    // var qchats = db.create_tables('CREATE TABLE IF NOT EXISTS chats ( \
+    //   chat_id INT AUTO_INCREMENT PRIMARY KEY, \
+    //   chatname VARCHAR(255), \
+    //   latest_text_id INT,\
+    //   admin_id INT, \
+    //   FOREIGN KEY (latest_text_id) REFERENCES texts(text_id), \
+    //   FOREIGN KEY (admin_id) REFERENCES chats(user_id) \
+    // );')
+    var qchats = db.create_tables('CREATE TABLE IF NOT EXISTS chats ( \
+      chat_id INT AUTO_INCREMENT PRIMARY KEY, \
+      chatname VARCHAR(255), \
+      admin_id INT, \
+      FOREIGN KEY (admin_id) REFERENCES users(user_id) \
+    );')
+
     var qtexts = db.create_tables('CREATE TABLE IF NOT EXISTS texts ( \
       text_id INT AUTO_INCREMENT PRIMARY KEY, \
       author_id INT, \
@@ -112,19 +129,6 @@ async function create_tables(db) {
       timestamp DATE, \
       FOREIGN KEY (author_id) REFERENCES users(user_id), \
       FOREIGN KEY (chat_id) REFERENCES chats(chat_id) \
-    );')
-
-
-    /**** chat-related table ***/
-    // ADDED CHECK
-    // update it whenever you send somethiing
-    var qchats = db.create_tables('CREATE TABLE IF NOT EXISTS chats ( \
-      chat_id INT AUTO_INCREMENT PRIMARY KEY, \
-      chatname VARCHAR(255), \
-      latest_text_id INT,\
-      admin_id INT, \
-      FOREIGN KEY (latest_text_id) REFERENCES texts(text_id), \
-      FOREIGN KEY (admin_id) REFERENCES chats(user_id) \
     );')
 
     // establishing the chat users in there
@@ -149,13 +153,13 @@ async function create_tables(db) {
     var quserinvites = db.create_tables('CREATE TABLE IF NOT EXISTS user_invites ( \
       user_id INT, \
       invite_id INT, \
-      FOREIGN KEY (user_id) REFERENCES users(user_id) \
+      FOREIGN KEY (user_id) REFERENCES users(user_id), \
       FOREIGN KEY (invite_id) REFERENCES invites(invite_id) \
     );')
 
     var qfriends = db.create_tables('CREATE TABLE IF NOT EXISTS friends ( \
       followed INT, \
-      follower INT \
+      follower INT, \
       FOREIGN KEY (follower) REFERENCES users(user_id), \
       FOREIGN KEY (followed) REFERENCES users(user_id) \
       );')

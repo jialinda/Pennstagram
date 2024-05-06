@@ -37,12 +37,19 @@ function register_routes(app) {
     app.get('/:username/movies', routes.get_movie); 
     // CHECK because u have to update it
     app.get('/chat/:chatId', routes.get_chat_by_id); // check
-    app.get('/chat', routes.get_chat_all); // check
-    app.get('/:username/movies', routes.post_chat); 
-    app.get('/:username/movies', routes.post_text); 
-    app.get('/:username/movies', routes.post_invite); 
-    app.get('/:username/movies', routes.confirm_invite); 
-    // app.get('/:username/movies', routes.get_friend_by_username: getFriendName
+    app.get('/getChatAll', routes.get_chat_all); // check
+    app.post('/postChat', routes.post_chat); 
+    app.post('/postText', routes.post_text); 
+    app.get('/getInviteAll', routes.get_invite_all); // check
+    app.post('/postInvite', routes.post_invite); 
+    app.get('/confirmInvite', routes.confirm_invite); 
+    // FRIEND-RELATED ROUTES
+    app.get('/getFriend', routes.get_friend_by_username);
+    app.get('/friends/:friend_id', routes.add_friends); // by id // POST
+    app.delete('/deleteInvite', routes.delete_invite); // by id // POST
+    app.delete('/leaveChatroom', routes.leave_chatroom); // by id // POST
+    app.get('/getTextByChatId', routes.get_text_by_chat_id);
+
 // ); 
   }
   

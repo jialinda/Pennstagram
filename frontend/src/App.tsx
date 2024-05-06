@@ -6,6 +6,7 @@ import Friends from "./pages/Friends";
 import ChatInterface from "./pages/ChatInterface";
 import HomePage from "./pages/HomePage";
 import CreateChat from "./pages/CreateChat";
+import InviteFriend from "./pages/InviteFriend";
 
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
         <Route path='/:username/friends' element={<Friends />} />
         <Route path="/:username/chat" element={<ChatInterface />} />
         <Route path="/:username/createChat" element={<CreateChat />} />
+        <Route path="/:username/createChat/:chat_id/inviteFriend" element={<InviteFriend />} />
       </Routes>
     </BrowserRouter>
   )

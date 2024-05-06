@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios'; 
 import config from '../../config.json';
 // import InviteComponent from '../components/InviteComponent'
-import CreateChatComponent from '../components/CreateChatComponent';
+import CreateChatComponent from '../components/chats/CreateChatComponent';
 import { useNavigate } from 'react-router-dom';
 
 export default function CreateChat() {
@@ -52,13 +52,6 @@ export default function CreateChat() {
         
         <div className='h-full w-full mx-auto max-w-[1800px] flex flex-col items-center space-y-4'>
           <CreateChatComponent updatePosts={fetchData} />
-          {/* <PostComponent key={index} title={post.title} description={post.content}/> */}
-          {/* {
-              // TODO: map each post to a PostComponent
-              posts.map((post, index) => (
-                <PostComponent key={index} title={post.title} description={post.content}/>
-            ))
-            } */}
         </div>
     </div>
   )

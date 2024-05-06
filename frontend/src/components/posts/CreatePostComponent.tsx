@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import config from '../../config.json';
+import config from '../../../config.json';
 import { useParams } from 'react-router-dom';
 
 function CreatePostComponent({ updatePosts }) {

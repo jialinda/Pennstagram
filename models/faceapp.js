@@ -61,9 +61,9 @@ async function initializeFaceModels() {
   // await faceapi.nets.faceLandmark68Net.loadFromDisk('/nets2120/project-steam-team/models/model');
   // await faceapi.nets.faceRecognitionNet.loadFromDisk('/nets2120/project-steam-team/models/model');
   try {
-    await faceapi.nets.ssdMobilenetv1.loadFromDisk('/nets2120/project-steam-team/models/model');
-    await faceapi.nets.faceLandmark68Net.loadFromDisk('/nets2120/project-steam-team/models/model');
-    await faceapi.nets.faceRecognitionNet.loadFromDisk('/nets2120/project-steam-team/models/model');
+    await faceapi.nets.ssdMobilenetv1.loadFromDisk('/nets2120/project-stream-team/models/model');
+    await faceapi.nets.faceLandmark68Net.loadFromDisk('/nets2120/project-stream-team/models/model');
+    await faceapi.nets.faceRecognitionNet.loadFromDisk('/nets2120/project-stream-team/models/model');
     console.log("Models loaded successfully.");
   } catch (e) {
     console.error("Failed to load models:", e);

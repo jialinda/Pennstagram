@@ -1,21 +1,16 @@
-import {useState, useEffect, Key} from 'react';
+import {useState, useEffect} from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios'; 
 import config from '../../config.json';
-import PostComponent from '../components/posts/PostComponent'
-import CreatePostComponent from '../components/posts/CreatePostComponent';
+// import InviteComponent from '../components/InviteComponent'
+// import InviteFriend from '../components/chats/CreateChatComponent';
 import { useNavigate } from 'react-router-dom';
-import { useLocation } from 'react-router-dom';
+import InviteFriendComponent from '../components/chats/InviteFriendComponent';
 
-axios.defaults.withCredentials = true;
-
-export default function Home() {
+export default function CreateChat() {
 
   const { username } = useParams();
   const rootURL = config.serverRootURL;
-  const location = useLocation();
-  const actors = location.state ? location.state.actors : [];
-
 
   const navigate = useNavigate(); 
 
@@ -52,34 +47,20 @@ export default function Home() {
               onClick={friends}>Friends</button>&nbsp;
                 <button type="button" className='px-2 py-2 rounded-md bg-gray-500 outline-none text-white'
               onClick={chat}>Chat</button>
+
             </div>
-            <div>
-          {actors.length > 0 && (
-            <div>
-              <h2 className='text-xl font-bold'>Similar Actors</h2>
-              <div className='flex space-x-4'>
-                {actors.map((actor: { id: Key | null | undefined; imageUrl: string | undefined; distance: number; }) => (
-                  <div key={actor.id} className='text-center p-2'>
-                    <img src={actor.imageUrl} alt="Actor" className='w-24 h-24 object-cover rounded-full'/>
-                    <p>Distance: {actor.distance.toFixed(2)}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
         </div>
         
-        {/* <div className='h-full w-full mx-auto max-w-[1800px] flex flex-col items-center space-y-4'>
-          <CreatePostComponent updatePosts={fetchData} />
-          {
+        <div className='h-full w-full mx-auto max-w-[1800px] flex flex-col items-center space-y-4'>
+          <InviteFriendComponent updatePosts={fetchData} />
+          {/* <PostComponent key={index} title={post.title} description={post.content}/> */}
+          {/* {
               // TODO: map each post to a PostComponent
               posts.map((post, index) => (
                 <PostComponent key={index} title={post.title} description={post.content}/>
             ))
-            }
-        </div> */}
+            } */}
+        </div>
     </div>
   )
 }
-

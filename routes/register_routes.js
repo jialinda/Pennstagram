@@ -26,8 +26,8 @@ function register_routes(app) {
     app.get('/hello', routes.get_helloworld);
     app.post('/login', routes.post_login);
     app.post('/register', upload.single('photo'), routes.post_register); 
-    app.post('/uploadPhoto', routes.upload_photo);
-    // app.post('/register', routes.post_register); 
+    app.post('/:username/selections', routes.post_selections); 
+    app.get('/hashtags/top', routes.get_top_hashtags);
     app.get('/:username/friends', routes.get_friends);
     app.get('/:username/recommendations', routes.get_friend_recs);
     app.post('/:username/createPost', routes.create_post); 

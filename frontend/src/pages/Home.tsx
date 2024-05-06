@@ -4,9 +4,20 @@ import axios from 'axios';
 import config from '../../config.json';
 import PostComponent from '../components/PostComponent';
 import CreatePostComponent from '../components/CreatePostComponent';
+<<<<<<< HEAD
 
 
 export default function Home() {
+=======
+import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+axios.defaults.withCredentials = true;
+
+
+export default function Home() {
+
+  axios.defaults.withCredentials = true;
+>>>>>>> main
   const { username } = useParams();
   const rootURL = config.serverRootURL;
   const location = useLocation();

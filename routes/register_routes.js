@@ -47,11 +47,19 @@ function register_routes(app) {
     app.post('/confirmInviteChat', routes.confirm_inivte_chat);
     // FRIEND-RELATED ROUTES
     app.get('/getFriend', routes.get_friend_by_username);
-    app.get('/friends/:friend_id', routes.add_friends); // by id // POST
+    app.post('/addFriends', routes.add_friends); // by id // POST
+    app.post('/postFInvite', routes.post_f_invite);
+    app.post('/deleteUFInvite', routes.delete_u_f_invite);
+    app.post('/deleteFInvite', routes.delete_f_invite);
+    app.get('/getFInviteAll', routes.get_f_invite_all);
+    app.post('/confirmFInvite', routes.confirm_f_invite);
+    app.post('/removeFriend', routes.remove_friend);
     app.post('/deleteUInvite', routes.delete_u_invite);
     app.post('/deleteInvite', routes.delete_invite); // check if it;s ok to do post
     app.post('/leaveChatroom', routes.leave_chatroom); // by id // POST
     app.get('/getTextByChatId', routes.get_text_by_chat_id);
+    app.get('/getUserByUsername', routes.get_user_by_username);
+    
 
 // ); 
   }

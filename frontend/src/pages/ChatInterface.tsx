@@ -8,6 +8,17 @@ import Invites from '../components/invites/Invites'
 import ChatBar from '../components/chats/ChatBar'
 import Chatroom from '../components/chats/Chatroom'
 import $ from 'jquery';
+import io from 'socket.io-client';
+
+const socket = io('http://localhost:8080'); // Make sure this matches the server address and port
+
+// Listening for messages
+socket.on('receiveMessage', (message) => {
+  console.log('New message:', message);
+});
+
+// Sending a message
+socket.emit('sendMessage', { message: 'Hello, world!' });
 
 
 const rootURL = config.serverRootURL;
@@ -43,6 +54,7 @@ export default function ChatInterface() {
     const navigate = useNavigate(); 
 
     let userId; // check
+    // I have to change that
     userId = 2;
 
     const feed = () => {
@@ -157,72 +169,64 @@ export default function ChatInterface() {
         console.log('messages: ', messages);
     
         // Make a call to postText route in backend
-        try {
-            await axios.post(`${rootURL}/postText`, {
-                content: input,
-                chat_id: currChat.chat_id,
-                timestamp: formattedTimestamp
-            });
-            console.log('text sent success');
-            // Optionally, update the UI or state to reflect leaving the chat
-        } catch (error) {
-            console.error('Error sending text:', error);
-        }
-        // $.ajax({
-        //     url: `${rootURL}/postText`, // check
-        //     method: 'POST',
-        //     data: $.param({
+        // try {
+        //     await axios.post(`${rootURL}/postText`, {
         //         content: input,
         //         chat_id: currChat.chat_id,
-        //         timestamp: timestamp.toISOString()
-        //     }),
-        //     contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
-        //     success: function(response) {
-        //         console.log('Message sent successfully:', response);
-        //     },
-        //     error: function(error) {
-        //         console.error('Error sending message:', error);
-        //     }
-        // });
-    
-        setInput('');
+        //         timestamp: formattedTimestamp
+        //     });
+        //     console.log('text sent success');
+        //     // Optionally, update the UI or state to reflect leaving the chat
+        // } catch (error) {
+        //     console.error('Error sending text:', error);
+        // }
+        // Make a call to postText route in backend
+        $.ajax({
+            url: `${rootURL}/postText`, // Adjust 'rootURL' as necessary
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                content: input, // Ensure 'input' is defined in your scope
+                chat_id: currChat.chat_id, // Ensure 'currChat.chat_id' is defined in your scope
+                timestamp: formattedTimestamp
+            }),
+            success: function(response) {
+                console.log('Message sent successfully:', response);
+                // Optionally, update the UI or state to reflect new changes
+            },
+            error: function(xhr, status, error) {
+                console.error('Error sending message:', error);
+            }
+        });
+
+        setInput(''); // Reset input field or handle state update as needed
     };
 
 
     const inviteToChat = async (chat) => {
-        // Implement invite functionality here
-        // Example:
-        // await axios.post('/inviteToChat', {
-        //     chatId: currChat.chat_id,
-        //     userId: userId
-        // });
         console.log('this is chatname', chat.chatname);
         navigate('/' + username  +'/' + chat.chatname + '/' + chat.chat_id + '/inviteIntoChat');
     }
 
-    const leaveChat = async (chatId) => {
-        try {
-            console.log('leaving chat');
-            await axios.post(`${rootURL}/leaveChatroom`, {
-                user_id: userId,
-                chatId: chatId // Assuming you need to send the userId as well
-            });
-            // Optionally, update the UI or state to reflect leaving the chat
-        } catch (error) {
-            console.error('Error leaving chat:', error);
-        }
+    const leaveChat = (chatId) => {
+        console.log('leaving chat');
+        $.ajax({
+            url: `${rootURL}/leaveChatroom`, // Replace `rootURL` with your actual server URL
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                user_id: userId, // Ensure `userId` is defined in your scope or passed to the function
+                chatId: chatId
+            }),
+            success: function(response) {
+                console.log('Successfully left the chat');
+                // Optionally, update the UI or state to reflect leaving the chat
+            },
+            error: function(xhr, status, error) {
+                console.error('Error leaving chat:', error);
+            }
+        });
     }
-
-    // accepting invite
-    const handleAcceptInvite = async () => {
-        try {
-          // Make a request to update the confirmed status in the invites table
-        //   await axios.post('/api/acceptInvite', { inviteId: 'your_invite_id' });
-          // Optionally, update the UI or state to reflect the acceptance
-        } catch (error) {
-        //   console.error('Error accepting invite:', error);
-        }
-      };
 
     return (
         <div className='w-screen h-screen flex flex-col items-center'>

@@ -31,6 +31,7 @@ const facehelper = require('../models/faceapp.js');
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' }); // Temporary storage
 const mysql = require('mysql2');
+const session = require("express-session");
 const client = new ChromaClient();
 const parse = require('csv-parse').parse;
 const csvContent = fs.readFileSync('/nets2120/project-stream-team/names.csv', 'utf8');
@@ -397,6 +398,44 @@ var getTags = async function (req, res) {
 
 
 // GET /friends
+// getALLFRIENDS
+var getUserByUsername = async function (req, res) {
+
+    if (!session_user_id) {
+        return res.status(403).json({ error: 'Not logged in.' });
+    }
+
+    if (!req.query.friend_name) {
+        return res.status(400).json({ error: 'Friend username is missing.' });
+    }
+
+    const friendName = req.query.friend_name;
+    console.log('finding user with username', friendName);
+
+    const findUserQuery = `
+    SELECT *
+    FROM users
+    WHERE username LIKE '%${friendName}%'`;
+
+    try {
+        const users = await db.send_sql(findUserQuery);
+        if (users.length <= 0) {
+            return res.status(409).json({ error: 'No user with this name found!' });
+        }
+        const results = users.map(user => ({
+            userId: user.user_id,
+            username: user.username
+        }));
+        res.status(200).json({ results });
+    } catch (error) {
+        console.error('Error querying database:', error);
+        return res.status(500).json({ error: 'Error querying database.' });
+    }
+
+}
+
+// GET /friends
+// getALLFRIENDS
 var getFriends = async function (req, res) {
 
     console.log('getting friends');
@@ -406,24 +445,35 @@ var getFriends = async function (req, res) {
     }
 
     const username = req.params.username;
+    
 
     // TODO: get all friends of current user
-    if (!helper.isLoggedIn(req.session.user_id) || !helper.isOK(username)) {
-        // if (!req.session.user_id) {
+    if (!session_user_id) {
         return res.status(403).json({ error: 'Not logged in.' });
     }
+    const userId = session_user_id;
 
     try {
-        const friends = await db.send_sql(`SELECT DISTINCT friends.followed, nFriend.primaryName
-        FROM names nUser
-        JOIN users user1 ON user1.linked_nconst = nUser.nconst
-        JOIN friends ON nUser.nconst = friends.follower
-        JOIN names nFriend ON friends.followed = nFriend.nconst
-        WHERE user1.user_id = '${req.session.user_id}'`);
+        const getFriendsQuery = ` WITH filtered_friends AS (
+            SELECT * FROM friends WHERE follower = ${userId}
+        ) 
+        SELECT t1.followed, t2.username
+        FROM filtered_friends t1
+        JOIN users t2
+        ON t1.followed = t2.user_id
+        `
+        const friends = await db.send_sql(getFriendsQuery);
+        // const friends = await db.send_sql(`SELECT DISTINCT friends.followed, nFriend.primaryName
+        // FROM names nUser
+        // JOIN users user1 ON user1.linked_nconst = nUser.nconst
+        // JOIN friends ON nUser.nconst = friends.follower
+        // JOIN names nFriend ON friends.followed = nFriend.nconst
+        // WHERE user1.user_id = '${req.session.user_id}'`);
 
+        // followed data
         const results = friends.map(friend => ({
             followed: friend.followed,
-            primaryName: friend.primaryName
+            username: friend.username
         }));
         res.status(200).json({ results });
     } catch (error) {
@@ -1217,6 +1267,36 @@ var deleteInvite = async function(req, res) {
     }
 }
 
+
+// DELETE /deleteInvite
+var deleteUFInvite = async function(req, res) {
+    // Check if the user is logged in
+    console.log('delete fu invite is called');
+    if (!session_user_id) {
+        return res.status(403).json({ error: 'Not logged in.' });
+    }
+
+    if (!req.body.params.inviteId) {
+        return res.status(400).json({ error: 'Invite ID is missing.' });
+    }
+
+    const inviteId = req.body.params.inviteId;
+    const user_id = session_user_id;
+    // const user_id = req.query.user_id;
+
+    try {
+
+        const deleteUInvite = `DELETE FROM user_f_invites WHERE f_invite_id = ${inviteId} AND user_id = ${user_id}`;
+        await db.send_sql(deleteUInvite);
+        console.log('success u delete')
+        res.status(200).json({ message: "Invite deleted successfully." });
+    } catch (error) {
+        console.error('Error deleting invite:', error);
+        return res.status(500).json({ error: 'Error deleting invite.' });
+    }
+}
+
+
 // GET /chat/{chatId}
 /** getChat 
  * 
@@ -1294,20 +1374,234 @@ var getFriendName = async function(req, res) {
     }
 }
 
-// POST /friends
-// when user A CLICKS FOLLOW/ADD friend B, we insert (followed = B, follower = A) into friends table
-var addFriends = async function (req, res) {
 
-    if (!helper.isLoggedIn(req.session.user_id)) {
+// GET /chat
+/** getChat 
+ * 
+ * @param {*} req 
+ * @param {*} res 
+ * @returns -> retrieves all the current chats that users have
+ */
+var getFInviteAll = async function (req, res) {
+    console.log('getFInviteAll is called');
+
+    if (!session_user_id) {
+        return res.status(403).json({ error: 'Not logged in.' });
+    }
+    user_id = session_user_id;
+    console.log('curr id: ', user_id);
+    try {
+        const getInviteQuery = `
+        WITH invite_agg AS (
+            SELECT i1.f_invite_id, i1.sender_id, i1.receiver_id, i1.confirmed
+            FROM friend_invites i1
+            JOIN (SELECT * FROM user_f_invites WHERE user_id = ${user_id}) i2
+            ON i1.f_invite_id = i2.f_invite_id
+        )
+        SELECT t1.f_invite_id, t1.sender_id, t2.username, t1.confirmed
+        FROM invite_agg t1
+        JOIN users t2 ON t1.sender_id = t2.user_id
+        `;
+        const allInvites = await db.send_sql(getInviteQuery);
+
+        const results = allInvites.map(invite => ({
+            inviterName: invite.username,
+            inviteId: invite.f_invite_id,
+            inviterId: invite.sender_id,
+            confirmed: invite.confirmed,
+        }));
+        console.log('results backend', results);
+        res.status(200).json({ results });
+    } catch (error) {
+        console.error('Error querying database:', error);
+        return res.status(500).json({ error: 'Error querying database.' });
+    }
+
+}
+
+// POST /postInvite
+var postFInvite = async function(req, res) {
+    // TODO: add to posts table
+    console.log('posting f invite', req);
+    if (!session_user_id) {
         return res.status(403).json({ error: 'Not logged in.' });
     }
 
-    if (!req.params.friend_id) {
+    const inviterId =session_user_id;
+    console.log('1');
+
+    if (!req.body.invitee_id) {
+        return res.status(400).json({ error: 'One or more of the fields you entered was empty, please try again.' });
+    }
+    const inviteeId = req.body.invitee_id; // would it be id or name..?
+    console.log('2');
+    try {
+        // Insert the post into the database
+        //  DELETE CHAT-ID FROM IT
+        const postInvite = `INSERT INTO friend_invites (sender_id, receiver_id, confirmed) VALUES ('${inviterId}', '${inviteeId}', 0)`; // FALSE is 0
+        await db.send_sql(postInvite);
+
+        const getInviteId = `SELECT LAST_INSERT_ID() AS invite_id`;
+        const r1 = await db.send_sql(getInviteId);
+        const inviteId = r1[0].invite_id;
+
+        const postUInvite = `INSERT INTO user_f_invites (user_id, f_invite_id) VALUES ('${inviteeId}', '${inviteId}')`; // FALSE is 0
+        await db.send_sql(postUInvite);
+        res.status(201).send({ message: "Invite sent." });
+    } catch (error) {
+        console.error('Error querying database:', error);
+        return res.status(500).json({ error: 'Error querying database.' });
+    }
+}
+
+// UPDATE /confirmInvite
+var confirmFInvite = async function(req, res) {
+    // Check if the user is logged in
+    console.log('confirming f invite');
+
+    if (!session_user_id) {
+        return res.status(403).json({ error: 'Not logged in.' });
+    }
+
+    if (!req.body.params.inviteId || !req.body.params.adminId) {
+        return res.status(400).json({ error: 'One or more of the fields you entered was empty, please try again.' });
+    }
+
+    const inviteId = req.body.params.inviteId;
+    const adminId = req.body.params.adminId;
+    const user_id = session_user_id;
+
+    try {
+        // Update the confirmation status in the database
+        const updateQuery = `UPDATE friend_invites SET confirmed = 1 WHERE f_invite_id = ${inviteId}`;
+        await db.send_sql(updateQuery);
+
+        const postFriend = `INSERT INTO friends (followed, follower) VALUES ('${user_id}', '${adminId}')`;
+        await db.send_sql(postFriend);
+
+        const postFriend2 = `INSERT INTO friends (followed, follower) VALUES ('${adminId}', '${user_id}')`;
+        await db.send_sql(postFriend2);
+
+        console.log('done');
+
+        res.status(200).json({ message: "Friend invite confirmation updated successfully and posted." });
+    } catch (error) {
+        console.error('Error updating invite confirmation:', error);
+        return res.status(500).json({ error: 'Error updating invite confirmation.' });
+    }
+}
+
+// DELETE /deleteInvite
+var deleteUInvite = async function(req, res) {
+    // Check if the user is logged in
+    console.log('delete u invite is called');
+    if (!session_user_id) {
+        return res.status(403).json({ error: 'Not logged in.' });
+    }
+
+    if (!req.body.params.inviteId) {
         return res.status(400).json({ error: 'Invite ID is missing.' });
     }
 
-    const userId = req.session.user_id;
-    const friendId = req.body.friend_id;
+    const inviteId = req.body.params.inviteId;
+    const user_id = session_user_id;
+    // const user_id = req.query.user_id;
+
+    try {
+
+        const deleteUInvite = `DELETE FROM user_invites WHERE invite_id = ${inviteId} AND user_id = ${user_id}`;
+        await db.send_sql(deleteUInvite);
+        console.log('success u delete')
+        res.status(200).json({ message: "Invite deleted successfully." });
+    } catch (error) {
+        console.error('Error deleting invite:', error);
+        return res.status(500).json({ error: 'Error deleting invite.' });
+    }
+}
+
+
+
+// DELETE /deleteInvite
+var deleteFInvite = async function(req, res) {
+    // Check if the user is logged in
+    console.log('delete f invite is called');
+    if (!session_user_id) {
+        return res.status(403).json({ error: 'Not logged in.' });
+    }
+
+    // console.log('delete invite req', req);
+
+    if (!req.body.params.inviteId) {
+        return res.status(400).json({ error: 'Invite ID is missing.' });
+    }
+
+    const inviteId = req.body.params.inviteId;
+
+    try {
+        const deleteQuery = `DELETE FROM friend_invites WHERE f_invite_id = ${inviteId}`;
+        // might also have to delete from user_invites unless foreign key already does tht>
+        await db.send_sql(deleteQuery);
+
+        console.log('finvite delete success');
+        res.status(200).json({ message: "Invite deleted successfully." });
+    } catch (error) {
+        console.error('Error deleting invite:', error);
+        return res.status(500).json({ error: 'Error deleting invite.' });
+    }
+}
+
+
+// post /removeFriend
+// remove both followed, follower
+var removeFriend = async function(req, res) {
+    // Check if the user is logged in
+    console.log('removing friend');
+
+    if (!session_user_id) {
+        return res.status(403).json({ error: 'Not logged in.' });
+    }
+
+    if (!req.body.friendId) {
+        return res.status(400).json({ error: 'One or more of the fields you entered was empty, please try again.' });
+    }
+
+    const friendId = req.body.friendId;
+    const user_id = session_user_id;
+
+    try {
+        // Update the confirmation status in the database
+        // TODO: WHAT HAPPENS TO CHAT?
+        // DELETE chat_id and user_id where chat-id is in both?
+        const updateQuery = `DELETE FROM friends
+        WHERE (followed = ${user_id} AND follower = ${friendId})
+           OR (followed = ${friendId} AND follower = ${user_id});`;
+
+        await db.send_sql(updateQuery);
+
+        res.status(200).json({ message: "Friend deleted!" });
+    } catch (error) {
+        console.error('Error updating invite confirmation:', error);
+        return res.status(500).json({ error: 'Error updating invite confirmation.' });
+    }
+}
+
+
+// POST /friends 
+// LET THIS BE THE ACCEPT ONE
+var addFriends = async function (req, res) {
+
+    if (!session_user_id) {
+        return res.status(403).json({ error: 'Not logged in.' });
+    }
+
+    if (!req.query.friend_id || !req.query.inviteId) {
+        return res.status(400).json({ error: 'Friend id is missing.' });
+    }
+
+    const userId = session_user_id;
+    const friendId = req.query.friend_id;
+    const inviteId = req.query.inviteId;
+    console.log('adding friendId as friend', friendId);
 
     try {
         const friends = await db.send_sql(`INSERT INTO friends (followed, follower) VALUES ('${friendId}', '${userId}')`);
@@ -1431,7 +1725,7 @@ var routes = {
     get_feed: getFeed,
     post_selections: postSelections, 
     get_top_hashtags: getTopHashtags,
-        get_chat_by_id: getChatById,
+    get_chat_by_id: getChatById,
     get_chat_all: getChatAll,
     post_chat: postChat,
     post_text: postText,
@@ -1445,7 +1739,14 @@ var routes = {
     delete_invite: deleteInvite,
     delete_u_invite: deleteUInvite,
     leave_chatroom: leaveChatroom,
-    get_text_by_chat_id: getTextByChatId
+    get_text_by_chat_id: getTextByChatId,
+    get_user_by_username: getUserByUsername,
+    post_f_invite: postFInvite,
+    get_f_invite_all: getFInviteAll,
+    confirm_f_invite: confirmFInvite,
+    delete_f_invite: deleteFInvite,
+    delete_u_f_invite: deleteUFInvite,
+    remove_friend: removeFriend
   };
 
 

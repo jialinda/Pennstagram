@@ -6,5 +6,11 @@
       "user": "admin",
       "password": "netsfinalproject"
     },
-    "serverPort": "8080"
+    "serverPort": "8080",
+    "kafka": {
+      "groupId": "nets-2120-group-a",
+      "bootstrapServers": ["localhost:9092"],
+      "topic": "FederatedPosts",
+      "port": 4567
+    }
   }

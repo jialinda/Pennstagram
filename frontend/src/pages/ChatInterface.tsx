@@ -139,10 +139,17 @@ export default function ChatInterface() {
 
     const sendMessage = async () => {
         const timestamp = new Date(); // Get the current timestamp
+        const year = timestamp.getFullYear();
+        const month = String(timestamp.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed, so add 1
+        const day = String(timestamp.getDate()).padStart(2, '0');
+        const hours = String(timestamp.getHours()).padStart(2, '0');
+        const minutes = String(timestamp.getMinutes()).padStart(2, '0');
+
+        const formattedTimestamp = `${year}-${month}-${day} ${hours}:${minutes}`;
         const newMessage = {
             sender: username,
             message: input,
-            timestamp: timestamp.toISOString()
+            timestamp: formattedTimestamp
         };
         console.log('adding new message', newMessage);
         setMessages([...messages, newMessage]);
@@ -151,13 +158,14 @@ export default function ChatInterface() {
     
         // Make a call to postText route in backend
         $.ajax({
-            url: '/postText', // check
+            url: `${rootURL}/postText`, // check
             method: 'POST',
-            data: {
+            data: $.param({
                 content: input,
                 chat_id: currChat.chat_id,
                 timestamp: timestamp.toISOString()
-            },
+            }),
+            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
             success: function(response) {
                 console.log('Message sent successfully:', response);
             },
@@ -178,13 +186,13 @@ export default function ChatInterface() {
         //     userId: userId
         // });
         console.log('this is chatname', chat.chatname);
-        navigate('/' + username + chat.chatname + '/inviteIntoChat');
+        navigate('/' + username  +'/' + chat.chatname + '/' + chat.chat_id + '/inviteIntoChat');
     }
 
     const leaveChat = async (chatId) => {
         try {
-            // Make a request to leave the chat using the chatId
-            await axios.post('/leaveChatroom', {
+            console.log('leaving chat');
+            await axios.post(`${rootURL}/leaveChatroom`, {
                 user_id: userId,
                 chatId: chatId // Assuming you need to send the userId as well
             });

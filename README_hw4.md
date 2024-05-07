@@ -81,7 +81,7 @@ As an example, here is a version that worked for us:
 ssh -i ~/.ssh/tunnel.pem -4 -L 3306:database-2.czkkqa8wuy3r.us-east-1.rds.amazonaws.com:3306 ubuntu@ec2-3-86-71-131.compute-1.amazonaws.com
 ```
 
-ssh -i ~/.ssh/tunnel2.pem -4 -L 3306:instadb.cbbt2woocf66.us-east-1.rds.amazonaws.com:3306 ubuntu@ec2-3-88-170-21.compute-1.amazonaws.com
+ssh -i ~/.ssh/tunnelgrace2.pem -4 -L 3306:instadb.cbbt2woocf66.us-east-1.rds.amazonaws.com:3306 ubuntu@ec2-3-88-170-21.compute-1.amazonaws.com
 
 **First-Time You Connect to the New Tunnel**. The first time you create the tunnel server, may need to answer `yes` to whether you trust the server.  You'll be logged into an Amazon EC2 node at this point.
 

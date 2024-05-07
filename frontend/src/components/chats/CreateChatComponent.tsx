@@ -21,10 +21,10 @@ function createChatComponent({ updatePosts }) {
 
     const handleSendInvite = async (user) => {
       // Add the user to the invitees list
-      console.log('handle send invite called');
+      console.log('handle send invite called 1');
       // e.preventDefault();
       try {
-        const response = await axios.post(`${config.serverRootURL}/${username}/postInvite`, {
+        const response = await axios.post(`${config.serverRootURL}/postInvite`, {
           chat_id: chat_id,
           invitee_id: user.user_id,
           inviter_id: 2, // it technically should be whoever is in session right now
@@ -39,9 +39,15 @@ function createChatComponent({ updatePosts }) {
       }
 
       } catch (error) {
-        console.error('Error sending invite:', error);
-      }
+        if (error.response && error.response.status === 409) {
+          // If error 409 (Conflict) is returned, display a message to inform the user
+          alert("Chat already exists!");
+        } else {
+            // For other errors, log the error to the console
+            console.error('Error sending invite:', error);
+        }
     };
+  }
 
     const handleAddFriend = (user) => {
       // Check if the user is already in the invitees list
@@ -52,6 +58,7 @@ function createChatComponent({ updatePosts }) {
           console.log('curr invitees: ', invitees);
       }
     };
+    
     
     const handleRemoveFriend = (friendToRemove) => {
         setFriends(friends.filter(friend => friend !== friendToRemove));

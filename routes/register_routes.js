@@ -42,12 +42,13 @@ function register_routes(app) {
     app.post('/postText', routes.post_text); 
     app.get('/getInviteAll', routes.get_invite_all); // check
     app.post('/postInvite', routes.post_invite); 
-    app.get('/confirmInvite', routes.confirm_invite); 
+    app.post('/postInviteChat', routes.post_invite_chat); 
+    app.post('/confirmInvite', routes.confirm_invite); 
     // FRIEND-RELATED ROUTES
     app.get('/getFriend', routes.get_friend_by_username);
     app.get('/friends/:friend_id', routes.add_friends); // by id // POST
-    app.delete('/deleteInvite', routes.delete_invite); // by id // POST
-    app.delete('/leaveChatroom', routes.leave_chatroom); // by id // POST
+    app.post('/deleteInvite', routes.delete_invite); // check if it;s ok to do post
+    app.post('/leaveChatroom', routes.leave_chatroom); // by id // POST
     app.get('/getTextByChatId', routes.get_text_by_chat_id);
 
 // ); 

@@ -13,21 +13,23 @@ function InviteIntoChat({ updatePosts }) {
     // const { username } = useParams();
     const [invitees, setInvitees] = useState([]);
 
-    const { username, chatname } = useParams();
+    const { username, chatname, chat_id } = useParams();
 
     // Now you can use username and chat_id in your component
     console.log('Username:', username);
     console.log('Chat name:', chatname);
+    console.log('chat id', chat_id);
 
     const handleSendInvite = async (user) => {
       // Add the user to the invitees list
       console.log('handle send invite called');
       // e.preventDefault();
       try {
-        const response = await axios.post(`${config.serverRootURL}/${username}/postInvite`, {
+        // change to postInviteByChatid
+        const response = await axios.post(`${rootURL}/postInviteChat`, {
           chat_id: chat_id,
           invitee_id: user.user_id,
-          inviter_id: 2, // it technically should be whoever is in session right now
+          // inviter_id: 2, // it technically should be whoever is in session right now
           confirmed: 0
         }
       );
@@ -35,11 +37,16 @@ function InviteIntoChat({ updatePosts }) {
           // CHECK - navigate somewhere?
           console.log('invite was successfully sent to username: ', user.username);        
         } else {
-          alert("invite ffailed");
+          alert("invite failed");
       }
 
       } catch (error) {
-        console.error('Error sending invite:', error);
+        if (error.response && error.response.status === 409) {
+          // If error 409 (Conflict) is returned, display a message to inform the user
+          alert("Chat already exists!");
+        } else {
+          console.error('Error sending invite:', error);
+        }
       }
     };
 

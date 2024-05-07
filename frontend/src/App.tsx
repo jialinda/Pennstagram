@@ -12,7 +12,6 @@ import Feed from "./pages/Feed";
 import CreatePost from "./pages/CreatePost";
 import SetupProfile from "./pages/SetupProfile";
 
-
 function App() {
   return (
     <BrowserRouter>
@@ -26,7 +25,7 @@ function App() {
         <Route path="/:username/chat" element={<ChatInterface />} />
         <Route path="/:username/createChat" element={<CreateChat />} />
         <Route path="/:username/createChat/:chat_id/inviteFriend" element={<InviteFriend />} />
-        <Route path="/:username/:chatname/inviteIntoChat" element={<InviteIntoChat />} />
+        <Route path="/:username/:chatname/:chat_id/inviteIntoChat" element={<InviteIntoChat />} />
         <Route path="/:username/feed" element={<Feed />} />
         <Route path="/:username/createPost" element={<CreatePost />} />
       </Routes>

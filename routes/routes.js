@@ -563,7 +563,6 @@ var createPost = async function (req, res) {
         return res.status(500).json({ error: 'Error querying database.' });
     }
 }
-}
 
 // GET /feed
 //Yes, authors that the current user follows, as well as

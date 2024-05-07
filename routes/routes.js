@@ -504,7 +504,6 @@ var createPost = async function (req, res) {
         console.error('Error querying database:', error);
         return res.status(500).json({ error: 'Error querying database.' });
     }
-
 }
 
 // GET /feed

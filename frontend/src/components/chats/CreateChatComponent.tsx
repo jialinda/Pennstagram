@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import config from '../../../config.json';
 import { useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+
 
 const rootURL = config.serverRootURL;
 
@@ -18,6 +20,7 @@ function createChatComponent({ updatePosts }) {
     // Now you can use username and chat_id in your component
     console.log('Username:', username);
     console.log('Chat ID:', chat_id);
+    const navigate = useNavigate(); 
 
     const handleSendInvite = async (user) => {
       // Add the user to the invitees list
@@ -94,25 +97,7 @@ function createChatComponent({ updatePosts }) {
       };
     
       const handleSubmit = async (e) => {
-
-        // might change this to go back to chatroom instead
-        e.preventDefault();
-        try {
-          const response = await axios.post(`${config.serverRootURL}/${username}/createChatroom`, {
-            title,
-            friends,
-          }, { withCredentials: true });
-          console.log(response);
-          if (response.status === 201 || response.status === 200) {
-            // Clear input fields
-            setTitle('');
-            setFriends([]);
-            // Update posts
-            updatePosts();
-          }
-        } catch (error) {
-          console.error('Error creating chatroom:', error);
-        }
+        navigate("/"+ username+"/chat");
       };
 
       
@@ -158,7 +143,7 @@ function createChatComponent({ updatePosts }) {
         </div>
         <div className='w-full flex justify-center'>
           <button type="button" className='px-4 py-2 rounded-md bg-blue-500 outline-none font-bold text-white'
-            onClick={handleSubmit}>Create Chatroom</button>
+            onClick={handleSubmit}>Done</button>
         </div>
       </div>
     </form>

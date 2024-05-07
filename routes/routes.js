@@ -876,11 +876,6 @@ var postChat = async function(req, res) {
 var getInviteAll = async function (req, res) {
     console.log('getInviteAll is called');
 
-    // TODO: get the correct posts to show on current user's feed
-    // if (!helper.isLoggedIn(req.session.user_id)) {
-    //     return res.status(403).json({ error: 'Not logged in.' });
-    // }
-
     if (!session_user_id) {
         return res.status(403).json({ error: 'Not logged in.' });
     }
@@ -895,12 +890,12 @@ var getInviteAll = async function (req, res) {
         // 
         const getInviteQuery = `
         WITH invite_agg AS (
-            SELECT i1.invite_id, i1.chat_id, i1.invitee_id, i1.inviter_id, i1.confirmed
+            SELECT i1.invite_id, i1.chat_id, i1.invitee_id, i1.inviter_id, i1.confirmed, i1.is_groupchat
             FROM invites i1
             JOIN (SELECT * FROM user_invites WHERE user_id = ${user_id}) i2
             ON i1.invite_id = i2.invite_id
         )
-        SELECT t1.invite_id, t1.inviter_id, t2.username, t1.confirmed
+        SELECT t1.invite_id, t1.inviter_id, t2.username, t1.confirmed, t1.is_groupchat, t1.chat_id
         FROM invite_agg t1
         JOIN users t2 ON t1.inviter_id = t2.user_id
         `;
@@ -912,7 +907,9 @@ var getInviteAll = async function (req, res) {
             inviteId: invite.invite_id,
             inviterId: invite.inviter_id,
             chatroomName: invite.chatname,
-            confirmed: invite.confirmed
+            confirmed: invite.confirmed,
+            is_groupchat: invite.is_groupchat,
+            chatId: invite.chat_id
         }));
         console.log('results backend', results);
         res.status(200).json({ results });
@@ -942,11 +939,6 @@ var postInvite = async function(req, res) {
         return res.status(400).json({ error: 'One or more of the fields you entered was empty, please try again.' });
     }
     const inviteeId = req.body.invitee_id; // would it be id or name..?
-    // const chatId = req.session.chatId;
-
-    // have to check for the case when 3 ppl amek the same groupchat
-    
-    // first check if the two users are already in an existing groupchat
     try {
         console.log('trying post invite');
         const checkChat = `WITH agg AS (
@@ -971,8 +963,7 @@ var postInvite = async function(req, res) {
     try {
         // Insert the post into the database
         //  DELETE CHAT-ID FROM IT
-        // const postInvite = `INSERT INTO invites (chat_id, invitee_id, inviter_id, confirmed) VALUES ('${chatId}', '${inviteeId}', '${inviterId}', 0)`; // FALSE is 0
-        const postInvite = `INSERT INTO invites (invitee_id, inviter_id, confirmed) VALUES ('${inviteeId}', '${inviterId}', 0)`; // FALSE is 0
+        const postInvite = `INSERT INTO invites (invitee_id, inviter_id, confirmed, is_groupchat) VALUES ('${inviteeId}', '${inviterId}', 0, 0)`; // FALSE is 0
 
         await db.send_sql(postInvite);
 
@@ -1019,9 +1010,11 @@ var postInviteChat = async function(req, res) {
             return res.status(409).json({ error: 'User is already in chat! Please add another user!' });
         } else {
             try {
-                const postInvite = `INSERT INTO invites (invitee_id, chat_id, inviter_id, confirmed) VALUES ('${inviteeId}', '${chatId}', '${inviterId}', 0)`;
-
+                // TODO: CHECK WHY THERE ARE TWO INVITES RN
+                const postInvite = `INSERT INTO invites (invitee_id, chat_id, inviter_id, confirmed, is_groupchat) VALUES ('${inviteeId}', '${chatId}', '${inviterId}', 0, 1)`;
+                
                 await db.send_sql(postInvite);
+                console.log('invite post 1');
 
                 const getInviteId = `SELECT LAST_INSERT_ID() AS invite_id`;
                 const r1 = await db.send_sql(getInviteId);
@@ -1030,9 +1023,10 @@ var postInviteChat = async function(req, res) {
                     //  check if I need quotations for this or not
                     const postUInvite = `INSERT INTO user_invites (user_id, invite_id) VALUES (${inviteeId}, ${inviteId})`;
                     const r2 = await db.send_sql(postUInvite);
+                    console.log('invite post 2');
 
                 } catch(err) {
-                    console.error('Error querying database:', error);
+                    console.error('Error querying database:', err);
                     return res.status(500).json({ error: 'Error querying database.' });
                 }
                 // const check = await db.send_sql(checkChat);
@@ -1043,27 +1037,6 @@ var postInviteChat = async function(req, res) {
         }
     } catch (err) {
         console.error('Error querying database:', err);
-        return res.status(500).json({ error: 'Error querying database.' });
-    }
-
-    try {
-        // Insert the post into the database
-        //  DELETE CHAT-ID FROM IT
-        // const postInvite = `INSERT INTO invites (chat_id, invitee_id, inviter_id, confirmed) VALUES ('${chatId}', '${inviteeId}', '${inviterId}', 0)`; // FALSE is 0
-        // check if for the chat_id i can probably just 
-        const postInvite = `INSERT INTO invites (invitee_id, inviter_id, confirmed) VALUES ('${inviteeId}', '${inviterId}', 0)`; // FALSE is 0
-
-        await db.send_sql(postInvite);
-
-        const countInvQuery = `SELECT COUNT(*) AS totalInvites FROM invites`;
-        const countResult = await db.send_sql(countInvQuery);
-        const inviteId = countResult[0].totalInvites;
-
-        const postUInvite = `INSERT INTO user_invites (user_id, invite_id) VALUES ('${inviteeId}', '${inviteId}')`; // FALSE is 0
-        await db.send_sql(postUInvite);
-        res.status(201).send({ message: "Invite sent." });
-    } catch (error) {
-        console.error('Error querying database:', error);
         return res.status(500).json({ error: 'Error querying database.' });
     }
 }
@@ -1117,6 +1090,41 @@ var confirmInvite = async function(req, res) {
 }
 
 
+// UPDATE /confirmInvite
+var confirmInviteChat = async function(req, res) {
+    // Check if the user is logged in
+    console.log('confirming invite chat');
+
+    if (!session_user_id) {
+        return res.status(403).json({ error: 'Not logged in.' });
+    }
+
+    if (!req.body.params.inviteId || !req.body.params.adminId || !req.body.params.chatId) {
+        return res.status(400).json({ error: 'One or more of the fields you entered was empty, please try again.' });
+    }
+
+    const inviteId = req.body.params.inviteId;
+    const adminId = req.body.params.adminId;
+    const chatId = req.body.params.chatId;
+    const user_id = session_user_id;
+
+    try {
+        const updateQuery = `UPDATE invites SET confirmed = 1 WHERE invite_id = ${inviteId}`;
+        await db.send_sql(updateQuery);
+
+        // create new row in user chats
+        const postUserChat = `INSERT INTO user_chats (user_id, chat_id) VALUES ('${user_id}', '${chatId}')`;
+        await db.send_sql(postUserChat);
+        console.log('done');
+
+        res.status(200).json({ message: "Invite confirmation updated successfully and posted." });
+    } catch (error) {
+        console.error('Error updating invite confirmation:', error);
+        return res.status(500).json({ error: 'Error updating invite confirmation.' });
+    }
+}
+
+
 // DELETE /leaveChatroom
 var leaveChatroom = async function(req, res) {
     // Check if the user is logged in
@@ -1149,14 +1157,12 @@ var leaveChatroom = async function(req, res) {
 
 
 // DELETE /deleteInvite
-var deleteInvite = async function(req, res) {
+var deleteUInvite = async function(req, res) {
     // Check if the user is logged in
-    console.log('delete invite is called');
+    console.log('delete u invite is called');
     if (!session_user_id) {
         return res.status(403).json({ error: 'Not logged in.' });
     }
-
-    console.log('delete invite req', req);
 
     if (!req.body.params.inviteId) {
         return res.status(400).json({ error: 'Invite ID is missing.' });
@@ -1167,9 +1173,38 @@ var deleteInvite = async function(req, res) {
     // const user_id = req.query.user_id;
 
     try {
+
         const deleteUInvite = `DELETE FROM user_invites WHERE invite_id = ${inviteId} AND user_id = ${user_id}`;
         await db.send_sql(deleteUInvite);
+        console.log('success u delete')
+        res.status(200).json({ message: "Invite deleted successfully." });
+    } catch (error) {
+        console.error('Error deleting invite:', error);
+        return res.status(500).json({ error: 'Error deleting invite.' });
+    }
+}
 
+
+
+// DELETE /deleteInvite
+var deleteInvite = async function(req, res) {
+    // Check if the user is logged in
+    console.log('delete invite is called');
+    if (!session_user_id) {
+        return res.status(403).json({ error: 'Not logged in.' });
+    }
+
+    // console.log('delete invite req', req);
+
+    if (!req.body.params.inviteId) {
+        return res.status(400).json({ error: 'Invite ID is missing.' });
+    }
+
+    const inviteId = req.body.params.inviteId;
+    const user_id = session_user_id;
+    // const user_id = req.query.user_id;
+
+    try {
         const deleteQuery = `DELETE FROM invites WHERE invite_id = ${inviteId}`;
         // might also have to delete from user_invites unless foreign key already does tht>
         await db.send_sql(deleteQuery);
@@ -1199,8 +1234,13 @@ var getFriendName = async function(req, res) {
     //     return res.status(403).json({ error: 'Not logged in.' });
     // }
 
+    if (!session_user_id) {
+        return res.status(403).json({ error: 'Not logged in.' });
+    }
+
     // const user_id = req.session.user_id;
-    const user_id = req.query.user_id;
+    const user_id = session_user_id;
+    // const user_id = req.query.user_id;
     console.log('user id ', user_id);
 
     if (!req.query.username) {
@@ -1305,19 +1345,16 @@ var postText = async function(req, res) {
     // const timestamp = req.query.timestamp; // Assuming the invitee ID is provided in the request body
     // const content = req.query.content;
     const author_id = session_user_id;
-    // const author_id = req.body.user_id; // Assuming user_id is sent in the request body
     const chat_id = req.body.chat_id;
     const timestamp = req.body.timestamp;
     const content = req.body.content;
 
     try {
         // Insert the message into the database
-        const insertQuery = `INSERT INTO texts (author_id, chat_id, content, timestamp) VALUES (${author_id}, ${chat_id}, '${content}', ${timestamp})`;
-        // const insertQuery = `INSERT INTO messages (sender_id, message_content, chat_id) VALUES (?, ?, ?)`;
+        const insertQuery = `INSERT INTO texts (author_id, chat_id, content, timestamp) VALUES (${author_id}, ${chat_id}, '${content}', '${timestamp}')`;
         await db.send_sql(insertQuery);
 
         // // Insert the message into the invites table - PROBA won't need this?
-        // const inviteQuery = `INSERT INTO invites (chat_id, invitee_id, inviter_id, confirmed) VALUES (?, ?, ?, 0)`;
         // await db.send_sql(inviteQuery, [chatId, inviteeId, senderId]);
 
         // Send a success response
@@ -1402,9 +1439,11 @@ var routes = {
     get_invite_all: getInviteAll,
     post_invite: postInvite,
     confirm_invite: confirmInvite,
+    confirm_inivte_chat: confirmInviteChat,
     add_friends: addFriends,
     get_friend_by_username: getFriendName,
     delete_invite: deleteInvite,
+    delete_u_invite: deleteUInvite,
     leave_chatroom: leaveChatroom,
     get_text_by_chat_id: getTextByChatId
   };

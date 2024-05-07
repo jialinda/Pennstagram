@@ -157,22 +157,33 @@ export default function ChatInterface() {
         console.log('messages: ', messages);
     
         // Make a call to postText route in backend
-        $.ajax({
-            url: `${rootURL}/postText`, // check
-            method: 'POST',
-            data: $.param({
+        try {
+            await axios.post(`${rootURL}/postText`, {
                 content: input,
                 chat_id: currChat.chat_id,
-                timestamp: timestamp.toISOString()
-            }),
-            contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
-            success: function(response) {
-                console.log('Message sent successfully:', response);
-            },
-            error: function(error) {
-                console.error('Error sending message:', error);
-            }
-        });
+                timestamp: formattedTimestamp
+            });
+            console.log('text sent success');
+            // Optionally, update the UI or state to reflect leaving the chat
+        } catch (error) {
+            console.error('Error sending text:', error);
+        }
+        // $.ajax({
+        //     url: `${rootURL}/postText`, // check
+        //     method: 'POST',
+        //     data: $.param({
+        //         content: input,
+        //         chat_id: currChat.chat_id,
+        //         timestamp: timestamp.toISOString()
+        //     }),
+        //     contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+        //     success: function(response) {
+        //         console.log('Message sent successfully:', response);
+        //     },
+        //     error: function(error) {
+        //         console.error('Error sending message:', error);
+        //     }
+        // });
     
         setInput('');
     };

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import config from '../../config.json';
 import { useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const rootURL = config.serverRootURL;
 
@@ -14,6 +15,7 @@ function InviteIntoChat({ updatePosts }) {
     const [invitees, setInvitees] = useState([]);
 
     const { username, chatname, chat_id } = useParams();
+    const navigate = new useNavigate();
 
     // Now you can use username and chat_id in your component
     console.log('Username:', username);
@@ -95,23 +97,7 @@ function InviteIntoChat({ updatePosts }) {
     
       const handleSubmit = async (e) => {
         //  gotta change this shit
-        e.preventDefault();
-        try {
-          const response = await axios.post(`${config.serverRootURL}/${username}/createChatroom`, {
-            title,
-            friends,
-          }, { withCredentials: true });
-          console.log(response);
-          if (response.status === 201 || response.status === 200) {
-            // Clear input fields
-            setTitle('');
-            setFriends([]);
-            // Update posts
-            updatePosts();
-          }
-        } catch (error) {
-          console.error('Error creating chatroom:', error);
-        }
+        navigate("/"+ username+"/chat");
       };
 
   return (

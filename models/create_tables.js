@@ -128,7 +128,7 @@ async function create_tables(db) {
       author_id INT, \
       chat_id INT, \
       content VARCHAR(500), \
-      timestamp DATE, \
+      timestamp VARCHAR(500), \
       FOREIGN KEY (author_id) REFERENCES users(user_id), \
       FOREIGN KEY (chat_id) REFERENCES chats(chat_id) \
     );')
@@ -147,6 +147,7 @@ async function create_tables(db) {
       invitee_id INT, \
       inviter_id INT, \
       confirmed BOOLEAN, \
+      is_groupchat BOOLEAN, \
       FOREIGN KEY (invitee_id) REFERENCES users(user_id), \
       FOREIGN KEY (inviter_id) REFERENCES users(user_id), \
       FOREIGN KEY (chat_id) REFERENCES chats(chat_id) \

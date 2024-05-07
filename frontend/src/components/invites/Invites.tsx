@@ -11,18 +11,35 @@ function Invites({ invites }) {
         const inviteId = invite.inviteId;
         const adminId = invite.inviterId;
         console.log("Invite accepted for invite_id", inviteId);
-        try {
-          console.log('entered invite');
-          const response = await axios.post(`${rootURL}/confirmInvite`, {
-            params: {
-              inviteId: inviteId,
-              user_id: 2, // CHANGE HERE
-              adminId: adminId
-            }
-          });
-          console.log('delete response', response);
-        } catch (err) {
-          console.log('error', err);
+        if (!invite.is_groupchat) {
+          try {
+            console.log('entered invite');
+            const response = await axios.post(`${rootURL}/confirmInvite`, {
+              params: {
+                inviteId: inviteId,
+                user_id: 2, // CHANGE HERE
+                adminId: adminId
+              }
+            });
+            console.log('delete response', response);
+          } catch (err) {
+            console.log('error', err);
+          }
+        } else {
+          try {
+            console.log('accepted groupchat invite for chat', invite.chatId);
+            const response = await axios.post(`${rootURL}/confirmInviteChat`, {
+              params: {
+                inviteId: inviteId,
+                adminId: adminId,
+                chatId: invite.chatId
+              }
+            });
+            console.log('delete response', response);
+          } catch (err) {
+            console.log('error', err);
+          }
+          
         }
       };
     
@@ -65,6 +82,18 @@ function Invites({ invites }) {
          // you delete the invite from your database
         //  and don't create groupchat
         console.log("Invite declined here", inviteId);
+        try {
+          console.log('deleting user invite')
+          const response = await axios.post(`${rootURL}/deleteUInvite`, {
+            params: {
+              inviteId: inviteId,
+              user_id: 2 // CHANGE HERE
+            }
+          });
+          console.log('delete response', response);
+        } catch (err) {
+          console.log('error', err);
+        }
         try {
           console.log('entered');
           console.log('this is rootURL', rootURL);

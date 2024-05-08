@@ -19,26 +19,39 @@ const kafka = new Kafka({
 const consumer = kafka.consumer({ groupId: config.kafka.groupId });
 const producer = kafka.producer();
 
-const topic = "Twitter-Kafka";
-// const topic = "FederatedPosts";
+const topic1 = "Twitter-Kafka";
+const topic2 = "FederatedPosts";
 
 async function runConsumer() {
-  await consumer.connect();
-  await consumer.subscribe({ topic: topic, fromBeginning: true });
+    try {
+        console.log('Database successfully connected.');
+        await consumer.connect();
+        await consumer.subscribe({ topics: [topic1, topic2], fromBeginning: true });
+        console.log('Kafka consumer connected and subscribed.');
 
-  // receiving the kafka messages
-  await consumer.run({
-    eachMessage: async ({ topic, partition, message }) => {
-        try {
-            const data = JSON.parse(message.value.toString());
-            console.log('Received Message:', data);
-            handleTwitterPosts(data);
-        } catch {
-            console.error('Error processing post', error);
-        }
-    },
-  });
+        consumer.run({
+            eachMessage: async ({ topic, partition, message }) => {
+                console.log(`Received message from ${topic}: ${message.value.toString()}`);
+                try {
+                    const data = JSON.parse(message.value.toString());
+                    if (topic === topic1) { 
+                        console.log('Processing Twitter post:', data);
+                        await handleTwitterPosts(data);
+                    } else if (topic === topic2) {
+                        console.log('Processing Federated post:', data);
+                        await handleFederatedPosts(data);
+                    }
+                    await consumer.commitOffsets([{ topic, partition, offset: (message.offset + 1).toString() }]);
+                } catch (err) {
+                    console.error('Error processing message:', err);
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error during startup:', error);
+    }
 }
+
 
 // 1. Text field
 // 2. HASHTAG
@@ -48,28 +61,27 @@ async function runConsumer() {
 async function handleTwitterPosts(data) {
     try {
         console.log('Processing Twitter post:', data);
-        // extract the hashtags / text content from the posts in the stream 
+        // Extract the text content and hashtags from the Twitter post data
         const text = data.text;
         const hashtags = data.hashtags;
 
-        // if (text == undefined || hashtags == undefined) {
-        //     throw error;
-        // }
+        // Validate text and hashtags data
 
-        // insert the post with a placeholder author_id for Twitter users in both `posts` and `texts` tables
+        if (!text) {
+            throw new Error('Twitter post text is undefined or empty');
+        }
+
+        // Insert the post with a placeholder author_id for Twitter users in the `posts` table
         const insertPostQuery = `
             INSERT INTO posts (author_id, title, content, parent_post, timestamp)
-            VALUES (-1, '', ?, 'null', NOW());`;
+            VALUES (-1, '', ?, 'null', NOW());
+        `;
         const postResult = await dbAccess.send_sql(insertPostQuery, [text]);
         const postId = postResult.insertId;
 
-        // insert post into `texts` table
-        const insertTextQuery = `
-            INSERT INTO texts (author_id, content, timestamp, post_id)
-            VALUES (-1, ?, NOW(), ?);`;
-        await dbAccess.send_sql(insertTextQuery, [text, postId]);
+        console.log(`Post inserted with ID: ${postId}`);
 
-        // check / handle hashtags
+        // Handle hashtags associated with the post
         if (hashtags && hashtags.length > 0) {
             await Promise.all(hashtags.map(async (hashtag) => {
                 let tagId;
@@ -82,36 +94,76 @@ async function handleTwitterPosts(data) {
                     const tagInsertResult = await dbAccess.send_sql(tagInsertQuery, [hashtag]);
                     tagId = tagInsertResult.insertId;
                 }
-
+                console.log('preparing to send to SQL');
                 const postTagRelationQuery = `INSERT INTO post_tagged_with (post_id, hashtag_id) VALUES (?, ?);`;
                 await dbAccess.send_sql(postTagRelationQuery, [postId, tagId]);
             }));
         }
+
         console.log('Twitter post processed successfully with hashtags and inserted into texts table.');
     } catch (error) {
         console.error('Error processing Twitter post:', error);
+        console.error(`Failed operation data: ${JSON.stringify(data)}`);
     }
 }
+
 
 // similar to twitter, handle federated posts 
+// async function handleFederatedPosts(data) {
+//     try {
+//         console.log('Processing Federated post:', data);
+//         const username = data.username;  // not used in the insert, ensure it's intentional
+//         const source_site = data.source_site;
+//         const post_uuid_within_site = data.post_uuid_within_site;
+//         const post_text = data.post_text;
+//         const content_type = data.content_type;
+
+//         if (!username || !post_text) {
+//             throw new Error('Essential post data missing');
+//         }
+
+//         const author_id = -1;  // Ensure this ID is supposed to be -1, or it should reference a valid user
+
+//         const insertPostQuery = `
+//             INSERT INTO posts (title, content, author_id, source_site, post_uuid_within_site, content_type, timestamp)
+//             VALUES (?, ?, ?, ?, ?, ?, NOW());
+//         `;
+
+//         // Log the values to be inserted to ensure they are correct
+//         console.log('Inserting:', ['', post_text, author_id, source_site, post_uuid_within_site, content_type]);
+
+//         const postResult = await dbAccess.send_sql(insertPostQuery, ['', post_text, author_id, source_site, post_uuid_within_site, content_type]);
+//         const postId = postResult.insertId;
+//         console.log(`Federated post inserted with ID: ${postId}`);
+//     } catch (error) {
+//         console.error('Error processing Federated post:', error);
+//     }
+// }
+
 async function handleFederatedPosts(data) {
     try {
-        // TODO PUT SOMETHING HERE 
-    } catch {
-        console.error('Error processing federated post:', error);
+        console.log('Processing Federated post:', data);
+        const post_text = data.post_text;
+        if (!post_text) {
+            throw new Error('Post text is undefined or empty');
+        }
+
+        const author_id = -1;
+
+        // insert the post into the database, ignorefields not present in  table
+        const insertPostQuery = `
+            INSERT INTO posts (title, content, author_id, timestamp)
+            VALUES (?, ?, ?, NOW());
+        `;
+        const postResult = await dbAccess.send_sql(insertPostQuery, ['', post_text, author_id]);
+        const postId = postResult.insertId;
+        console.log(`Federated post inserted with ID: ${postId}`);
+    } catch (error) {
+        console.error('Error processing Federated post:', error);
     }
 }
 
-// this is the format we have to follow here
-// {
-//     username: '...',
-//     source_site: '...',
-//     post_uuid_within_site: '...',
-//     post_text: '...',
-//     content_type: '...'
-// }
-// when we send to kafka, we follow a very specific format
-// fix this to follow format
+
 
 async function sendPostToKafka(post, producer, topic) {
     try {
@@ -119,10 +171,10 @@ async function sendPostToKafka(post, producer, topic) {
         // for post to match the required Kafka message structure
         const kafkaMessage = {
             username: post.author_id,
-            source_site: 'g01',
+            source_site: 'g07',
             post_uuid_within_site: post.uuid,
             post_text: post.content,
-            content_type: 'text/plain'
+            content_type: 'testing please work!!!!!!!!!!!!!!!!!!!!!!! '
         };
         // prepare message for Kafka
         const messages = [{ value: JSON.stringify(kafkaMessage) }];
@@ -136,15 +188,3 @@ async function sendPostToKafka(post, producer, topic) {
 runConsumer().catch(error => console.error('Error in Kafka Consumer:', error));
 
 module.exports = sendPostToKafka;
-
-
-
-// this is for RECEIVING POSTS!!!
-// check for text + hashtag
-// insert a new post into table w/ placeholder values (only care about text + hashtag)
-// when inserting, just create a new author id (= -1) for twitter user 
-// now we have posts/hashtag table, we need to check for the existence of the hashtag table
-// first check if hashtag exists, if it does, then get the id of the hashtag then just add to post hashtag table
-// if does not exist, then add hashtag into the table, and new post/hashtag relationship into the other table
-
-// https://edstem.org/us/courses/49842/discussion/4809058

@@ -62,6 +62,15 @@ async function get_db_connection() {
     });
 }
 
+
+/**
+ * Sends an SQL query to the database
+ * 
+ * @param {*} query 
+ * @param {*} params 
+ * @returns promise
+ */
+
 /**
  * Sends an SQL query to the database
  * 

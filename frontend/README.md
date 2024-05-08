@@ -44,6 +44,9 @@ To run Kafka (load all posts from beginning):
         ```
         127.0.0.1  ip-172-31-29-52
         ```
+3.34.76.88 ip-172-31-29-52
+ssh -i ~/.ssh/nets2120-project.pem -4 -L 9092:kafka.tunnel.universe.esinx.net:9092 ubuntu@ec2-44-203-65-104.compute-1.amazonaws.com
+
   i. CMD + X, then make sure to click 'Y' to save changes
   j. Now run 'ssh -i ~/.ssh/nets2120-project.pem -4 -L 9092:ip-172-31-29-52.ec2.internal:9092 ubuntu@ec2-44-203-65-104.compute-1.amazonaws.com'
 
@@ -87,3 +90,6 @@ Here are some notes about what i should do to get kafka working and running:
   // consumer and produer (consumer is once every hour), producer (every single post we make on our app should be put in our kafka)
 
   // for post tables, whenever we upload a post from kafka, set post id to some neg number so whenever we seee post table, we know that it has come from kafka 
+
+
+## original groupId: nets-2120-group-a

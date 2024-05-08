@@ -144,3 +144,27 @@
 [31mERROR[0m:    [04-05-2024 21:38:20] [Errno 98] error while attempting to bind on address ('0.0.0.0', 8000): address already in use
 [32mINFO[0m:     [04-05-2024 21:38:20] Waiting for application shutdown.
 [32mINFO[0m:     [04-05-2024 21:38:20] Application shutdown complete.
+[33mWARNING[0m:  [06-05-2024 23:37:50] chroma_server_nofile is set to 65535, but this is less than current soft limit of 1048576. chroma_server_nofile will not be set.
+[32mINFO[0m:     [06-05-2024 23:37:50] Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+[36mDEBUG[0m:    [06-05-2024 23:37:50] Starting component System
+[36mDEBUG[0m:    [06-05-2024 23:37:50] Starting component OpenTelemetryClient
+[36mDEBUG[0m:    [06-05-2024 23:37:50] Starting component SimpleAssignmentPolicy
+[36mDEBUG[0m:    [06-05-2024 23:37:50] Starting component SqliteDB
+[36mDEBUG[0m:    [06-05-2024 23:37:50] Starting component Posthog
+[36mDEBUG[0m:    [06-05-2024 23:37:50] Starting component LocalSegmentManager
+[36mDEBUG[0m:    [06-05-2024 23:37:50] Starting component SegmentAPI
+[32mINFO[0m:     [06-05-2024 23:37:50] Started server process [[36m40800[0m]
+[32mINFO[0m:     [06-05-2024 23:37:50] Waiting for application startup.
+[32mINFO[0m:     [06-05-2024 23:37:50] Application startup complete.
+[32mINFO[0m:     [06-05-2024 23:37:50] Uvicorn running on [1mhttp://0.0.0.0:8000[0m (Press CTRL+C to quit)
+[32mINFO[0m:     [06-05-2024 23:37:55] 127.0.0.1:38164 - "GET / HTTP/1.1" 404
+[32mINFO[0m:     [06-05-2024 23:37:56] 127.0.0.1:38164 - "GET /favicon.ico HTTP/1.1" 404
+[32mINFO[0m:     [06-05-2024 23:38:02] 127.0.0.1:59836 - "GET /hello HTTP/1.1" 404
+[32mINFO[0m:     [06-05-2024 23:38:04] 127.0.0.1:59854 - "GET /hello HTTP/1.1" 404
+[32mINFO[0m:     [06-05-2024 23:38:21] 127.0.0.1:55586 - "GET /hello HTTP/1.1" 404
+[32mINFO[0m:     [06-05-2024 23:41:12] 127.0.0.1:43084 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [06-05-2024 23:43:40] 127.0.0.1:60018 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [06-05-2024 23:43:41] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [06-05-2024 23:43:41] 127.0.0.1:60018 - "POST /api/v1/collections/198cdf4e-ed7c-4be0-b01b-24d98e904cf9/query HTTP/1.1" 200
+[32mINFO[0m:     [06-05-2024 23:45:32] 127.0.0.1:35692 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [06-05-2024 23:46:50] 127.0.0.1:42206 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200

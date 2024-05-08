@@ -6,14 +6,18 @@ import { useParams } from 'react-router-dom';
 function CreatePostComponent({ updatePosts }) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [photo, setPhoto] = useState('');
   const { username } = useParams();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // upload image to S3
+      // get URl, pass it into here, store URl in posts
       const response = await axios.post(`${config.serverRootURL}/${username}/createPost`, {
         title,
         content,
+        photo
       }, {withCredentials: true });
       console.log(response);
       if (response.status === 201 || response.status === 200) {

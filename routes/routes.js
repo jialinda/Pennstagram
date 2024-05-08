@@ -15,7 +15,6 @@ const {
     RunnableSequence,
     RunnablePassthrough,
 } = require("@langchain/core/runnables");
-// const { Chroma } = require("@langchain/community/vectorstores/chroma");
 const AWS = require('aws-sdk');
 const dbsingleton = require('../models/db_access.js');
 const config = require('../config.json'); // Load configuration
@@ -29,21 +28,86 @@ const faceapi = require('@vladmandic/face-api');
 const facehelper = require('../models/faceapp.js');
 
 const multer = require('multer');
-const upload = multer({ dest: 'uploads/' }); // Temporary storage
+const upload = multer({ dest: 'uploads/' }); 
+
 const mysql = require('mysql2');
 const client = new ChromaClient();
 const parse = require('csv-parse').parse;
 const csvContent = fs.readFileSync('/nets2120/project-stream-team/names.csv', 'utf8');
 
+let session_user_id; // global
 
+AWS.config.update({
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    region: process.env.AWS_REGION
+});
 
+/* S3 Functions */
+const multer = require("multer");
+const path = require("path");
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const AWS = require("aws-sdk");
+const fs = require("fs");
 
-// AWS.config.update({
-//     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-//     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-//     region: process.env.AWS_REGION
-// });
-// const s3 = new AWS.S3();
+const s3Client = new S3Client({
+  region: "us-east-1",
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    sessionToken: process.env.AUTH_TOKEN,
+  }
+});
+
+const s3 = new AWS.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  sessionToken: process.env.AUTH_TOKEN,
+  region: "us-east-1",
+});
+
+const uploadPostsToS3 = async (file, postId, bucketName) => {
+  console.log("Uploading post image to S3");
+
+  const fileContent = fs.readFileSync(file.path);
+  const keyName = `posts/${postId}-${Date.now()}${path.extname(
+    file.originalname
+  )}`;
+
+  const params = {
+    Bucket: bucketName,
+    Key: keyName,
+    Body: fileContent,
+    ACL: "public-read",
+  };
+
+  try {
+    const data = await s3.upload(params).promise();
+    console.log(`Post image uploaded successfully. ${data.Location}`);
+    return data.Location;
+  } catch (err) {
+    console.error("Error uploading post image:", err);
+    throw err;
+  }
+};
+
+// const getS3Object = async (bucketName, fileKey) => {
+//   try {
+//     const data = await s3Client.send(
+//       new GetObjectCommand({
+//         Bucket: bucketName,
+//         Key: fileKey,
+//       })
+//     );
+//     const bodyContents = await streamToString(data.Body);
+//     console.log(bodyContents);
+//     return bodyContents;
+//   } catch (err) {
+//     console.error("Error", err);
+//     throw err;
+//   }
+// };
+
 
 // Database connection setup
 const db = dbsingleton;
@@ -241,6 +305,7 @@ var postLogin = async function (req, res) {
                 console.log('success');
                 req.session.user_id = user[0].user_id; // check this
                 req.session.username = user[0].username;
+                session_user_id = req.session.user_id;
                 console.log('user id:', req.session.user_id);
                 console.log('user name:', req.session.username);
                 req.session.save();
@@ -259,6 +324,7 @@ var postLogin = async function (req, res) {
 // GET /logout
 var postLogout = function (req, res) {
     req.session.user_id = null;
+    session_user_id = null;
     res.status(200).json({ message: "You were successfully logged out." });
 
 };
@@ -476,182 +542,170 @@ var getFriendRecs = async function (req, res) {
 
 // POST /createPost
 var createPost = async function (req, res) {
-    if (!req.session.user_id || !helper.isLoggedIn(req.session.user_id)) {
-        return res.status(403).json({ error: 'Not logged in.' });
+    // if (!req.session.user_id || !helper.isLoggedIn(req.session.user_id)) {
+    //   return res.status(403).json({ error: 'Not logged in.' });
+    // }
+    console.log(req.body);
+    const { title, hashtags, content } = req.body;
+    // console.log(title);
+    // console.log(hashtags);
+    console.log(content);
+    // let content = req.file;  // Assuming content is a file uploaded and parsed by middleware like `multer`
+    let parent_id = req.body.parent_post || null;
+  
+    if (!title || !content) {
+      return res.status(400).json({ error: 'Title or content must be provided.' });
     }
-
-    if (!req.body.title || !req.body.content) {
-        return res.status(400).json({ error: 'One or more of the fields you entered was empty, please try again.' });
+  
+    if (!helper.isOK(title) || (content && !helper.isOK(content.originalname))) {  // Validate file name if content is a file
+      return res.status(400).json({ error: 'Invalid characters in title or file name.' });
     }
-
-    const title = req.body.title;
-    const content = req.body.content;
-    let parent_id = req.body.parent_id || "null";  // Handle parent_id if not provided
-
-    let hashtags = req.body.hashtags || [];
-    if (hashtags.length) {
-        hashtags = hashtags.replace(/\s/g, '').split(',');
-        hashtags = hashtags.map(tag => tag.startsWith('#') ? tag : '#' + tag.trim());
-    }
-
-    if (!helper.isOK(title) || !helper.isOK(content)) {
-        return res.status(400).json({ error: 'Title and content should only contain alphanumeric characters, spaces, periods, question marks, commas, and underscores.' });
-    }
-
+  
     try {
-        // Insert the post into the database
-        const postQuery = `INSERT INTO posts (author_id, title, content, parent_post) VALUES (?, ?, ?, ?)`;
-        const result = await db.send_sql(postQuery, [req.session.user_id, title, content, parent_id]);
-        const newPostId = result.insertId;
-
-        // Handle hashtags
-        if (hashtags.length) {
-            let tagsQuery = `INSERT INTO hashtags (hashtagname) VALUES `;
-            let values = [];
-            hashtags.forEach((tag, index) => {
-                tagsQuery += `(?)`;
-                values.push(tag);
-                if (index < hashtags.length - 1) tagsQuery += ', ';
-            });
-            await db.send_sql(tagsQuery, values);
-        }
-
-        // Prepare post for Kafka
-        const kafkaMessage = {
-            username: req.session.user_id,
-            source_site: 'g01',
-            post_uuid_within_site: newPostId.toString(),
-            post_text: content,
-            content_type: 'text/plain'
-        };
-        await sendPostToKafka(kafkaMessage, producer, topic);
-
-        res.status(200).send({ message: "Post created and sent to Kafka." });
+      const postQuery = `INSERT INTO posts (author_id, title, content, parent_post, timestamp) VALUES (?, ?, ?, ?, NOW())`;
+      const postResult = await db.send_sql(postQuery, [req.session.user_id, title, content.path, parent_id]); // Assuming `content.path` is where the file is stored
+      const newPostId = postResult.insertId;
+  
+      if (hashtags) {
+        const tags = hashtags.split(',').map(tag => tag.trim().startsWith('#') ? tag.trim() : `#${tag.trim()}`);
+        tags.forEach(async (tag) => {
+          let tagId = (await db.send_sql(`SELECT hashtag_id FROM hashtags WHERE hashtagname = ?`, [tag]))[0]?.hashtag_id;
+          if (!tagId) {
+            tagId = (await db.send_sql(`INSERT INTO hashtags (hashtagname) VALUES (?)`, [tag])).insertId;
+          }
+          await db.send_sql(`INSERT INTO post_tagged_with (post_id, hashtag_id) VALUES (?, ?)`, [newPostId, tagId]);
+        });
+      }
+  
+      res.status(200).send({ message: "Post created successfully." });
     } catch (error) {
-        console.error('Error querying database:', error);
-        return res.status(500).json({ error: 'Error querying database.' });
+      console.error('Error querying database:', error);
+      return res.status(500).json({ error: 'Error querying database.' });
     }
-};
+  };
+
 
 // GET /posts 
 // getting post info (from posts table)
 // select everything from the posts 
-
-
-// GET /feed
-//Yes, authors that the current user follows, as well as
-//any posts that the current user made. (just like how you can see your own posts in your Instagram feed)
 // GET /feed
 var getFeed = async function (req, res) {
+    console.log('getFeed is called', req.session.user_id);
+
+    if (!req.session.user_id) {  // Ensuring user is logged in
+        return res.status(403).json({ error: 'Not logged in.' });
+    }
+
+    const userId = req.session.user_id;
+    console.log('curr id: ', userId);
+    
     try {
-        const query = `
-        SELECT p.post_id, p.title, p.content, p.timestamp, u.username, u.firstname, u.lastname,
-               (SELECT COUNT(*) FROM posts_liked_by plb WHERE plb.post_id = p.post_id) AS likes,
-               (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.post_id) AS comments_count
-        FROM posts p
-        JOIN users u ON p.author_id = u.user_id
-        ORDER BY p.timestamp DESC;`;
-        const posts = await db.send_sql(query);
-        res.status(200).json(posts);
+        console.log('trying to fetch feed');
+        const feedQuery = `
+            SELECT 
+                p.post_id AS post_id, 
+                p.timestamp AS post_timestamp,
+                u.username AS post_author, 
+                p.parent_post AS parent_post, 
+                p.title AS title, 
+                p.content AS content, 
+                CONCAT_WS(' | ', h.hashtagname) AS hashtags,
+                COUNT(plb.liker_id) AS likes_count,
+                CONCAT_WS(' | ', GROUP_CONCAT(CONCAT(c.content, ',', c.timestamp, ',', cu.username) ORDER BY c.timestamp ASC SEPARATOR ' | ')) AS comments
+            FROM 
+                posts p
+            JOIN 
+                users u ON p.author_id = u.user_id
+            LEFT JOIN 
+                post_tagged_with ptw ON ptw.post_id = p.post_id
+            LEFT JOIN 
+                hashtags h ON h.hashtag_id = ptw.hashtag_id
+            LEFT JOIN 
+                posts_liked_by plb ON plb.post_id = p.post_id
+            LEFT JOIN 
+                comments_on_post_by copb ON copb.post_id = p.post_id
+            LEFT JOIN 
+                comments c ON copb.comment_id = c.comment_id
+            LEFT JOIN 
+                users cu ON c.author_id = cu.user_id
+            GROUP BY
+                p.post_id
+            ORDER BY 
+                p.timestamp DESC;
+        `;
+
+        const feed = await db.send_sql(feedQuery);
+
+        const results = feed.map(post => ({
+            post_id: post.post_id,
+            username: post.post_author,
+            parent_post: post.parent_post,
+            post_author: post.post_author,
+            post_timestamp: post.post_timestamp,
+            title: post.title,
+            content: post.content,
+            likes_count: post.likes_count,
+            hashtags: post.hashtags.split(' | '),
+            comments: post.comments ? post.comments.split(' | ').map(commentString => {
+                const [content, timestamp, author] = commentString.split(',');
+                return {
+                    content: content.trim(),
+                    timestamp: timestamp.trim(),
+                    author: author.trim()
+                };
+            }) : []
+        }));
+
+        res.status(200).json({ results });
     } catch (error) {
-        console.error('Error querying posts:', error);
-        res.status(500).json({ error: 'Failed to fetch posts' });
+        console.error('Error querying database:', error);
+        res.status(500).json({ error: 'Error querying database.' });
     }
 };
 
-// var getFeed = async function (req, res) {
-//     console.log('getFeed is called', req.session.user_id);
 
-//     // TODO: get the correct posts to show on current user's feed
-//     if (!helper.isLoggedIn(req)) {
+
+// posting stuff onto the feed!!!!!!!!!!!!
+// PUT /updatePost
+// var updatePost = async function (req, res) {
+//     console.log('updatePost called', req.session.user_id);
+
+//     if (!req.session.user_id) {
 //         return res.status(403).json({ error: 'Not logged in.' });
-//     } else if (helper.isLoggedIn(req)) {
-//         console.log('success');
 //     }
+
 //     const userId = req.session.user_id;
+//     const postId = req.body.postId;
+//     const newContent = req.body.newContent;
 
-//     console.log('curr id: ', req.session.user_id);
-//     // GRACE TODO: Check the tables
-//     // TODO: sql query is WRONG
-//     // TODO: also retrieve hashtags
+//     // Check if the post belongs to the user or the user has the right to edit the post
 //     try {
-//         console.log('trying');
-//         const feed = await db.send_sql(`
-//             SELECT 
-//                 posts.post_id AS post_id, 
-//                 posts.timestamp AS post_timestamp,
-//                 post_users.username AS post_author, 
-//                 posts.parent_post AS parent_post, 
-//                 posts.title AS title, 
-//                 posts.content AS content, 
-//                 CONCAT_WS(' | ', hashtags.hashtagname) AS hashtags, 
-//                 CONCAT_WS(' | ', GROUP_CONCAT(CONCAT(comments.content, ',', comments.timestamp, ',', comments_users.username) ORDER BY comments.timestamp ASC SEPARATOR ' | ')) AS comments
-//             FROM 
-//                 posts
-//             JOIN 
-//                 users AS post_users ON posts.author_id = post_users.user_id
-//             JOIN 
-//                 post_tagged_with ON post_tagged_with.post_id = posts.post_id
-//             JOIN 
-//                 hashtags ON hashtags.hashtag_id = post_tagged_with.hashtag_id
-//             LEFT JOIN 
-//                 (
-//                     SELECT 
-//                         comments_on_post_by.post_id,
-//                         comments.content,
-//                         comments.timestamp,
-//                         comments_users.username
-//                     FROM 
-//                         comments_on_post_by
-//                     LEFT JOIN 
-//                         comments ON comments_on_post_by.comment_id = comments.comment_id
-//                     LEFT JOIN 
-//                         users AS comments_users ON comments.author_id = comments_users.user_id
-//                     ORDER BY 
-//                         comments.timestamp ASC
-//                 ) AS comments ON comments.post_id = posts.post_id
-//             WHERE 
-//                 posts.author_id = '${userId}' 
-//                 OR posts.author_id IN (
-//                     SELECT 
-//                         followed 
-//                     FROM 
-//                         friends 
-//                     WHERE 
-//                         follower = '${userId}'
-//                 )
-//             GROUP BY
-//                 posts.post_id
-//             ORDER BY 
-//                 posts.post_id DESC;
-
-//         `);
-
-//         // Send the response with the list of posts for the feed
-//         const results = feed.map(post => ({
-//             username: post.post_author,
-//             parent_post: post.parent_post,
-//             post_author: post.post_author,
-//             post_timestamp: post.post_timestamp,
-//             title: post.title,
-//             content: post.content,
-//             hashtags: post.hashtags.split(' | '),
-//             comments: post.comments.split(' | ').map(commentString => {
-//                 const [content, timestamp, author] = commentString.split(',');
-//                 return {
-//                     content: content.trim(),
-//                     timestamp: timestamp.trim(),
-//                     author: author.trim()
-//                 };
-//             }),
-//         }));
-//         res.status(200).json({ results });
-
+//         const postOwnerCheckQuery = `
+//             SELECT author_id FROM posts WHERE post_id = ?;
+//         `;
+//         const postOwnerCheckResult = await db.send_sql(postOwnerCheckQuery, [postId]);
+//         if (postOwnerCheckResult.length > 0 && postOwnerCheckResult[0].author_id === userId) {
+//             // User owns the post or has rights to edit it
+//             const updatePostQuery = `
+//                 UPDATE posts
+//                 SET content = ?
+//                 WHERE post_id = ?;
+//             `;
+//             await db.send_sql(updatePostQuery, [newContent, postId]);
+//             console.log('Post updated successfully.');
+//             res.status(200).json({ message: 'Post updated successfully.' });
+//         } else {
+//             console.log('Unauthorized attempt to edit post.');
+//             res.status(403).json({ error: 'Unauthorized attempt to edit post.' });
+//         }
 //     } catch (error) {
-//         console.error('Error querying database:', error);
-//         return res.status(500).json({ error: 'Error querying database.' });
+//         console.error('Error updating post:', error);
+//         res.status(500).json({ error: 'Error updating post in database.' });
 //     }
-// }
+// };
+
+//module.exports = updatePost;
+
 
 var getMovie = async function (req, res) {
     const vs = await getVectorStore();
@@ -1052,3 +1106,9 @@ var routes = {
   };
     
 module.exports = routes;
+
+
+
+// dummy post command
+// INSERT INTO posts (title, content, author_id, timestamp, parent_post)
+// VALUES ('Cant wait for summer', 'counting down the days...', 4, CURDATE(), NULL);

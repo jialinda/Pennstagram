@@ -21,7 +21,7 @@ export default function Login() {
       });
 
       if (response.status === 200) {
-        navigate(`/${username}/home`);
+        navigate(`/${username}/feed`);
       } else {
         alert("Log in failed.");
       }

@@ -230,7 +230,7 @@
                             <goal>java</goal>
                         </goals>
                         <configuration>
-                            <mainClass>edu.upenn.cis.nets2120.hw3.local.ComputeRanksLocal</mainClass>
+                            <mainClass>edu.upenn.cis.nets2120.algorithm.local.ComputeRanksLocal</mainClass>
                             <arguments>
                             </arguments>
                         </configuration>
@@ -241,7 +241,7 @@
                             <goal>java</goal>
                         </goals>
                         <configuration>
-                            <mainClass>edu.upenn.cis.nets2120.hw3.livy.ComputeRanksLivy</mainClass>
+                            <mainClass>edu.upenn.cis.nets2120.algorithm.livy.ComputeRanksLivy</mainClass>
                             <arguments>
                             </arguments>
                         </configuration>

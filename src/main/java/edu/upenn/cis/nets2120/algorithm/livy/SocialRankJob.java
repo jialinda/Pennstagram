@@ -7,10 +7,20 @@ import java.util.List;
 import java.util.Set;
 import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.DatabaseMetaData;
 
 import org.apache.livy.JobContext;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaDoubleRDD;
 
 import edu.upenn.cis.nets2120.config.Config;
 import edu.upenn.cis.nets2120.algorithm.SparkJob;
@@ -49,7 +59,7 @@ public class SocialRankJob extends SparkJob<List<MyPair<String, Double>>> {
      * @param filePath
      * @return JavaPairRDD: (followed: String, follower: String)
      */
-        public JavaPairRDD<String, Tuple2<String, Double>> getSocialNetworkFromJDBC() {
+    public JavaPairRDD<String, Tuple2<String, Double>> getSocialNetworkFromJDBC() {
         List<Tuple2<String, String>> hashtagEdges = new ArrayList<>(); //(h, *) -> 1
         List<Tuple2<String, String>> userHashtagEdges = new ArrayList<>(); // (u,h) -> 0.3
         List<Tuple2<String, String>> postEdges = new ArrayList<>(); //(p, *) -> 1
@@ -57,7 +67,7 @@ public class SocialRankJob extends SparkJob<List<MyPair<String, Double>>> {
         List<Tuple2<String, String>> userEdges = new ArrayList<>(); // (u,u') -> 0.3
 
         try (Connection connection = DriverManager.getConnection(Config.DATABASE_CONNECTION, Config.DATABASE_USERNAME, Config.DATABASE_PASSWORD)) {
-            / Query for user-hashtag relationships
+            // Query for user-hashtag relationships
             try (ResultSet rsUserHashtags = connection.createStatement().executeQuery(
                     "SELECT u.user_id, h.hashtag_id FROM hashtag_by hb " +
                     "JOIN users u ON hb.user_id = u.user_id " +
@@ -105,6 +115,7 @@ public class SocialRankJob extends SparkJob<List<MyPair<String, Double>>> {
                     String followed = "u" + rsFriends.getString("followed");
                     userEdges.add(new Tuple2<>(follower, followed));
                     userEdges.add(new Tuple2<>(followed, follower));
+                    System.err.println(follower);
                 }
             }
 
@@ -116,18 +127,18 @@ public class SocialRankJob extends SparkJob<List<MyPair<String, Double>>> {
         // JavaRDD<Tuple2<String, String>> rdd = context.parallelize(edges);
         // return rdd.mapToPair(tuple -> tuple);
 
-        JavaPairRDD<String, String> hashtagEdges = sc.parallelizePairs(hashtagEdges);
-        JavaPairRDD<String, String> userHashtagEdges = sc.parallelizePairs(userHashtagEdges);
-        JavaPairRDD<String, String> postEdges = sc.parallelizePairs(postEdges);
-        JavaPairRDD<String, String> userPostEdges = sc.parallelizePairs(userPostEdges);
-        JavaPairRDD<String, String> userEdges = sc.parallelizePairs(userEdges);
+        JavaPairRDD<String, String> hashtagEdgesJ = context.parallelizePairs(hashtagEdges);
+        JavaPairRDD<String, String> userHashtagEdgesJ = context.parallelizePairs(userHashtagEdges);
+        JavaPairRDD<String, String> postEdgesJ = context.parallelizePairs(postEdges);
+        JavaPairRDD<String, String> userPostEdgesJ = context.parallelizePairs(userPostEdges);
+        JavaPairRDD<String, String> userEdgesJ = context.parallelizePairs(userEdges);
 
         // Assign weights
-        JavaPairRDD<String, Tuple2<String, Double>> weightedHashtagEdges = assignEqualWeights(hashtagEdges, 1.0);
-        JavaPairRDD<String, Tuple2<String, Double>> weightedUserHashtagEdges = assignEqualWeights(userHashtagEdges, 0.3);
-        JavaPairRDD<String, Tuple2<String, Double>> weightedPostEdges = assignEqualWeights(postEdges, 1.0);
-        JavaPairRDD<String, Tuple2<String, Double>> weightedUserPostEdges = assignEqualWeights(userPostEdges, 0.4);
-        JavaPairRDD<String, Tuple2<String, Double>> weightedUserEdges = assignEqualWeights(userEdges, 0.3);
+        JavaPairRDD<String, Tuple2<String, Double>> weightedHashtagEdges = assignEqualWeights(hashtagEdgesJ, 1.0);
+        JavaPairRDD<String, Tuple2<String, Double>> weightedUserHashtagEdges = assignEqualWeights(userHashtagEdgesJ, 0.3);
+        JavaPairRDD<String, Tuple2<String, Double>> weightedPostEdges = assignEqualWeights(postEdgesJ, 1.0);
+        JavaPairRDD<String, Tuple2<String, Double>> weightedUserPostEdges = assignEqualWeights(userPostEdgesJ, 0.4);
+        JavaPairRDD<String, Tuple2<String, Double>> weightedUserEdges = assignEqualWeights(userEdgesJ, 0.3);
 
         this.users = weightedUserHashtagEdges
                                     .union(weightedUserPostEdges)
@@ -200,11 +211,24 @@ public class SocialRankJob extends SparkJob<List<MyPair<String, Double>>> {
         double epsilon = 0.001;  // Adjust this threshold based on the sensitivity needed for your application
 
         // Compare old and new labels to decide on convergence
-        double totalDiff = oldLabels.join(newLabels)
-                                    .mapToDouble(item -> Math.abs(item._2()._1() - item._2()._2()))
-                                    .reduce((a, b) -> a + b);  // Sum all differences
+        JavaDoubleRDD differences = oldLabels.join(newLabels)
+                                            .mapToDouble(item -> Math.abs(item._2()._1() - item._2()._2()));
+
+        // Check if the differences RDD is empty to prevent reduce errors on empty collections
+        if (differences.isEmpty()) {
+            return true;  // Or false, depending on the logic you need for an empty dataset
+        }
+
+        double totalDiff = differences.reduce((a, b) -> a + b);  // Sum all differences
 
         return totalDiff < epsilon;
+    }
+
+    private static boolean tableExists(Connection connection, String tableName) throws SQLException {
+        DatabaseMetaData dbm = connection.getMetaData();
+        try (var rs = dbm.getTables(null, null, tableName, null)) {
+            return rs.next();
+        }
     }
 
     /**
@@ -216,7 +240,7 @@ public class SocialRankJob extends SparkJob<List<MyPair<String, Double>>> {
      * @throws IOException          if there is an error reading the social network file
      * @throws InterruptedException if the execution is interrupted
      */
-    public List<Tuple2<String, Tuple2<Double, Tuple2<String, Double>>>> run(boolean debug) throws IOException, InterruptedException {
+    public List<MyPair<String, Double>> run(boolean debug) throws IOException, InterruptedException, SQLException {
 
         // Load the social network, aka. the edges
         JavaPairRDD<String, Tuple2<String, Double>> edgeRDD = getSocialNetworkFromJDBC();
@@ -225,7 +249,7 @@ public class SocialRankJob extends SparkJob<List<MyPair<String, Double>>> {
 
         // Create an RDD from edgeRDD containing all unique nodes with a label of 0.0
         JavaPairRDD<String, Double> allNodeLabels = edgeRDD
-            .flatMap(pair -> Arrays.asList(pair._1(), pair._2()._1()))
+            .flatMap(pair -> Arrays.asList(pair._1(), pair._2()._1()).iterator())  // Convert List to Iterator
             .distinct()
             .mapToPair(node -> new Tuple2<>(node, 0.0));
 
@@ -244,7 +268,39 @@ public class SocialRankJob extends SparkJob<List<MyPair<String, Double>>> {
         }
 
         // labels contain all nodes and their weights
-        return labels.join(edgeRDD).collect();
+        // After the label propagation is complete, sort the labels by their values in descending order
+        JavaPairRDD<String, Double> sortedLabels = labels
+            .mapToPair(label -> label.swap()) // swap to make the value the key
+            .sortByKey(false) // false for descending
+            .mapToPair(label -> label.swap()); // swap back to original form
+
+        // Collect the top 20 labels
+        List<Tuple2<String, Double>> top20Labels = sortedLabels.take(20);
+
+        // try (Connection connection = DriverManager.getConnection(Config.DATABASE_CONNECTION, Config.DATABASE_USERNAME, Config.DATABASE_PASSWORD)) {
+        //     if (!tableExists(connection, "RankResults")) {
+        //         try (Statement statement = connection.createStatement()) {
+        //             String sqlCreate = "CREATE TABLE RankResults (" +
+        //                                "id INT AUTO_INCREMENT PRIMARY KEY, " +
+        //                                "node VARCHAR(255) NOT NULL, " +
+        //                                "rank DOUBLE NOT NULL)";
+        //             statement.executeUpdate(sqlCreate);
+        //         }
+        //     }
+        // }
+        // String query = "INSERT INTO RankResults (node, rank) VALUES (?, ?)";
+        // try (Connection connection = DriverManager.getConnection(Config.DATABASE_CONNECTION, Config.DATABASE_USERNAME, Config.DATABASE_PASSWORD);
+        //      PreparedStatement statement = connection.prepareStatement(query)) {
+        //     for (Tuple2<String, Double> result : top20Labels) {
+        //         statement.setString(1, result._1);
+        //         statement.setDouble(2, result._2);
+        //         statement.executeUpdate();
+        //     }
+        // }
+
+        return top20Labels.stream()
+                        .map(tuple -> new MyPair<>(tuple._1, tuple._2))
+                        .collect(Collectors.toList());
         
     }
 

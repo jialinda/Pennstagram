@@ -96,25 +96,20 @@ var postRegister = async function (req, res) {
         const files = await fs.promises.readdir("/nets2120/project-stream-team/models/images");
         // const csvContent = fs.readFileSync('/nets2120/project-stream-team/names.csv', 'utf8');
         // console.log('csvContent', csvContent);
-        const files = await fs.promises.readdir("/nets2120/project-stream-team/models/images");
-<<<<<<< HEAD
-=======
-        // const csvContent = fs.readFileSync('/nets2120/project-stream-team/names.csv', 'utf8');
-        // console.log('csvContent', csvContent);
->>>>>>> main
+        // const files = await fs.promises.readdir("/nets2120/project-stream-team/models/images");
 
-        // const csvContent = fs.readFileSync('/nets2120/project-stream-team/names.csv', 'utf8');
-        // console.log('csvContent', csvContent);
+        const csvContent = fs.readFileSync('/nets2120/project-stream-team/names.csv', 'utf8');
+        console.log('csvContent', csvContent);
 
 
-        // files.forEach(function (file) {
-        //     console.info("Adding task for " + file + " to index.");
-        //     promises.push(facehelper.indexAllFaces(path.join("/nets2120/project-stream-team/models/images", file), file, collection));
-        // });
+        files.forEach(function (file) {
+            console.info("Adding task for " + file + " to index.");
+            promises.push(facehelper.indexAllFaces(path.join("/nets2120/project-stream-team/models/images", file), file, collection));
+        });
 
-        // console.info("Done adding promises, waiting for completion.");
-        // await Promise.all(promises);
-        // console.log("All images indexed.");
+        console.info("Done adding promises, waiting for completion.");
+        await Promise.all(promises);
+        console.log("All images indexed.");
 
         const topMatches = await facehelper.findTopKMatches(collection, req.file.path, 5);
         for (var item of topMatches) {
@@ -203,6 +198,8 @@ var postSelections = async function (req, res) {
         res.status(500).json({ error: 'Failed to update selections' });
     }
 };
+
+
 
 
 
@@ -480,7 +477,6 @@ var getFriendRecs = async function (req, res) {
 
 // POST /createPost
 var createPost = async function (req, res) {
-    // TODO: add to posts table
     if (!req.session.user_id || !helper.isLoggedIn(req.session.user_id)) {
         return res.status(403).json({ error: 'Not logged in.' });
     }
@@ -491,85 +487,53 @@ var createPost = async function (req, res) {
 
     const title = req.body.title;
     const content = req.body.content;
-    let parent_id = req.body.parent_id;
+    let parent_id = req.body.parent_id || "null";  // Handle parent_id if not provided
 
-    // TODO, FORMAT POST AND THEN SEND IT TO KAFKA PRODUCER FUNCTION
-    // const post = SOMETHING HERE;
-
-    // producer send to kafka 
-    // sendPostToKafka(post);
-
-    if (!parent_id) {
-        parent_id = "null";
-    let hashtags = req.body.hashtags;
-
-    if (hashtags) {
-        // Remove spaces and split by commas
+    let hashtags = req.body.hashtags || [];
+    if (hashtags.length) {
         hashtags = hashtags.replace(/\s/g, '').split(',');
-        // Ensure each hashtag starts with '#'
-        hashtags = hashtags.map(tag => {
-            // Trim any leading or trailing whitespace
-            tag = tag.trim();
-            // Add '#' if missing
-            if (!tag.startsWith('#')) {
-                tag = '#' + tag;
-            }
-            return tag;
-        });
-    } else {
-        // If no hashtags provided, initialize as an empty array
-        hashtags = [];
+        hashtags = hashtags.map(tag => tag.startsWith('#') ? tag : '#' + tag.trim());
     }
 
-    // screen the title and content to be alphanumeric
     if (!helper.isOK(title) || !helper.isOK(content)) {
         return res.status(400).json({ error: 'Title and content should only contain alphanumeric characters, spaces, periods, question marks, commas, and underscores.' });
     }
 
     try {
         // Insert the post into the database
-        const postQuery = `INSERT INTO posts (author_id, title, content) VALUES ('${req.session.user_id}', '${title}', '${content}')`;
-        const result = await db.send_sql(postQuery);
-        const newPostId = result[1][0].new_post_id;
-        // 'INSERT INTO posts (parent_post, title, content, author_id) VALUES (?, ?, ?, ?)';
-        // await db.send_sql(postQuery, [parent_id, title, content, author_id]);
-        // Send the response indicating successful post creation
+        const postQuery = `INSERT INTO posts (author_id, title, content, parent_post) VALUES (?, ?, ?, ?)`;
+        const result = await db.send_sql(postQuery, [req.session.user_id, title, content, parent_id]);
+        const newPostId = result.insertId;
 
-        // Constructing the SQL query dynamically
-        let tagsQuery = `INSERT INTO hashtags (hashtagname) VALUES `;
-        hashtags.forEach((tag, index) => {
-            tagsQuery += `('${tag}')`;
-            if (index !== hashtags.length - 1) {
-                tagsQuery += ', ';
-            }
-        });
-        const resultTags = await db.send_sql(tagsQuery);
-        // Get the number of rows affected by the insertion
-        const numRowsInserted = resultTags.affectedRows;
+        // Handle hashtags
+        if (hashtags.length) {
+            let tagsQuery = `INSERT INTO hashtags (hashtagname) VALUES `;
+            let values = [];
+            hashtags.forEach((tag, index) => {
+                tagsQuery += `(?)`;
+                values.push(tag);
+                if (index < hashtags.length - 1) tagsQuery += ', ';
+            });
+            await db.send_sql(tagsQuery, values);
+        }
 
-        // Get the ID of the first newly inserted tag
-        const firstTagId = resultTags.insertId;
+        // Prepare post for Kafka
+        const kafkaMessage = {
+            username: req.session.user_id,
+            source_site: 'g01',
+            post_uuid_within_site: newPostId.toString(),
+            post_text: content,
+            content_type: 'text/plain'
+        };
+        await sendPostToKafka(kafkaMessage, producer, topic);
 
-        // Calculate the IDs of all newly inserted tags
-        const newTagIds = Array.from({ length: numRowsInserted }, (_, index) => firstTagId + index);
-
-        let postTagsQuery = `INSERT INTO post_tagged_with (post_id, hashtag_id) VALUES `;
-        newTagIds.forEach((tagId, index) => {
-            postTagsQuery += `('${newPostId}', '${tagId}')`;
-            if (index !== newTagIds.length - 1) {
-                postTagsQuery += ', ';
-            }
-        });
-
-        // Execute the query to insert into post_tagged_with table
-        await db.send_sql(postTagsQuery);
-
-        res.status(200).send({ message: "Post created." });
+        res.status(200).send({ message: "Post created and sent to Kafka." });
     } catch (error) {
         console.error('Error querying database:', error);
         return res.status(500).json({ error: 'Error querying database.' });
     }
-}
+};
+
 
 // GET /feed
 //Yes, authors that the current user follows, as well as
@@ -1055,7 +1019,6 @@ var routes = {
     get_movie: getMovie,
     create_post: createPost,
     get_feed: getFeed,
-    upload_photo : uploadPhoto,
     get_chat_by_id: getChatById,
     get_chat_all: getChatAll,
     post_chat: postChat,
@@ -1063,9 +1026,8 @@ var routes = {
     post_invite: postInvite,
     confirm_invite: confirmInvite,
     // get_friend_by_username: getFriendName
-  };
     post_selections: postSelections, 
     get_top_hashtags: getTopHashtags
-};
-
+  };
+    
 module.exports = routes;

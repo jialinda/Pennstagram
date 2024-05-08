@@ -1,0 +1,17 @@
+{
+    "database": {
+      "host": "localhost",
+      "port": "3306",
+      "database": "instadb",
+      "user": "admin",
+      "password": "netsfinalproject"
+    },
+    "serverPort": "8080",
+    "kafka": {
+      "groupId": "lol",
+      "bootstrapServers": ["localhost:9092"],
+      "topic": "TwitterKafka",
+      "port": 4567
+  }
+}
+  

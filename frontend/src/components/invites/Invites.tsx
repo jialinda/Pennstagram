@@ -42,41 +42,6 @@ function Invites({ invites }) {
           
         }
       };
-    
-    /*const handleAcceptInvite = async (invite) => {
-      // Function to handle accept invitation action
-      const inviteId = invite.inviteId;
-      const adminId = invite.inviterId;
-      console.log("Invite accepted for invite_id", inviteId);
-      const handleAcceptInvite = async (invite) => {
-        // Function to handle accept invitation action
-        const inviteId = invite.inviteId;
-        const adminId = invite.inviterId;
-        console.log("Invite accepted for invite_id", inviteId);
-        
-        try {
-            const response = await fetch(`${rootURL}/confirmInvite`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    inviteId: inviteId,
-                    adminId: adminId
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-
-            const responseData = await response.json();
-            console.log('delete response', responseData);
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    };
-  }*/
       const handleDeclineInvite = async (inviteId) => {
         // Function to handle decline invitation action
          // you delete the invite from your database

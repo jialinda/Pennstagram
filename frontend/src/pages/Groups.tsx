@@ -43,7 +43,7 @@ const onRemove = async (user) => {
     }
   };
 
-export default function Friends() {
+export default function Groups() {
     const navigate = useNavigate(); 
     const { username } = useParams();
     const rootURL = config.serverRootURL;
@@ -84,7 +84,7 @@ export default function Friends() {
         fetchData();
     // }, [username, rootURL]);
     });
-
+    
     const feed = () => navigate(`/${username}/feed`);
     const chat = () => navigate(`/${username}/chat`);
     const onlineFriends = usersFriends.filter(friend => friend.is_online);

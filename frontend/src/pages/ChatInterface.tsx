@@ -56,6 +56,7 @@ export default function ChatInterface() {
     let userId; // check
     // I have to change that
     userId = 2;
+    console.log('this is currChat', currChat);
 
     const feed = () => {
         navigate('/' + username + '/home');
@@ -89,6 +90,7 @@ export default function ChatInterface() {
         // fetchCurrChat();
         // console.log('chats', chats);
     }, []);
+    // }); // CHECK
     // check how I can change this part
 
     // ajax
@@ -168,19 +170,6 @@ export default function ChatInterface() {
         console.log('input: ', input);
         console.log('messages: ', messages);
     
-        // Make a call to postText route in backend
-        // try {
-        //     await axios.post(`${rootURL}/postText`, {
-        //         content: input,
-        //         chat_id: currChat.chat_id,
-        //         timestamp: formattedTimestamp
-        //     });
-        //     console.log('text sent success');
-        //     // Optionally, update the UI or state to reflect leaving the chat
-        // } catch (error) {
-        //     console.error('Error sending text:', error);
-        // }
-        // Make a call to postText route in backend
         $.ajax({
             url: `${rootURL}/postText`, // Adjust 'rootURL' as necessary
             method: 'POST',
@@ -255,40 +244,42 @@ export default function ChatInterface() {
                     <ChatBar chatbars={chats} setCurrChat={setCurrChat} handleChatClick={handleChatClick} ></ChatBar>
                     {/* <div className='h-[40rem] w-100% bg-blue-100 p-3'></div> */}
                 </div>
+                {currChat && currChat.chatname && (
                 <div className='w-1/3'> {/* Second div */}
                     <div className='font-bold text-2xl'>{currChat.chatname}</div>
                     <div className='h-100% w-[30rem] bg-slate-100 p-3'>
-                <div className='h-[90%] overflow-scroll'>
-                    <div className='space-y-2'>
-                        {messages.map(msg => {
-                            return (
-                                <MessageComponent sender={msg.sender} message={msg.message} timestamp={msg.timestamp} />
-                            )
-                        })}
+                    <div className='h-[90%] overflow-scroll'>
+                        <div className='space-y-2'>
+                            {messages.map(msg => {
+                                return (
+                                    <MessageComponent sender={msg.sender} message={msg.message} timestamp={msg.timestamp} />
+                                )
+                            })}
+                        </div>
+                    </div>
+                    <div className='w-full flex space-x-2'>
+                        <input className='w-full outline-none border-none px-3 py-1 rounded-md'
+                            placeholder='Ask something!'
+                            onChange={e => setInput(e.target.value)}
+                            value={input}
+                            onKeyDown={e => {
+                                if (e.key === 'Enter') {
+                                    sendMessage();
+                                    setInput('');
+                                }
+                            }} />
+                        <button className='outline-none px-3 py-1 rounded-md text-bold bg-indigo-600 text-white'
+                            onClick={() => {
+                                sendMessage();
+                            }}>Send</button>
+                            <button className='outline-none px-3 py-1 rounded-md text-bold bg-green-600 text-white'
+                            onClick={() => inviteToChat(currChat)}>Invite</button>
+                        <button className='outline-none px-3 py-1 rounded-md text-bold bg-red-600 text-white'
+                            onClick={() => leaveChat(currChat.chat_id)}>Leave</button>
                     </div>
                 </div>
-                <div className='w-full flex space-x-2'>
-                    <input className='w-full outline-none border-none px-3 py-1 rounded-md'
-                        placeholder='Ask something!'
-                        onChange={e => setInput(e.target.value)}
-                        value={input}
-                        onKeyDown={e => {
-                            if (e.key === 'Enter') {
-                                sendMessage();
-                                setInput('');
-                            }
-                        }} />
-                    <button className='outline-none px-3 py-1 rounded-md text-bold bg-indigo-600 text-white'
-                        onClick={() => {
-                            sendMessage();
-                        }}>Send</button>
-                        <button className='outline-none px-3 py-1 rounded-md text-bold bg-green-600 text-white'
-                        onClick={() => inviteToChat(currChat)}>Invite</button>
-                    <button className='outline-none px-3 py-1 rounded-md text-bold bg-red-600 text-white'
-                        onClick={() => leaveChat(currChat.chat_id)}>Leave</button>
                 </div>
-            </div>
-                </div>
+                )}
             </div>
             
         </div>

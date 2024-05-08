@@ -137,6 +137,7 @@ async function create_tables(db) {
     var quserchats = db.create_tables('CREATE TABLE IF NOT EXISTS user_chats ( \
       user_id INT, \
       chat_id INT, \
+      is_active INT,\
       FOREIGN KEY (user_id) REFERENCES users(user_id), \
       FOREIGN KEY (chat_id) REFERENCES chats(chat_id) \
     );')
@@ -188,10 +189,24 @@ async function create_tables(db) {
         is_online INT, \
         FOREIGN KEY (user_id) REFERENCES users(user_id)\
         );')
+
+    var qgroups = db.create_tables('CREATE TABLE IF NOT EXISTS communities ( \
+      communities_id INT AUTO_INCREMENT PRIMARY KEY, \
+      communities_name VARCHAR(500),\
+      chat_id INT,\
+      admin_id INT,\
+      FOREIGN KEY (chat_id) REFERENCES chats(chat_id),\
+      FOREIGN KEY (admin_id) REFERENCES users(user_id)\
+    );')
   
+    var qusergroups = db.create_tables('CREATE TABLE IF NOT EXISTS user_communities ( \
+      user_id INT, \
+      communities_id INT, \
+      FOREIGN KEY (user_id) REFERENCES users(user_id),\
+      FOREIGN KEY (communities_id) REFERENCES communities(communities_id)\
+    );')
 
-
-    return await Promise.all([qrecs, qusers, qposts, qpostslikers, qcommenters, qposttags, qusertags, qchats, quserchats, qtexts, qinvites, quserinvites, qfriends, qcomments, qfinvites, quserfinvites, qlogin]);
+    return await Promise.all([qrecs, qusers, qposts, qpostslikers, qcommenters, qposttags, qusertags, qchats, quserchats, qtexts, qinvites, quserinvites, qfriends, qcomments, qfinvites, quserfinvites, qlogin, qgroups, qusergroups]);
 }
 
 // Database connection setup

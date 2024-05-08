@@ -35,7 +35,7 @@ function InviteFriendComponent({ updatePosts }) {
           // CHECK - navigate somewhere?
           console.log('invite was successfully sent to username: ', user.username);        
         } else {
-          alert("invite ffailed");
+          alert("invite failed");
       }
 
       } catch (error) {

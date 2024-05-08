@@ -4,6 +4,7 @@ const socketIo = require('socket.io'); // Import socket.io
 const app = express();
 const server = http.createServer(app); // Create an HTTP server instance
 const io = socketIo(server); // Attach socket.io to the HTTP server
+// const { Chroma } = require("@langchain/community/vectorstores/chroma"); // call chroma
 
 const port = 8080;
 const registry = require('./routes/register_routes.js');

@@ -13,6 +13,7 @@ function InviteIntoChat({ updatePosts }) {
     const [searchResults, setSearchResults] = useState([]); // State to store search results
     // const { username } = useParams();
     const [invitees, setInvitees] = useState([]);
+    const [invitedUsers, setInvitedUsers] = useState(new Set());
 
     const { username, chatname, chat_id } = useParams();
     const navigate = new useNavigate();
@@ -25,7 +26,13 @@ function InviteIntoChat({ updatePosts }) {
     const handleSendInvite = async (user) => {
       // Add the user to the invitees list
       console.log('handle send invite called');
+      console.log('invited users', invitedUsers);
       // e.preventDefault();
+      if (invitedUsers.has(user.user_id)) { // keep track of user id?
+        console.log('Invite already sent to', user.username);
+        return;
+    }
+
       try {
         // change to postInviteByChatid
         const response = await axios.post(`${rootURL}/postInviteChat`, {
@@ -36,8 +43,8 @@ function InviteIntoChat({ updatePosts }) {
         }
       );
         if (response.status == 201) {
-          // CHECK - navigate somewhere?
-          console.log('invite was successfully sent to username: ', user.username);        
+          console.log('invite was successfully sent to username: ', user.username);   
+          setInvitedUsers(prev => new Set(prev).add(user.user_id));     
         } else {
           alert("invite failed");
       }
@@ -113,6 +120,7 @@ function InviteIntoChat({ updatePosts }) {
             <button type="button" className='px-4 py-2 rounded-md bg-blue-500 outline-none font-bold text-white' onClick={handleSearch}>Search</button>
         </div>
         <div>
+          {/* change this part later */}
           {searchResults.map(user => (
             <div key={user.user_id} className="flex items-center space-x-2">
               <span>{user.username}</span>

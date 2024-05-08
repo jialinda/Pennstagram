@@ -544,6 +544,49 @@ var getFriendRecs = async function (req, res) {
 
 }
 
+// GET /friends
+// getALLFRIENDS
+var getGroupsALl = async function (req, res) {
+
+    console.log('getting groups');
+
+    if (!req.params.username) {
+        return res.status(403).json({ error: 'Not logged in.' });
+    }
+
+    const username = req.params.username;
+    
+    // TODO: get all friends of current user
+    if (!session_user_id) {
+        return res.status(403).json({ error: 'Not logged in.' });
+    }
+    const userId = session_user_id;
+
+    try {
+        const getGroupQuery = ` WITH filtered_coms AS (
+            SELECT * FROM user_communities WHERE user_id = ${userId}
+        ) 
+        SELECT t1.communities_id, t2.communities_name, t2.chat_id, t2.admin_id
+        FROM filtered_coms t1
+        JOIN communities t2 ON t1.communities_id = t2.communities_id
+        `;
+
+        const friends = await db.send_sql(getGroupQuery);
+        // followed data
+        const results = friends.map(friend => ({
+            communities_id: friend.communities_id,
+            communities_name: friend.communities_name,
+            chatId: friend.chat_id,
+            adminId: friend.admin_id
+        }));
+        res.status(200).json({ results });
+    } catch (error) {
+        console.error('Error querying database:', error);
+        return res.status(500).json({ error: 'Error querying database.' });
+    }
+
+}
+
 
 // POST /createPost
 var createPost = async function (req, res) {
@@ -782,15 +825,17 @@ var getChatAll = async function (req, res) {
         // last text id so that it is easier to display too
         console.log('trying');
 
+        // MADE EDITS HERE CHECK  
+
         const getChatQuery = `
         WITH chat_agg AS (
-            SELECT t1.chat_id, t1.user_id
+            SELECT t1.chat_id, t1.user_id, t1.is_active
             FROM user_chats t1
-            JOIN (SELECT * FROM user_chats WHERE user_id = ${user_id}) t2
+            JOIN (SELECT * FROM user_chats WHERE user_id = ${user_id} and is_active = 1) t2
             ON t1.chat_id = t2.chat_id
         ), with_name AS (
             SELECT t1.chat_id, t2.username
-            FROM chat_agg t1
+            FROM (SELECT * FROM chat_agg WHERE is_active = 1) t1
             JOIN users t2 ON t1.user_id = t2.user_id
         )
         SELECT chat_id, GROUP_CONCAT(username SEPARATOR ', ') AS users
@@ -957,10 +1002,6 @@ var getInviteAll = async function (req, res) {
     // GRACE TODO: Check the tables
     try {
         console.log('invite trying');
-        // maybe I should add a last text entry to chat so we can keep track?
-        // last text id so that it is easier to display too
-        // consider changing this to just include the username now
-        // 
         const getInviteQuery = `
         WITH invite_agg AS (
             SELECT i1.invite_id, i1.chat_id, i1.invitee_id, i1.inviter_id, i1.confirmed, i1.is_groupchat
@@ -984,7 +1025,7 @@ var getInviteAll = async function (req, res) {
             is_groupchat: invite.is_groupchat,
             chatId: invite.chat_id
         }));
-        console.log('results backend', results);
+        console.log('invite results backend', results);
         res.status(200).json({ results });
     } catch (error) {
         console.error('Error querying database:', error);
@@ -1013,6 +1054,10 @@ var postInvite = async function(req, res) {
     }
     const inviteeId = req.body.invitee_id; // would it be id or name..?
     try {
+        // add another column into user_chats
+        // is_active
+        // if is_active is true return chat already exist
+        // if not active then say chat exists, rejoin?
         console.log('trying post invite');
         const checkChat = `WITH agg AS (
             SELECT DISTINCT chat_id,
@@ -1025,8 +1070,36 @@ var postInvite = async function(req, res) {
         WHERE FIND_IN_SET(${inviterId}, user_ids) > 0
           AND FIND_IN_SET(${inviteeId}, user_ids) > 0`;
         const check = await db.send_sql(checkChat);
+        console.log('this is check', check);
         if (check.length > 0) {
-            return res.status(409).json({ error: 'Chat session already exists' });
+            const existing_chat_id = check[0].chat_id;
+            console.log('existing_chat_id', existing_chat_id);
+            try {
+                // add another column into user_chats
+                // is_active
+                // if is_active is true return chat already exist
+                // if not active then say chat exists, rejoin?
+                console.log('checking if active or not');
+                const checkActive = `SELECT * FROM user_chats WHERE chat_id = ${existing_chat_id}`;
+                const active = await db.send_sql(checkActive);
+                console.log('this is active', active);
+                if (active.length > 0) {
+                    // this means chat already exist
+                    console.log('chat already exists');
+                    const activeStatus = active.find(user => user.user_id === inviterId)?.is_active;
+                    if (activeStatus) {
+                        return res.status(409).json({ error: 'Chat session already exists' });
+                    } else {
+                        // have them rejoin the chat
+                        console.log('joining an old chat');
+                        const update = `UPDATE user_chats SET is_active = 1 WHERE user_id = ${user_id} AND chat_id = ${existing_chat_id}`;
+                        await db.send_sql(update);
+                        return res.status(201).send({ message: "Rejoined old chat!" });
+                    } 
+                } 
+            } catch (err) {
+                return res.status(500).json({ error: 'Error querying database.' });
+            }
         }
     } catch (err) {
         console.error('Error querying database:', error);
@@ -1077,11 +1150,40 @@ var postInviteChat = async function(req, res) {
 
     console.log('this is chat_id', chatId);
     try {
-        const checkInvite = `SELECT * FROM user_chats WHERE user_id = ${inviteeId} and chat_id = ${chatId}`;
-        const check = await db.send_sql(checkInvite);
+        const checkInvite = `WITH agg AS (
+            SELECT DISTINCT chat_id,
+            GROUP_CONCAT(user_id ORDER BY user_id) AS user_ids
+            FROM user_chats
+            GROUP BY chat_id
+        )
+        SELECT * FROM agg WHERE chat_id = ${chatId}`;
+        const currChatMembers = await db.send_sql(checkInvite);
+        console.log('old list', currChatMembers);
+        // map it and concat our current chatId into it
+
+        const userIdsString = currChatMembers[0].user_ids 
+        console.log('old list 1', userIdsString);
+        const userIdsArray = userIdsString.split(',').map(id => parseInt(id));
+        userIdsArray.push(inviteeId);
+        userIdsArray.sort((a, b) => a - b);
+        const newChatMembers = userIdsArray.join(',');
+        console.log('new list', newChatMembers)
+
+        const userChats = `WITH agg AS (
+            SELECT DISTINCT t.chat_id,
+            GROUP_CONCAT(t.user_id ORDER BY t.user_id) AS user_ids
+            FROM (SELECT * FROM user_chats WHERE is_active = 1) t
+            GROUP BY t.chat_id
+        )
+        SELECT * FROM agg WHERE user_ids = '${newChatMembers}'
+        `;
+        const check = await db.send_sql(userChats);
+        // const checkInvite = `SELECT * FROM user_chats WHERE user_id = ${inviteeId} and chat_id = ${chatId}`;
+        // const check = await db.send_sql(checkInvite);
         if (check.length > 0) {
             return res.status(409).json({ error: 'User is already in chat! Please add another user!' });
         } else {
+            console.log('inserting invite');
             try {
                 // TODO: CHECK WHY THERE ARE TWO INVITES RN
                 const postInvite = `INSERT INTO invites (invitee_id, chat_id, inviter_id, confirmed, is_groupchat) VALUES ('${inviteeId}', '${chatId}', '${inviterId}', 0, 1)`;
@@ -1147,9 +1249,9 @@ var confirmInvite = async function(req, res) {
         const chatId = r1[0].chat_id;
 
         // create new row in user chats
-        const postUserChat = `INSERT INTO user_chats (user_id, chat_id) VALUES ('${user_id}', '${chatId}')`;
+        const postUserChat = `INSERT INTO user_chats (user_id, chat_id, is_active) VALUES ('${user_id}', '${chatId}', 1)`;
         await db.send_sql(postUserChat);
-        const postAdminChat = `INSERT INTO user_chats (user_id, chat_id) VALUES ('${adminId}', '${chatId}')`;
+        const postAdminChat = `INSERT INTO user_chats (user_id, chat_id, is_active) VALUES ('${adminId}', '${chatId}', 1)`;
         await db.send_sql(postAdminChat);
         // also have to insert this for the admin_id
         // should add a delete... as well
@@ -1186,7 +1288,7 @@ var confirmInviteChat = async function(req, res) {
         await db.send_sql(updateQuery);
 
         // create new row in user chats
-        const postUserChat = `INSERT INTO user_chats (user_id, chat_id) VALUES ('${user_id}', '${chatId}')`;
+        const postUserChat = `INSERT INTO user_chats (user_id, chat_id, is_active) VALUES ('${user_id}', '${chatId}', 1)`;
         await db.send_sql(postUserChat);
         console.log('done');
 
@@ -1217,7 +1319,8 @@ var leaveChatroom = async function(req, res) {
     const chatId = req.body.chatId;
 
     try {
-        const deleteQuery = `DELETE FROM user_chats WHERE user_id = ${user_id} AND chat_id = ${chatId}`;
+        const deleteQuery = `UPDATE user_chats SET is_active = 0 WHERE user_id = ${user_id} AND chat_id = ${chatId}`;
+        // const deleteQuery = `DELETE FROM user_chats WHERE user_id = ${user_id} AND chat_id = ${chatId}`;
         // might also have to delete from user_invites unless foreign key already does tht>
         await db.send_sql(deleteQuery);
 

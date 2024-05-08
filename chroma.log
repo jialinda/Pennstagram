@@ -292,3 +292,38 @@
 [32mINFO[0m:     [06-05-2024 23:54:10] 127.0.0.1:42490 - "POST /api/v1/collections/198cdf4e-ed7c-4be0-b01b-24d98e904cf9/add HTTP/1.1" 201
 [32mINFO[0m:     [06-05-2024 23:54:10] 127.0.0.1:42500 - "POST /api/v1/collections/198cdf4e-ed7c-4be0-b01b-24d98e904cf9/add HTTP/1.1" 201
 [32mINFO[0m:     [06-05-2024 23:54:10] 127.0.0.1:47428 - "POST /api/v1/collections/198cdf4e-ed7c-4be0-b01b-24d98e904cf9/query HTTP/1.1" 200
+[33mWARNING[0m:  [08-05-2024 01:11:06] chroma_server_nofile is set to 65535, but this is less than current soft limit of 1048576. chroma_server_nofile will not be set.
+[32mINFO[0m:     [08-05-2024 01:11:06] Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+[36mDEBUG[0m:    [08-05-2024 01:11:06] Starting component System
+[36mDEBUG[0m:    [08-05-2024 01:11:06] Starting component OpenTelemetryClient
+[36mDEBUG[0m:    [08-05-2024 01:11:06] Starting component SimpleAssignmentPolicy
+[36mDEBUG[0m:    [08-05-2024 01:11:06] Starting component SqliteDB
+[36mDEBUG[0m:    [08-05-2024 01:11:06] Starting component Posthog
+[36mDEBUG[0m:    [08-05-2024 01:11:06] Starting component LocalSegmentManager
+[36mDEBUG[0m:    [08-05-2024 01:11:06] Starting component SegmentAPI
+[32mINFO[0m:     [08-05-2024 01:11:06] Started server process [[36m41669[0m]
+[32mINFO[0m:     [08-05-2024 01:11:06] Waiting for application startup.
+[32mINFO[0m:     [08-05-2024 01:11:06] Application startup complete.
+[32mINFO[0m:     [08-05-2024 01:11:06] Uvicorn running on [1mhttp://0.0.0.0:8000[0m (Press CTRL+C to quit)
+[32mINFO[0m:     [08-05-2024 01:12:10] 127.0.0.1:50788 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [08-05-2024 01:13:24] 127.0.0.1:45434 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [08-05-2024 01:17:11] 127.0.0.1:45978 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[33mWARNING[0m:  [08-05-2024 02:16:13] chroma_server_nofile is set to 65535, but this is less than current soft limit of 1048576. chroma_server_nofile will not be set.
+[32mINFO[0m:     [08-05-2024 02:16:13] Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+[36mDEBUG[0m:    [08-05-2024 02:16:13] Starting component System
+[36mDEBUG[0m:    [08-05-2024 02:16:13] Starting component OpenTelemetryClient
+[36mDEBUG[0m:    [08-05-2024 02:16:13] Starting component SimpleAssignmentPolicy
+[36mDEBUG[0m:    [08-05-2024 02:16:13] Starting component SqliteDB
+[36mDEBUG[0m:    [08-05-2024 02:16:13] Starting component Posthog
+[36mDEBUG[0m:    [08-05-2024 02:16:13] Starting component LocalSegmentManager
+[36mDEBUG[0m:    [08-05-2024 02:16:13] Starting component SegmentAPI
+[32mINFO[0m:     [08-05-2024 02:16:14] Started server process [[36m74083[0m]
+[32mINFO[0m:     [08-05-2024 02:16:14] Waiting for application startup.
+[32mINFO[0m:     [08-05-2024 02:16:14] Application startup complete.
+[32mINFO[0m:     [08-05-2024 02:16:14] Uvicorn running on [1mhttp://0.0.0.0:8000[0m (Press CTRL+C to quit)
+[32mINFO[0m:     [08-05-2024 02:17:27] 127.0.0.1:53762 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [08-05-2024 02:20:08] 127.0.0.1:45574 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [08-05-2024 02:20:47] 127.0.0.1:33228 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [08-05-2024 02:21:12] 127.0.0.1:50980 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [08-05-2024 02:21:13] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [08-05-2024 02:21:13] 127.0.0.1:50980 - "POST /api/v1/collections/198cdf4e-ed7c-4be0-b01b-24d98e904cf9/query HTTP/1.1" 200

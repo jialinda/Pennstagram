@@ -66,96 +66,91 @@ var getVectorStore = async function (req) {
 
 // POST /register 
 var postRegister = async function (req, res) {
-    if (!req.body.username || !req.body.password || !req.body.firstname || !req.body.lastname || !req.body.email || !req.body.affiliation || !req.body.birthday) {
-        return res.status(400).json({ error: 'One or more of the fields you entered was empty, please try again.' });
-    }
-
-    const { username, password, firstname, lastname, email, affiliation, birthday } = req.body;
-    console.log(username);
-    const imagePath = req.file.path;
-
-    // Check if the username already exists
-    const exists = await db.send_sql(`SELECT * FROM users WHERE username = '${username}'`);
-    if (exists.length > 0) {
-        console.log('User already exists');
-        return res.status(409).json({ error: 'An account with this username already exists, please try again.' });
-    }
-    helper.uploadToS3(username, req.file);
-
-    try {
-        await facehelper.initializeFaceModels();
-
-        const collection = await client.getOrCreateCollection({
-            name: "face-api",
-            embeddingFunction: null,
-            metadata: { "hnsw:space": "l2" },
-        });
-
-        console.info("Looking for files");
-        const promises = [];
-        const files = await fs.promises.readdir("/nets2120/project-stream-team/models/images");
-        // const csvContent = fs.readFileSync('/nets2120/project-stream-team/names.csv', 'utf8');
-        // console.log('csvContent', csvContent);
-
-        const csvContent = fs.readFileSync('/nets2120/project-stream-team/names.csv', 'utf8');
-        console.log('csvContent', csvContent);
-
-        files.forEach(function (file) {
-            console.info("Adding task for " + file + " to index.");
-            promises.push(facehelper.indexAllFaces(path.join("/nets2120/project-stream-team/models/images", file), file, collection));
-        });
-
-        files.forEach(function (file) {
-            console.info("Adding task for " + file + " to index.");
-            promises.push(facehelper.indexAllFaces(path.join("/nets2120/project-stream-team/models/images", file), file, collection));
-        });
-
-        console.info("Done adding promises, waiting for completion.");
-        await Promise.all(promises);
-        console.log("All images indexed.");
-
-        const topMatches = await facehelper.findTopKMatches(collection, req.file.path, 5);
-        for (var item of topMatches) {
-            for (var i = 0; i < item.ids[0].length; i++) {
-                console.log(item.ids[0][i] + " (Euclidean distance = " + Math.sqrt(item.distances[0][i]) + ") in " + item.documents[0][i]);
-            }
-        }
+        if (!req.body.username || !req.body.password || !req.body.firstname || !req.body.lastname || !req.body.email || !req.body.affiliation || !req.body.birthday) {
+            return res.status(400).json({ error: 'One or more of the fields you entered was empty, please try again.' });
+        }
     
-        console.log('example document', item.documents[0]);
-        actors = item.documents[0];
-        const actornConst = actors.map(file => file.replace('.jpg', ''));
-        parse(csvContent, { columns: true, skip_empty_lines: true }, function(err, records) {
-            if (err) {
-                console.error('Error parsing CSV:', err);
-                return res.status(500).json({ error: 'Failed to parse CSV data' });
-            }
-
-            const nameLookup = {};
-            records.forEach(record => {
-                nameLookup[record.nconst_short] = record.primaryName;
-            });
-
-            const actorNames = actornConst.map(nconst => nameLookup[nconst] || "Actor name not found");
-            const actorNamesString = actorNames.join(', '); 
-            console.log('actorName:', actorNames);
-
-            // Hash password and insert new user
-            helper.encryptPassword(password).then(hashedPassword => {
-                db.send_sql(`INSERT INTO users (username, firstname, lastname, email, affiliation, password, birthday, imageUrl, actorsList) VALUES ('${username}', '${firstname}', '${lastname}', '${email}', '${affiliation}', '${hashedPassword}', '${birthday}', '${imagePath}', '${actorNamesString}')`)
-                    .then(() => {
-                        res.status(200).json({ username, actorNames });
-                    })
-                    .catch(dbError => {
-                        console.error('Database insert failed:', dbError);
-                        res.status(500).json({ error: 'Database insertion failed' });
-                    });
-            });
-        });
-    } catch (error) {
-        console.error('Registration failed:', error);
-        res.status(500).json({ error: 'Failed to register user' });
-    }
-};
+        const { username, password, firstname, lastname, email, affiliation, birthday } = req.body;
+        console.log(username);
+        const imagePath = req.file.path;
+    
+        // Check if the username already exists
+        const exists = await db.send_sql(`SELECT * FROM users WHERE username = '${username}'`);
+        if (exists.length > 0) {
+            console.log('User already exists');
+            return res.status(409).json({ error: 'An account with this username already exists, please try again.' });
+        }
+        helper.uploadToS3(username, req.file);
+    
+        try {
+            await facehelper.initializeFaceModels();
+    
+            const collection = await client.getOrCreateCollection({
+                name: "face-api",
+                embeddingFunction: null,
+                metadata: { "hnsw:space": "l2" },
+            });
+    
+            console.info("Looking for files");
+            const promises = [];
+            const files = await fs.promises.readdir("/nets2120/project-stream-team/models/images");
+            // const csvContent = fs.readFileSync('/nets2120/project-stream-team/names.csv', 'utf8');
+            // console.log('csvContent', csvContent);
+    
+            const csvContent = fs.readFileSync('/nets2120/project-stream-team/names.csv', 'utf8');
+    //         console.log('csvContent', csvContent);
+    
+    //         files.forEach(function (file) {
+    //             console.info("Adding task for " + file + " to index.");
+    //             promises.push(facehelper.indexAllFaces(path.join("/nets2120/project-stream-team/models/images", file), file, collection));
+    //         });
+    
+            console.info("Done adding promises, waiting for completion.");
+            await Promise.all(promises);
+            console.log("All images indexed.");
+    
+            const topMatches = await facehelper.findTopKMatches(collection, req.file.path, 5);
+            for (var item of topMatches) {
+                for (var i = 0; i < item.ids[0].length; i++) {
+                    console.log(item.ids[0][i] + " (Euclidean distance = " + Math.sqrt(item.distances[0][i]) + ") in " + item.documents[0][i]);
+                }
+            }
+        
+            console.log('example document', item.documents[0]);
+            actors = item.documents[0];
+            const actornConst = actors.map(file => file.replace('.jpg', ''));
+            parse(csvContent, { columns: true, skip_empty_lines: true }, function(err, records) {
+                if (err) {
+                    console.error('Error parsing CSV:', err);
+                    return res.status(500).json({ error: 'Failed to parse CSV data' });
+                }
+    
+                const nameLookup = {};
+                records.forEach(record => {
+                    nameLookup[record.nconst_short] = record.primaryName;
+                });
+    
+                const actorNames = actornConst.map(nconst => nameLookup[nconst] || "Actor name not found");
+                const actorNamesString = actorNames.join(', '); 
+                console.log('actorName:', actorNames);
+    
+                // Hash password and insert new user
+                helper.encryptPassword(password).then(hashedPassword => {
+                    db.send_sql(`INSERT INTO users (username, firstname, lastname, email, affiliation, password, birthday, imageUrl, actorsList) VALUES ('${username}', '${firstname}', '${lastname}', '${email}', '${affiliation}', '${hashedPassword}', '${birthday}', '${imagePath}', '${actorNamesString}')`)
+                        .then(() => {
+                            res.status(200).json({ username, actorNames });
+                        })
+                        .catch(dbError => {
+                            console.error('Database insert failed:', dbError);
+                            res.status(500).json({ error: 'Database insertion failed' });
+                        });
+                });
+            });
+        } catch (error) {
+            console.error('Registration failed:', error);
+            res.status(500).json({ error: 'Failed to register user' });
+        }
+    };
 
 
 // POST /users/:username/selections
@@ -273,10 +268,10 @@ var getTopHashtags = async function (req, res) {
     console.log('getTopHashtags called');
     try {
         const query = `
-            SELECT h.hashtagname, COUNT(hb.hashtag_id) AS frequency
+            SELECT h.hashtagname, COUNT(ptw.hashtag_id) AS frequency
             FROM hashtags h
-            JOIN hashtag_by hb ON h.hashtag_id = hb.hashtag_id
-            GROUP BY hb.hashtag_id
+            JOIN post_tagged_with ptw ON h.hashtag_id = ptw.hashtag_id
+            GROUP BY h.hashtag_id, h.hashtagname
             ORDER BY frequency DESC
             LIMIT 10;
         `;
@@ -288,6 +283,7 @@ var getTopHashtags = async function (req, res) {
         res.status(500).json({ error: 'Error querying database for top hashtags.' });
     }
 };
+
 
 /** createTags
  * 
@@ -537,103 +533,125 @@ var createPost = async function (req, res) {
     }
 };
 
+// GET /posts 
+// getting post info (from posts table)
+// select everything from the posts 
+
 
 // GET /feed
 //Yes, authors that the current user follows, as well as
 //any posts that the current user made. (just like how you can see your own posts in your Instagram feed)
+// GET /feed
 var getFeed = async function (req, res) {
-    console.log('getFeed is called', req.session.user_id);
-
-    // TODO: get the correct posts to show on current user's feed
-    if (!helper.isLoggedIn(req)) {
-        return res.status(403).json({ error: 'Not logged in.' });
-    } else if (helper.isLoggedIn(req)) {
-        console.log('success');
-    }
-    const userId = req.session.user_id;
-
-    console.log('curr id: ', req.session.user_id);
-    // GRACE TODO: Check the tables
-    // TODO: sql query is WRONG
-    // TODO: also retrieve hashtags
     try {
-        console.log('trying');
-        const feed = await db.send_sql(`
-            SELECT 
-                posts.post_id AS post_id, 
-                posts.timestamp AS post_timestamp,
-                post_users.username AS post_author, 
-                posts.parent_post AS parent_post, 
-                posts.title AS title, 
-                posts.content AS content, 
-                CONCAT_WS(' | ', hashtags.hashtagname) AS hashtags, 
-                CONCAT_WS(' | ', GROUP_CONCAT(CONCAT(comments.content, ',', comments.timestamp, ',', comments_users.username) ORDER BY comments.timestamp ASC SEPARATOR ' | ')) AS comments
-            FROM 
-                posts
-            JOIN 
-                users AS post_users ON posts.author_id = post_users.user_id
-            JOIN 
-                post_tagged_with ON post_tagged_with.post_id = posts.post_id
-            JOIN 
-                hashtags ON hashtags.hashtag_id = post_tagged_with.hashtag_id
-            LEFT JOIN 
-                (
-                    SELECT 
-                        comments_on_post_by.post_id,
-                        comments.content,
-                        comments.timestamp,
-                        comments_users.username
-                    FROM 
-                        comments_on_post_by
-                    LEFT JOIN 
-                        comments ON comments_on_post_by.comment_id = comments.comment_id
-                    LEFT JOIN 
-                        users AS comments_users ON comments.author_id = comments_users.user_id
-                    ORDER BY 
-                        comments.timestamp ASC
-                ) AS comments ON comments.post_id = posts.post_id
-            WHERE 
-                posts.author_id = '${userId}' 
-                OR posts.author_id IN (
-                    SELECT 
-                        followed 
-                    FROM 
-                        friends 
-                    WHERE 
-                        follower = '${userId}'
-                )
-            GROUP BY
-                posts.post_id
-            ORDER BY 
-                posts.post_id DESC;
-
-        `);
-
-        // Send the response with the list of posts for the feed
-        const results = feed.map(post => ({
-            username: post.post_author,
-            parent_post: post.parent_post,
-            post_author: post.post_author,
-            post_timestamp: post.post_timestamp,
-            title: post.title,
-            content: post.content,
-            hashtags: post.hashtags.split(' | '),
-            comments: post.comments.split(' | ').map(commentString => {
-                const [content, timestamp, author] = commentString.split(',');
-                return {
-                    content: content.trim(),
-                    timestamp: timestamp.trim(),
-                    author: author.trim()
-                };
-            }),
-        }));
-        res.status(200).json({ results });
-
+        const query = `
+        SELECT p.post_id, p.title, p.content, p.timestamp, u.username, u.firstname, u.lastname,
+               (SELECT COUNT(*) FROM posts_liked_by plb WHERE plb.post_id = p.post_id) AS likes,
+               (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.post_id) AS comments_count
+        FROM posts p
+        JOIN users u ON p.author_id = u.user_id
+        ORDER BY p.timestamp DESC;`;
+        const posts = await db.send_sql(query);
+        res.status(200).json(posts);
     } catch (error) {
-        console.error('Error querying database:', error);
-        return res.status(500).json({ error: 'Error querying database.' });
+        console.error('Error querying posts:', error);
+        res.status(500).json({ error: 'Failed to fetch posts' });
     }
-}
+};
+
+// var getFeed = async function (req, res) {
+//     console.log('getFeed is called', req.session.user_id);
+
+//     // TODO: get the correct posts to show on current user's feed
+//     if (!helper.isLoggedIn(req)) {
+//         return res.status(403).json({ error: 'Not logged in.' });
+//     } else if (helper.isLoggedIn(req)) {
+//         console.log('success');
+//     }
+//     const userId = req.session.user_id;
+
+//     console.log('curr id: ', req.session.user_id);
+//     // GRACE TODO: Check the tables
+//     // TODO: sql query is WRONG
+//     // TODO: also retrieve hashtags
+//     try {
+//         console.log('trying');
+//         const feed = await db.send_sql(`
+//             SELECT 
+//                 posts.post_id AS post_id, 
+//                 posts.timestamp AS post_timestamp,
+//                 post_users.username AS post_author, 
+//                 posts.parent_post AS parent_post, 
+//                 posts.title AS title, 
+//                 posts.content AS content, 
+//                 CONCAT_WS(' | ', hashtags.hashtagname) AS hashtags, 
+//                 CONCAT_WS(' | ', GROUP_CONCAT(CONCAT(comments.content, ',', comments.timestamp, ',', comments_users.username) ORDER BY comments.timestamp ASC SEPARATOR ' | ')) AS comments
+//             FROM 
+//                 posts
+//             JOIN 
+//                 users AS post_users ON posts.author_id = post_users.user_id
+//             JOIN 
+//                 post_tagged_with ON post_tagged_with.post_id = posts.post_id
+//             JOIN 
+//                 hashtags ON hashtags.hashtag_id = post_tagged_with.hashtag_id
+//             LEFT JOIN 
+//                 (
+//                     SELECT 
+//                         comments_on_post_by.post_id,
+//                         comments.content,
+//                         comments.timestamp,
+//                         comments_users.username
+//                     FROM 
+//                         comments_on_post_by
+//                     LEFT JOIN 
+//                         comments ON comments_on_post_by.comment_id = comments.comment_id
+//                     LEFT JOIN 
+//                         users AS comments_users ON comments.author_id = comments_users.user_id
+//                     ORDER BY 
+//                         comments.timestamp ASC
+//                 ) AS comments ON comments.post_id = posts.post_id
+//             WHERE 
+//                 posts.author_id = '${userId}' 
+//                 OR posts.author_id IN (
+//                     SELECT 
+//                         followed 
+//                     FROM 
+//                         friends 
+//                     WHERE 
+//                         follower = '${userId}'
+//                 )
+//             GROUP BY
+//                 posts.post_id
+//             ORDER BY 
+//                 posts.post_id DESC;
+
+//         `);
+
+//         // Send the response with the list of posts for the feed
+//         const results = feed.map(post => ({
+//             username: post.post_author,
+//             parent_post: post.parent_post,
+//             post_author: post.post_author,
+//             post_timestamp: post.post_timestamp,
+//             title: post.title,
+//             content: post.content,
+//             hashtags: post.hashtags.split(' | '),
+//             comments: post.comments.split(' | ').map(commentString => {
+//                 const [content, timestamp, author] = commentString.split(',');
+//                 return {
+//                     content: content.trim(),
+//                     timestamp: timestamp.trim(),
+//                     author: author.trim()
+//                 };
+//             }),
+//         }));
+//         res.status(200).json({ results });
+
+//     } catch (error) {
+//         console.error('Error querying database:', error);
+//         return res.status(500).json({ error: 'Error querying database.' });
+//     }
+// }
 
 var getMovie = async function (req, res) {
     const vs = await getVectorStore();

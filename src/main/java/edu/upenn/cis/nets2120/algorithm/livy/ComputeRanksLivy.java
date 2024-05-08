@@ -70,27 +70,16 @@ public class ComputeRanksLivy {
         String livy = SparkJob.getLivyUrl(args);
 
         // Second call to Apache Livy to run SocialRankJob with back-links set to false
-        while(true)
-        {
+        // while(true)
+        // {
             SocialRankJob noBlJob = new SocialRankJob(d_max, i_max, 1000, false, debug);
 
-            List<Tuple2<String, Tuple2<Double, Tuple2<String, Double>>>> result = SparkJob.runJob(livy, noBlJob);
-            JavaPairRDD<String, Iterable<Tuple2<String, Double>>> adjacencyList = result.flatMapToPair(pair -> Arrays.asList(
-                new Tuple2<>(pair._1(), new Tuple2<>(pair._2()._2()._1(), pair._2()._1())),
-                new Tuple2<>(pair._2()._2()._1(), new Tuple2<>(pair._1(), pair._2()._1()))
-            ))
-            .groupByKey()
-            .cache(); 
-        }
-
-        // run random walk alg --> select posts to be recommended
-
-        // 
-
-
-
-        logger.info("*** Finished social network ranking! ***");
-        // Thread.sleep(3600000); 
+            List<MyPair<String, Double>> result = SparkJob.runJob(livy, noBlJob);
+            System.out.println("Result: " + result);
+    
+            logger.info("*** Finished social network ranking! ***");
+        //     Thread.sleep(3600000); 
+        // }
 
     }
 

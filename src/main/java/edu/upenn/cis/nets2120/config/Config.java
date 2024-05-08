@@ -7,10 +7,10 @@ package edu.upenn.cis.nets2120.config;
  */
 public class Config {
 
-    // For test drivers
-    public static void setSocialPath(String path) {
-        SOCIAL_NET_PATH = path;
-    }
+    // // For test drivers
+    // public static void setSocialPath(String path) {
+    //     SOCIAL_NET_PATH = path;
+    // }
 
     public static final String DATABASE_CONNECTION = "jdbc:mysql://localhost:3306/instaDB";
     public static final String DATABASE_USERNAME = "admin";

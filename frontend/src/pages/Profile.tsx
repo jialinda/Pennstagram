@@ -8,59 +8,73 @@ export default function Profile() {
   const navigate = useNavigate();
   const [userDetails, setUserDetails] = useState({
     username: '',
-    firstname: '',
-    lastname: '',
     email: '',
-    affiliation: '',
-    birthday: '',
-    photo: null
+    actorsList: [],
+    linkedActor: '',
+    hashtags: []
   });
 
   useEffect(() => {
     const fetchUserDetails = async () => {
       try {
-        const response = await axios.get(`${config.serverRootURL}/user/${username}`);
-        if (response.data) {
-          setUserDetails({
-            ...response.data,
-            photo: response.data.photo ? `data:image/jpeg;base64,${response.data.photo}` : null
-          });
-        }
+        const response = await axios.get(`${config.serverRootURL}/${username}/userinfo`);
+        const userData = response.data[0];
+        setUserDetails({
+          username: userData.username,
+          email: userData.email,
+          actorsList: userData.actorsList.split(', '),
+          linkedActor: userData.linkedActor,
+          hashtags: userData.hashtags ? userData.hashtags.split(', ') : []
+        });
       } catch (error) {
         console.error('Failed to fetch user details:', error);
       }
     };
+
     fetchUserDetails();
   }, [username]);
 
-  // check this, need to make sure user's session ends
-  const handleLogout = () => {
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      const response = await axios.post(`${config.serverRootURL}/logout`);
+      console.log(response.data.message); 
+      navigate("/login");
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   };
 
-  // navigate to edit profile page if button clicked
+
   const handleEditProfile = () => {
     navigate(`/${username}/editprofile`);
   };
 
   return (
-    <div className='w-screen h-screen flex flex-col items-center justify-center'>
-      <div className='bg-white shadow-xl rounded-lg p-8 max-w-md w-full'>
-        <div className='text-center'>
-          <img src={userDetails.photo || 'default_profile.png'} alt="Profile" className='w-32 h-32 rounded-full mx-auto' />
-          <h1 className='text-2xl font-semibold mt-4'>{userDetails.firstname} {userDetails.lastname}</h1>
-          <p className='text-md text-gray-600'>{userDetails.username}</p>
-          <p className='text-md text-gray-500'>{userDetails.email}</p>
-          <p className='text-md'>{userDetails.affiliation}</p>
-          <p className='text-md'>{new Date(userDetails.birthday).toLocaleDateString()}</p>
-        </div>
-        <div className='flex justify-around mt-6'>
-          <button onClick={handleEditProfile} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'>
-            Edit Profile
-          </button>
-          <button onClick={handleLogout} className='bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded'>
+    <div className='flex flex-col min-h-screen bg-gray-100'>
+      <div className="w-full px-6 py-4 bg-blue-500 text-white flex items-center justify-between">
+        <button onClick={() => navigate("/"+username+"/feed")} className="text-lg font-semibold">
+          Back to Feed
+        </button>
+        <h1 className='text-2xl font-bold'>Profile</h1>
+        <div className="space-x-4">
+          <button onClick={handleLogout} className="px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-600 focus:outline-none">
             Log Out
           </button>
+          <button onClick={handleEditProfile} className="px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-600 focus:outline-none">
+            Edit Profile
+          </button>
+        </div>
+      </div>
+      <div className='flex-grow flex items-center justify-center p-4'>
+        <div className='bg-white rounded-lg shadow-lg p-6 max-w-md w-full'>
+          <div className='text-center space-y-4'>
+            <p className='text-md'><strong>Email:</strong> {userDetails.email}</p>
+            <p className='text-md'><strong>Linked Actor:</strong> {userDetails.linkedActor}</p>
+            <p className='text-md'><strong>Actors List:</strong> {userDetails.actorsList.join(', ')}</p>
+            <div className='text-md overflow-auto whitespace-nowrap'>
+              <strong>Hashtags:</strong> {userDetails.hashtags.length > 0 ? userDetails.hashtags.join(' #') : 'No hashtags'}
+            </div>
+          </div>
         </div>
       </div>
     </div>

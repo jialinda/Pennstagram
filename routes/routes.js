@@ -97,8 +97,6 @@ var postRegister = async function (req, res) {
         // const csvContent = fs.readFileSync('/nets2120/project-stream-team/names.csv', 'utf8');
         // console.log('csvContent', csvContent);
 
-        const csvContent = fs.readFileSync('/nets2120/project-stream-team/names.csv', 'utf8');
-        console.log('csvContent', csvContent);
 
         files.forEach(function (file) {
             console.info("Adding task for " + file + " to index.");
@@ -256,7 +254,8 @@ var postLogin = async function (req, res) {
 
 // GET /logout
 var postLogout = function (req, res) {
-    req.session.user_id = null;
+    console.log("post logout called");
+    req.session = null;
     res.status(200).json({ message: "You were successfully logged out." });
 
 };
@@ -279,6 +278,169 @@ var getTopHashtags = async function (req, res) {
     } catch (error) {
         console.error('Error querying top hashtags:', error);
         res.status(500).json({ error: 'Error querying database for top hashtags.' });
+    }
+};
+
+// GET /userinfo
+var getUserInfo = async function (req, res) {
+    const username = req.params.username;
+    console.log('getUserInfo called');
+    console.log('getUserinfo username:', username);
+    try {
+        const query = `
+            SELECT users.*, GROUP_CONCAT(hashtags.hashtagname) AS hashtags
+            FROM users
+            JOIN hashtag_by ON users.user_id = hashtag_by.user_id
+            JOIN hashtags ON hashtag_by.hashtag_id = hashtags.hashtag_id
+            WHERE username = '${username}'
+            GROUP BY users.user_id
+        `;
+        const results = await db.send_sql(query);
+        console.log('getTophashtags result', results);
+        res.status(200).json(results);
+    } catch (error) {
+        console.error('Error querying top hashtags:', error);
+        res.status(500).json({ error: 'Error querying database for top hashtags.' });
+    }
+};
+
+// POST /:username/changeActor
+var changeActor = async function (req, res) {
+    const username = req.params.username;
+    const { newActor } = req.body;  // The new actor to link to the user
+
+    console.log('changeActor called');
+    console.log('changeActor username:', username);
+    console.log('changeActor newActor:', newActor);
+
+    if (!newActor) {
+        return res.status(400).json({ error: 'A new actor must be provided.' });
+    }
+
+    try {
+        const query = `
+            UPDATE users
+            SET linkedActor = '${newActor}'
+            WHERE username = '${username}'
+        `;
+        const result = await db.send_sql(query);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'No user found with the given username.' });
+        }
+
+        console.log('Actor changed successfully');
+        res.status(200).json({ success: true, message: `${username} is now linked to ${newActor}` });
+    } catch (error) {
+        console.error('Error changing actor:', error);
+        res.status(500).json({ error: 'Error updating database for actor change.' });
+    }
+};
+
+// POST /:username/changeEmail
+var changeEmail = async function (req, res) {
+    const username = req.params.username;
+    const { newEmail } = req.body;  
+
+    console.log('changeEmail called');
+    console.log('changeEmail username:', username);
+    console.log('changeEmail newEmail:', newEmail);
+
+    if (!newEmail) {
+        return res.status(400).json({ error: 'A new email must be provided.' });
+    }
+
+    try {
+        const query = `
+            UPDATE users
+            SET email = '${newEmail}'
+            WHERE username = '${username}'
+        `;
+        const result = await db.send_sql(query);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'No user found with the given username.' });
+        }
+
+        console.log('Email changed successfully');
+        res.status(200).json({ success: true, message: `${username}'s email has been updated successfully.` });
+    } catch (error) {
+        console.error('Error changing email:', error);
+        res.status(500).json({ error: 'Error updating database for email change.' });
+    }
+};
+
+
+// POST /:username/changePassword
+var changePassword = async function (req, res) {
+    const username = req.params.username;
+    const { newPassword } = req.body;  // The new password to update for the user
+
+    console.log('changePassword called');
+    console.log('changePassword username:', username);
+
+    if (!newPassword) {
+        return res.status(400).json({ error: 'A new password must be provided.' });
+    }
+
+    try {
+        // Hash the new password before storing it
+        const hashedPassword = await helper.encryptPassword(newPassword);
+
+        const query = `
+            UPDATE users
+            SET password = ?
+            WHERE username = ?
+        `;
+        const result = await db.send_sql(query, [hashedPassword, username]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'No user found with the given username.' });
+        }
+
+        console.log('Password changed successfully');
+        res.status(200).json({ success: true, message: `${username}'s password has been updated successfully.` });
+    } catch (error) {
+        console.error('Error changing password:', error);
+        res.status(500).json({ error: 'Error updating database for password change.' });
+    }
+};
+
+// POST /:username/changeHashtags
+var changeHashtags = async function (req, res) {
+    const username = req.params.username;
+    const { hashtags } = req.body;  // Expected to be a comma-separated string of hashtags
+
+    console.log('changeHashtags called');
+    console.log('changeHashtags username:', username);
+    console.log('changeHashtags:', hashtags);
+
+    if (!hashtags) {
+        return res.status(400).json({ error: 'Hashtags must be provided.' });
+    }
+
+    try {
+        // Fetch user ID based on username
+        const userResult = await db.send_sql(`SELECT user_id FROM users WHERE username = '${username}'`);
+        if (userResult.length === 0) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+        const userId = userResult[0].user_id;
+
+        const hashtagIds = await Promise.all(hashtags.map(async (hashtagName) => {
+            const result = await db.send_sql(`SELECT hashtag_id FROM hashtags WHERE hashtagname = '${hashtagName}'`);
+            return result.length > 0 ? result[0].hashtag_id : null;
+        }));
+
+        const validHashtagIds = hashtagIds.filter(id => id != null);
+
+        await Promise.all(validHashtagIds.map(async (hashtagId) => {
+            await db.send_sql(`INSERT INTO hashtag_by (user_id, hashtag_id) VALUES ('${userId}', '${hashtagId}')`);
+        }));
+        res.status(200).json({ success: true, message: `${username}'s hashtags have been updated successfully.` });
+    } catch (error) {
+        console.error('Error changing hashtags:', error);
+        res.status(500).json({ error: 'Error updating database for hashtag change.' });
     }
 };
 
@@ -1057,7 +1219,12 @@ var routes = {
     confirm_invite: confirmInvite,
     // get_friend_by_username: getFriendName
     post_selections: postSelections, 
-    get_top_hashtags: getTopHashtags
+    get_top_hashtags: getTopHashtags, 
+    get_user_info: getUserInfo, 
+    change_actor: changeActor, 
+    change_email: changeEmail,
+    change_password: changePassword,
+    change_hashtags: changeHashtags
   };
     
 module.exports = routes;

@@ -485,23 +485,18 @@ var getFriends = async function (req, res) {
         const getFriendsQuery = ` WITH filtered_friends AS (
             SELECT * FROM friends WHERE follower = ${userId}
         ) 
-        SELECT t1.followed, t2.username
+        SELECT t1.followed, t2.username, t3.is_online
         FROM filtered_friends t1
-        JOIN users t2
-        ON t1.followed = t2.user_id
-        `
-        const friends = await db.send_sql(getFriendsQuery);
-        // const friends = await db.send_sql(`SELECT DISTINCT friends.followed, nFriend.primaryName
-        // FROM names nUser
-        // JOIN users user1 ON user1.linked_nconst = nUser.nconst
-        // JOIN friends ON nUser.nconst = friends.follower
-        // JOIN names nFriend ON friends.followed = nFriend.nconst
-        // WHERE user1.user_id = '${req.session.user_id}'`);
+        JOIN users t2 ON t1.followed = t2.user_id
+        JOIN login t3 ON t3.user_id = t2.user_id
+        `;
 
+        const friends = await db.send_sql(getFriendsQuery);
         // followed data
         const results = friends.map(friend => ({
             followed: friend.followed,
-            username: friend.username
+            username: friend.username,
+            is_online: friend.is_online
         }));
         res.status(200).json({ results });
     } catch (error) {

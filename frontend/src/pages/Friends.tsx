@@ -73,6 +73,8 @@ export default function Friends() {
             try {
                 const friendsRes = await axios.get(`${rootURL}/${username}/friends`);
                 setUsersFriends(friendsRes.data.results);
+                console.log('all friends here', usersFriends);
+                
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
@@ -84,6 +86,8 @@ export default function Friends() {
 
     const feed = () => navigate(`/${username}/feed`);
     const chat = () => navigate(`/${username}/chat`);
+    const onlineFriends = usersFriends.filter(friend => friend.is_online);
+    const offlineFriends = usersFriends.filter(friend => !friend.is_online);
 
     return (
         <div className='w-full max-w-7xl mx-auto px-4'>
@@ -102,11 +106,24 @@ export default function Friends() {
                 <div>
                     <h2 className='font-bold text-xl mb-2'>Friends</h2>
                     <div className='space-y-2'>
-                        {usersFriends.map((friend, index) => (
+                        <div className='font-bold text-lg text-green-500'>Online</div>
+                        {onlineFriends.map((friend, index) => (
+                            <FriendComponent key={index} friend={friend} />
+                        ))}
+                        <div className='font-bold text-lg text-gray-500'>Offline</div>
+                        {offlineFriends.map((friend, index) => (
                             <FriendComponent key={index} friend={friend} />
                         ))}
                     </div>
                 </div>
+                {/* <div>
+                    <h2 className='font-bold text-xl mb-2'>Friends</h2>
+                    <div className='space-y-2'>
+                        {usersFriends.map((friend, index) => (
+                            <FriendComponent key={index} friend={friend} />
+                        ))}
+                    </div>
+                </div> */}
                 <div>
                     <h2 className='font-bold text-xl mb-2'>Recommended Friends</h2>
                     {/* <div className='space-y-2'>

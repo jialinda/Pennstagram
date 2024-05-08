@@ -242,10 +242,12 @@ var postLogin = async function (req, res) {
                 console.log('user id:', req.session.user_id);
                 console.log('user name:', req.session.username);
                 req.session.save();
+
                 return res.status(200).json({ username: username, session: req.session.user_id});
             } else {
                 return res.status(401).json({ error: 'Username and/or password are invalid.' });
-            }
+            }            
+
         });
     } catch (error) {
         console.error('Error querying database:', error);
@@ -253,13 +255,39 @@ var postLogin = async function (req, res) {
     }
 };
 
+var postOnline = async function (req, res) {
+
+    if (!session_user_id) {
+        return res.status(403).json({ error: 'Not logged in.' });
+    }
+
+    try {
+        const findUserQuery = `SELECT * FROM login WHERE user_id = ${session_user_id}`;
+        const u = await db.send_sql(findUserQuery);
+        let updateQuery;
+        if (u.length === 0) {
+            updateQuery = `INSERT INTO login (user_id, is_online) VALUES (${session_user_id}, 1)`;
+        } else {
+            updateQuery = `UPDATE login SET is_online = 1 WHERE user_id = ${session_user_id}`;
+        }
+        console.log('logging in');
+        const logging = await db.send_sql(updateQuery);
+        return res.status(200).json({ message: "logging in success" });
+    } catch (error) {
+        console.error('Error querying database:', error);
+        return res.status(500).json({ error: 'Error querying database.' });
+    }
+ 
+}
+
 
 // GET /logout
-var postLogout = function (req, res) {
+var postLogout = async function (req, res) {
     req.session.user_id = null;
     session_user_id = null; // CHECK ASK GRACE
+    const updateQuery = `UPDATE login SET is_online = 0 WHERE user_id = ${session_user_id}`;
+    const logout = await db.send_sql(updateQuery);
     res.status(200).json({ message: "You were successfully logged out." });
-
 };
 
 // GET /top10hashtags
@@ -1746,7 +1774,8 @@ var routes = {
     confirm_f_invite: confirmFInvite,
     delete_f_invite: deleteFInvite,
     delete_u_f_invite: deleteUFInvite,
-    remove_friend: removeFriend
+    remove_friend: removeFriend,
+    post_online: postOnline
   };
 
 

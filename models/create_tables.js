@@ -160,7 +160,7 @@ async function create_tables(db) {
       FOREIGN KEY (invite_id) REFERENCES invites(invite_id) \
     );')
 
-    var qinvites = db.create_tables('CREATE TABLE IF NOT EXISTS friend_invites ( \
+    var qfinvites = db.create_tables('CREATE TABLE IF NOT EXISTS friend_invites ( \
       f_invite_id INT AUTO_INCREMENT PRIMARY KEY, \
       sender_id INT, \
       receiver_id INT, \
@@ -169,7 +169,7 @@ async function create_tables(db) {
       FOREIGN KEY (receiver_id) REFERENCES users(user_id) \
     );')
 
-    var quserinvites = db.create_tables('CREATE TABLE IF NOT EXISTS user_f_invites ( \
+    var quserfinvites = db.create_tables('CREATE TABLE IF NOT EXISTS user_f_invites ( \
       user_id INT, \
       f_invite_id INT, \
       FOREIGN KEY (user_id) REFERENCES users(user_id), \
@@ -182,10 +182,16 @@ async function create_tables(db) {
       FOREIGN KEY (follower) REFERENCES users(user_id), \
       FOREIGN KEY (followed) REFERENCES users(user_id) \
       );')
+
+      var qlogin = db.create_tables('CREATE TABLE IF NOT EXISTS login ( \
+        user_id INT, \
+        is_online INT, \
+        FOREIGN KEY (user_id) REFERENCES users(user_id)\
+        );')
   
 
 
-    return await Promise.all([qrecs, qusers, qposts, qpostslikers, qcommenters, qposttags, qusertags, qchats, quserchats, qtexts, qinvites, quserinvites, qfriends, qcomments]);
+    return await Promise.all([qrecs, qusers, qposts, qpostslikers, qcommenters, qposttags, qusertags, qchats, quserchats, qtexts, qinvites, quserinvites, qfriends, qcomments, qfinvites, quserfinvites, qlogin]);
 }
 
 // Database connection setup

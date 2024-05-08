@@ -60,7 +60,7 @@ function register_routes(app) {
     app.get('/getTextByChatId', routes.get_text_by_chat_id);
     app.get('/getUserByUsername', routes.get_user_by_username);
     
-
+    app.post('/postOnline', routes.post_online);
 // ); 
   }
   

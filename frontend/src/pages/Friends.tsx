@@ -82,8 +82,8 @@ export default function Friends() {
 
         fetchInvites();
         fetchData();
-    // }, [username, rootURL]);
-    });
+    }, [username, rootURL]);
+    // });
 
     const feed = () => navigate(`/${username}/feed`);
     const chat = () => navigate(`/${username}/chat`);

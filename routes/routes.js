@@ -1109,9 +1109,9 @@ var postChat = async function(req, res) {
         await db.send_sql(postQuery);
 
         // retrieve the chat id by finding the number of rows and getting the last one..
-        const countChatsQuery = `SELECT COUNT(*) AS totalChats FROM chats`;
+        const countChatsQuery = `SELECT * FROM chats ORDER BY chat_id DESC LIMIT 1`;
         const countResult = await db.send_sql(countChatsQuery);
-        const chatId = countResult[0].totalChats;
+        const chatId = countResult[0].chat_id;
 
         // add chat and user relation
         const postUserChat = `INSERT INTO user_chats (user_id, chat_id) VALUES ('${chatAdmin}', '${chatId}')`;
@@ -1259,9 +1259,10 @@ var postInvite = async function(req, res) {
 
         await db.send_sql(postInvite);
 
-        const countInvQuery = `SELECT COUNT(*) AS totalInvites FROM invites`;
+        const countInvQuery = `SELECT * FROM invites ORDER BY invite_id DESC LIMIT 1`;
         const countResult = await db.send_sql(countInvQuery);
-        const inviteId = countResult[0].totalInvites;
+        const inviteId = countResult[0].invite_id;
+        console.log('adding invite with id',inviteId );
 
         const postUInvite = `INSERT INTO user_invites (user_id, invite_id) VALUES ('${inviteeId}', '${inviteId}')`; // FALSE is 0
         await db.send_sql(postUInvite);
@@ -1337,9 +1338,11 @@ var postInviteChat = async function(req, res) {
                 await db.send_sql(postInvite);
                 console.log('invite post 1');
 
-                const getInviteId = `SELECT LAST_INSERT_ID() AS invite_id`;
+                // const getInviteId = `SELECT LAST_INSERT_ID() AS invite_id`;
+                const getInviteId = `SELECT * FROM invites ORDER BY invite_id DESC LIMIT 1`;
                 const r1 = await db.send_sql(getInviteId);
                 const inviteId = r1[0].invite_id;
+                console.log('inviteId for post', inviteId);
                 try {
                     //  check if I need quotations for this or not
                     const postUInvite = `INSERT INTO user_invites (user_id, invite_id) VALUES (${inviteeId}, ${inviteId})`;
@@ -1367,7 +1370,7 @@ var postInviteChat = async function(req, res) {
 var confirmInvite = async function(req, res) {
     // Check if the user is logged in
     console.log('confirming invite');
-    console.log('req', req);
+    // console.log('req', req);
 
     if (!session_user_id) {
         return res.status(403).json({ error: 'Not logged in.' });
@@ -1390,9 +1393,12 @@ var confirmInvite = async function(req, res) {
         const postChat = `INSERT INTO chats (chatname, admin_id) VALUES ('${adminId}', '${adminId}')`;
         await db.send_sql(postChat);
 
-        const getChatIdQuery = `SELECT LAST_INSERT_ID() AS chat_id`;
+        const getChatIdQuery = `SELECT * FROM chats ORDER BY chat_id DESC LIMIT 1`;
+
+        // const getChatIdQuery = `SELECT LAST_INSERT_ID() AS chat_id`;
         const r1 = await db.send_sql(getChatIdQuery);
         const chatId = r1[0].chat_id;
+        console.log('insert this as chatId', chatId);
 
         // create new row in user chats
         const postUserChat = `INSERT INTO user_chats (user_id, chat_id, is_active) VALUES ('${user_id}', '${chatId}', 1)`;
@@ -1713,9 +1719,11 @@ var postFInvite = async function(req, res) {
         const postInvite = `INSERT INTO friend_invites (sender_id, receiver_id, confirmed) VALUES ('${inviterId}', '${inviteeId}', 0)`; // FALSE is 0
         await db.send_sql(postInvite);
 
-        const getInviteId = `SELECT LAST_INSERT_ID() AS invite_id`;
+        // const getInviteId = `SELECT LAST_INSERT_ID() AS invite_id`;
+        const getInviteId = `SELECT * FROM friend_invites ORDER BY f_invite_id DESC LIMIT 1`;
         const r1 = await db.send_sql(getInviteId);
-        const inviteId = r1[0].invite_id;
+        const inviteId = r1[0].f_invite_id;
+        console.log('inserting this as invite', inviteId);
 
         const postUInvite = `INSERT INTO user_f_invites (user_id, f_invite_id) VALUES ('${inviteeId}', '${inviteId}')`; // FALSE is 0
         await db.send_sql(postUInvite);

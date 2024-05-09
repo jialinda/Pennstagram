@@ -1,5 +1,5 @@
 // const { embedding_functions } = require('chromadb/lib/utils'); // Adjust path based on actual structure
-// const { Chroma } = require('@langchain/community/vectorstores/chroma');
+const { Chroma } = require('@langchain/community/vectorstores/chroma');
 
 const { OpenAI, ChatOpenAI } = require("@langchain/openai");
 const { PromptTemplate } = require("@langchain/core/prompts");
@@ -14,7 +14,7 @@ const { createStuffDocumentsChain } = require("langchain/chains/combine_document
 const { Document } = require("@langchain/core/documents");
 const { createRetrievalChain } = require("langchain/chains/retrieval");
 const { formatDocumentsAsString } = require("langchain/util/document");
-const {OpenAIEmbeddingFunction} = require('chromadb');
+const { OpenAIEmbeddingFunction } = require('chromadb');
 // const { Chroma } = require("@langchain/community/vectorstores/chroma");
 
 const {
@@ -36,19 +36,15 @@ const client = new ChromaClient();
 const parse = require('csv-parse').parse;
 const db = dbsingleton;
 const api_key = process.env.OPENAI_API_KEY;
-const emb_fn = new OpenAIEmbeddingFunction({
-            openai_api_key: api_key, 
-            model: "text-embedding-3-small"
-        });
 
 var vectorStore = null;
 
-var getVectorStore = async function(req) {
+var getVectorStore = async function (req) {
     if (vectorStore == null) {
         vectorStore = await Chroma.fromExistingCollection(new OpenAIEmbeddings(), {
-            collectionName: "imdb_reviews",
+            collectionName: "llm_embeddings",
             url: "http://localhost:8000", // Optional, will default to this value
-            });
+        });
     }
     return vectorStore;
 }
@@ -62,9 +58,9 @@ async function createCollectionIfNotExists(collectionName) {
         console.log(collections);
 
 
-        const collection =  await client.createCollection({
-                name: collectionName,
-                embeddingsModel: emb_fn
+        const collection = await client.createCollection({
+            name: collectionName,
+            embeddingsModel: emb_fn
         });
         console.log('collection created:', collection);
         return collection
@@ -80,8 +76,8 @@ async function getEmbeddings(texts) {
         apiKey: process.env.OPENAI_API_KEY,
         batchSize: 512,
         model: "text-embedding-3-small"
-      });
-    
+    });
+
     try {
         const vectors = await embeddings.embedDocuments(texts)
         return vectors;
@@ -108,7 +104,7 @@ async function indexDocuments() {
 
     // const vectorStore = createCollectionIfNotExists("test6");
 
-    const vectorStore = await client.createCollection ({
+    const vectorStore = await client.createCollection({
         name: "test8",
         embeddingFunction: emb_fn,
     })
@@ -138,36 +134,83 @@ async function indexDocuments() {
 
     console.log("vector store collection:", vectorStore);
 
-  
-        // await vectorStore.add(userDocuments.concat(postDocuments));
+
+    // await vectorStore.add(userDocuments.concat(postDocuments));
     console.log("Documents indexed in ChromaDB");
 }
 
 
 var getNaturalSearch = async function (req, res) {
-    // const collection = createCollectionIfNotExists("test6");
-    await client.deleteCollection({name: "test8"});
-    
-    await indexDocuments();
-    // const vs = await getVectorStore();
-    // const retriever = vs.asRetriever();
 
-    const collections = await client.listCollections();
+    const collectionList = await client.listCollections();
     console.log("collection list: ");
-    console.log(collections);
+    console.log(collectionList);
+    await client.deleteCollection({ name: "llm_embeddings" });
+
+    const emb_fn = new OpenAIEmbeddingFunction({
+        openai_api_key: api_key,
+        model: "text-embedding-3-small",
+    });
+
+
+    const collection = await client.createCollection({
+        name: "llm_embeddings",
+        embeddingsModel: emb_fn,
+    });
+
+    console.log('collection created:', collection);
+
+
+    await collection.add({
+        documents: ["I love playing basketball.", "I love playing football.", "I love playing tennis.", "Alice", "Bob", "Charlie"],
+        metadatas: [
+            { 'source': "post" },
+            { 'source': "post" },
+            { 'source': "post" },
+            { 'source': "user" },
+            { 'source': "user" },
+            { 'source': "user" }
+        ],
+        ids: ["p1", "p2", "p3", "u1", "u2", "u3"]
+    });
+
+
+
+
+
+    await client.deleteCollection({ name: "test8" });
+    await client.deleteCollection({ name: "test7" });
+    await client.deleteCollection({ name: "user_post_collection" });
+
+
+
+    const vs = await getVectorStore();
+    const retriever = vs.asRetriever();
+
 
     // console.log('vs:', vs);
     // const retriever = vs.asRetriever();
     // const results = await vs.search({ query: req.body.question });
+    // const context = 'Find the related user and post based on the {question}';
+    const question = req.body.question;
+
+    const prompt = PromptTemplate.fromTemplate(`
+                Context: context
+                Question: ${question}
+                Please provide related user or post based on the given context.
+            `);
+
+console.log('prompt:', prompt);
 
 
-    const prompt =
-        PromptTemplate.fromTemplate({
-            context: 'Find the related user and post based on the {question}',
-            contextParams: {question: req.body.question }
-        });
+
+    // const prompt =
+    //     PromptTemplate.fromTemplate('
+    //         Context: {context}
+    //         contextParams: { question: req.body.question }
+    //         ');
     //const llm = null; // TODO: replace with your language model
-    const llm = new ChatOpenAI({ apiKey: process.env.OPENAI_API_KEY, modelName: 'gpt-3.5-turbo', temperature: 0 });
+    const llm = new ChatOpenAI({ apiKey: process.env.OPENAI_API_KEY, modelName: 'gpt-3.5-turbo' });
 
     const ragChain = RunnableSequence.from([
         {
@@ -182,14 +225,20 @@ var getNaturalSearch = async function (req, res) {
 
     console.log(req.body.question);
 
-    result = await ragChain.invoke(req.body.question);
-    console.log(result);
-    res.status(200).json({ message: result });
+    try {
+        console.log("start invoking ragchain");
+        console.log('ragChain:', ragChain);
+        const result = await ragChain.invoke(req.body.question);
+        console.log('result:', result);
+        return res.status(200).json({ message: result });
+    } catch (error) {
+        console.log('error');
+    };
 }
 
 
 var llmroutes = {
-    get_NaturalSearch: getNaturalSearch,   
-  };
-    
+    get_NaturalSearch: getNaturalSearch,
+};
+
 module.exports = llmroutes;

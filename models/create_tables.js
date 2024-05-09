@@ -54,6 +54,14 @@ async function create_tables(db) {
       );'
     );
 
+    // make table for post images + associated post id 
+    var qpostmedia = db.create_tables('CREATE TABLE IF NOT EXISTS post_media ( \
+      media_id INT AUTO_INCREMENT PRIMARY KEY, \
+      post_id INT, \
+      media_url VARCHAR(500), \
+      FOREIGN KEY (post_id) REFERENCES posts(post_id));'
+    );
+
     var qcomments = db.create_tables('CREATE TABLE IF NOT EXISTS comments ( \
       comment_id INT AUTO_INCREMENT PRIMARY KEY, \
       content VARCHAR(500),\

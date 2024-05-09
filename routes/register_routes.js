@@ -1,5 +1,6 @@
 const routes = require('./routes.js');
 const multer = require('multer');
+const llmroutes = require('./llm_routes.js');
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
       cb(null, 'uploads/')
@@ -25,6 +26,7 @@ module.exports = {
 function register_routes(app) {
     app.get('/hello', routes.get_helloworld);
     app.post('/login', routes.post_login);
+    app.post('/logout', routes.post_logout);
     app.post('/register', upload.single('photo'), routes.post_register); 
     app.post('/:username/selections', routes.post_selections); 
     app.get('/hashtags/top', routes.get_top_hashtags);
@@ -37,6 +39,13 @@ function register_routes(app) {
     app.get('/:username/movies', routes.get_movie); 
     // CHECK because u have to update it
     app.get('/chat/:chatId', routes.get_chat_by_id); // check
+    app.get('/:username/userinfo', routes.get_user_info); 
+    app.post('/:username/changeActor', routes.change_actor); 
+    app.post('/:username/changeEmail', routes.change_email); 
+    app.post('/:username/changePassword', routes.change_password);    
+    app.post('/:username/changeHashtags', routes.change_hashtags); 
+    app.post('/search', llmroutes.get_NaturalSearch);    
+
     app.get('/getChatAll', routes.get_chat_all); // check
     app.post('/postChat', routes.post_chat); 
     app.post('/postText', routes.post_text); 

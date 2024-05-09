@@ -10,25 +10,38 @@ const port = 8080;
 const registry = require('./routes/register_routes.js');
 const session = require('express-session');
 const cors = require('cors');
+const registry = require('./routes/register_routes');
 
-console.log('app is in use');
 
+const app = express();
+
+// Middleware setup
 app.use(cors({
   origin: 'http://localhost:4567', // Adjust as needed for your front-end
   methods: ['POST', 'PUT', 'GET', 'OPTIONS', 'HEAD'],
   credentials: true
 }));
 
-app.use(express.json());
+app.use(express.json()); 
+
 app.use(session({
-  secret: 'nets2120_insecure',
+  secret: 'nets2120_insecure', 
   saveUninitialized: true,
   cookie: { httpOnly: false },
   resave: true
 }));
 
+
+// Register routes
 registry.register_routes(app);
 
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
+});
+
+const port = process.env.PORT || 8080;
 console.log('io is in use');
 io.on('connection', (socket) => {
   console.log('New client connected');
@@ -49,5 +62,7 @@ io.on('connection', (socket) => {
 
 // Change app.listen to server.listen to start HTTP and WebSocket server
 server.listen(port, () => {
-  console.log(`Main app listening on port ${port}`);
-});
+  console.log(`Server running on port ${port}`);;
+});;
+
+module.exports = app;

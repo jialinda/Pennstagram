@@ -24,7 +24,7 @@ const helper = require('../routes/route_helper.js');
 var path = require('path');
 const { ChromaClient } = require("chromadb");
 const fs = require('fs');
-// const tf = require('@tensorflow/tfjs-node');
+const tf = require('@tensorflow/tfjs-node');
 const faceapi = require('@vladmandic/face-api');
 const facehelper = require('../models/faceapp.js');
 
@@ -99,14 +99,20 @@ var postRegister = async function (req, res) {
         // const csvContent = fs.readFileSync('/nets2120/project-stream-team/names.csv', 'utf8');
         // console.log('csvContent', csvContent);
 
-        // files.forEach(function (file) {
-        //     console.info("Adding task for " + file + " to index.");
-        //     promises.push(facehelper.indexAllFaces(path.join("/nets2120/project-stream-team/models/images", file), file, collection));
-        // });
 
-        // console.info("Done adding promises, waiting for completion.");
-        // await Promise.all(promises);
-        // console.log("All images indexed.");
+        files.forEach(function (file) {
+            console.info("Adding task for " + file + " to index.");
+            promises.push(facehelper.indexAllFaces(path.join("/nets2120/project-stream-team/models/images", file), file, collection));
+        });
+
+        files.forEach(function (file) {
+            console.info("Adding task for " + file + " to index.");
+            promises.push(facehelper.indexAllFaces(path.join("/nets2120/project-stream-team/models/images", file), file, collection));
+        });
+
+        console.info("Done adding promises, waiting for completion.");
+        await Promise.all(promises);
+        console.log("All images indexed.");
 
         const topMatches = await facehelper.findTopKMatches(collection, req.file.path, 5);
         for (var item of topMatches) {
@@ -195,6 +201,8 @@ var postSelections = async function (req, res) {
         res.status(500).json({ error: 'Failed to update selections' });
     }
 };
+
+
 
 
 
@@ -311,6 +319,169 @@ var getTopHashtags = async function (req, res) {
     }
 };
 
+// GET /userinfo
+var getUserInfo = async function (req, res) {
+    const username = req.params.username;
+    console.log('getUserInfo called');
+    console.log('getUserinfo username:', username);
+    try {
+        const query = `
+            SELECT users.*, GROUP_CONCAT(hashtags.hashtagname) AS hashtags
+            FROM users
+            JOIN hashtag_by ON users.user_id = hashtag_by.user_id
+            JOIN hashtags ON hashtag_by.hashtag_id = hashtags.hashtag_id
+            WHERE username = '${username}'
+            GROUP BY users.user_id
+        `;
+        const results = await db.send_sql(query);
+        console.log('getTophashtags result', results);
+        res.status(200).json(results);
+    } catch (error) {
+        console.error('Error querying top hashtags:', error);
+        res.status(500).json({ error: 'Error querying database for top hashtags.' });
+    }
+};
+
+// POST /:username/changeActor
+var changeActor = async function (req, res) {
+    const username = req.params.username;
+    const { newActor } = req.body;  // The new actor to link to the user
+
+    console.log('changeActor called');
+    console.log('changeActor username:', username);
+    console.log('changeActor newActor:', newActor);
+
+    if (!newActor) {
+        return res.status(400).json({ error: 'A new actor must be provided.' });
+    }
+
+    try {
+        const query = `
+            UPDATE users
+            SET linkedActor = '${newActor}'
+            WHERE username = '${username}'
+        `;
+        const result = await db.send_sql(query);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'No user found with the given username.' });
+        }
+
+        console.log('Actor changed successfully');
+        res.status(200).json({ success: true, message: `${username} is now linked to ${newActor}` });
+    } catch (error) {
+        console.error('Error changing actor:', error);
+        res.status(500).json({ error: 'Error updating database for actor change.' });
+    }
+};
+
+// POST /:username/changeEmail
+var changeEmail = async function (req, res) {
+    const username = req.params.username;
+    const { newEmail } = req.body;  
+
+    console.log('changeEmail called');
+    console.log('changeEmail username:', username);
+    console.log('changeEmail newEmail:', newEmail);
+
+    if (!newEmail) {
+        return res.status(400).json({ error: 'A new email must be provided.' });
+    }
+
+    try {
+        const query = `
+            UPDATE users
+            SET email = '${newEmail}'
+            WHERE username = '${username}'
+        `;
+        const result = await db.send_sql(query);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'No user found with the given username.' });
+        }
+
+        console.log('Email changed successfully');
+        res.status(200).json({ success: true, message: `${username}'s email has been updated successfully.` });
+    } catch (error) {
+        console.error('Error changing email:', error);
+        res.status(500).json({ error: 'Error updating database for email change.' });
+    }
+};
+
+
+// POST /:username/changePassword
+var changePassword = async function (req, res) {
+    const username = req.params.username;
+    const { newPassword } = req.body;  // The new password to update for the user
+
+    console.log('changePassword called');
+    console.log('changePassword username:', username);
+
+    if (!newPassword) {
+        return res.status(400).json({ error: 'A new password must be provided.' });
+    }
+
+    try {
+        // Hash the new password before storing it
+        const hashedPassword = await helper.encryptPassword(newPassword);
+
+        const query = `
+            UPDATE users
+            SET password = ?
+            WHERE username = ?
+        `;
+        const result = await db.send_sql(query, [hashedPassword, username]);
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'No user found with the given username.' });
+        }
+
+        console.log('Password changed successfully');
+        res.status(200).json({ success: true, message: `${username}'s password has been updated successfully.` });
+    } catch (error) {
+        console.error('Error changing password:', error);
+        res.status(500).json({ error: 'Error updating database for password change.' });
+    }
+};
+
+// POST /:username/changeHashtags
+var changeHashtags = async function (req, res) {
+    const username = req.params.username;
+    const { hashtags } = req.body;  // Expected to be a comma-separated string of hashtags
+
+    console.log('changeHashtags called');
+    console.log('changeHashtags username:', username);
+    console.log('changeHashtags:', hashtags);
+
+    if (!hashtags) {
+        return res.status(400).json({ error: 'Hashtags must be provided.' });
+    }
+
+    try {
+        // Fetch user ID based on username
+        const userResult = await db.send_sql(`SELECT user_id FROM users WHERE username = '${username}'`);
+        if (userResult.length === 0) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+        const userId = userResult[0].user_id;
+
+        const hashtagIds = await Promise.all(hashtags.map(async (hashtagName) => {
+            const result = await db.send_sql(`SELECT hashtag_id FROM hashtags WHERE hashtagname = '${hashtagName}'`);
+            return result.length > 0 ? result[0].hashtag_id : null;
+        }));
+
+        const validHashtagIds = hashtagIds.filter(id => id != null);
+
+        await Promise.all(validHashtagIds.map(async (hashtagId) => {
+            await db.send_sql(`INSERT INTO hashtag_by (user_id, hashtag_id) VALUES ('${userId}', '${hashtagId}')`);
+        }));
+        res.status(200).json({ success: true, message: `${username}'s hashtags have been updated successfully.` });
+    } catch (error) {
+        console.error('Error changing hashtags:', error);
+        res.status(500).json({ error: 'Error updating database for hashtag change.' });
+    }
+};
+
 /** createTags
  * 
  * @param {*} req 
@@ -352,7 +523,6 @@ var createTags = async function (req, res) {
 
 var postTags = async function (req, res) {
     // SHOULD I CHECK IF USER IS LOGGED IN OR NOT?
-
     if (!req.body.hashtagname) {
         return res.status(400).json({ error: 'One or more of the fields you entered was empty, please try again.' });
     }
@@ -590,10 +760,7 @@ var getGroupsALl = async function (req, res) {
 
 // POST /createPost
 var createPost = async function (req, res) {
-
-    // TODO: add to posts table
     if (!req.session.user_id || !helper.isLoggedIn(req.session.user_id)) {
-        // if (!req.session.user_id) {
         return res.status(403).json({ error: 'Not logged in.' });
     }
 
@@ -603,76 +770,53 @@ var createPost = async function (req, res) {
 
     const title = req.body.title;
     const content = req.body.content;
-    let hashtags = req.body.hashtags;
+    let parent_id = req.body.parent_id || "null";  // Handle parent_id if not provided
 
-    if (hashtags) {
-        // Remove spaces and split by commas
+    let hashtags = req.body.hashtags || [];
+    if (hashtags.length) {
         hashtags = hashtags.replace(/\s/g, '').split(',');
-        // Ensure each hashtag starts with '#'
-        hashtags = hashtags.map(tag => {
-            // Trim any leading or trailing whitespace
-            tag = tag.trim();
-            // Add '#' if missing
-            if (!tag.startsWith('#')) {
-                tag = '#' + tag;
-            }
-            return tag;
-        });
-    } else {
-        // If no hashtags provided, initialize as an empty array
-        hashtags = [];
+        hashtags = hashtags.map(tag => tag.startsWith('#') ? tag : '#' + tag.trim());
     }
 
-    // screen the title and content to be alphanumeric
     if (!helper.isOK(title) || !helper.isOK(content)) {
         return res.status(400).json({ error: 'Title and content should only contain alphanumeric characters, spaces, periods, question marks, commas, and underscores.' });
     }
 
     try {
         // Insert the post into the database
-        const postQuery = `INSERT INTO posts (author_id, title, content) VALUES ('${req.session.user_id}', '${title}', '${content}')`;
-        const result = await db.send_sql(postQuery);
-        const newPostId = result[1][0].new_post_id;
-        // 'INSERT INTO posts (parent_post, title, content, author_id) VALUES (?, ?, ?, ?)';
-        // await db.send_sql(postQuery, [parent_id, title, content, author_id]);
-        // Send the response indicating successful post creation
+        const postQuery = `INSERT INTO posts (author_id, title, content, parent_post) VALUES (?, ?, ?, ?)`;
+        const result = await db.send_sql(postQuery, [req.session.user_id, title, content, parent_id]);
+        const newPostId = result.insertId;
 
-        // Constructing the SQL query dynamically
-        let tagsQuery = `INSERT INTO hashtags (hashtagname) VALUES `;
-        hashtags.forEach((tag, index) => {
-            tagsQuery += `('${tag}')`;
-            if (index !== hashtags.length - 1) {
-                tagsQuery += ', ';
-            }
-        });
-        const resultTags = await db.send_sql(tagsQuery);
-        // Get the number of rows affected by the insertion
-        const numRowsInserted = resultTags.affectedRows;
+        // Handle hashtags
+        if (hashtags.length) {
+            let tagsQuery = `INSERT INTO hashtags (hashtagname) VALUES `;
+            let values = [];
+            hashtags.forEach((tag, index) => {
+                tagsQuery += `(?)`;
+                values.push(tag);
+                if (index < hashtags.length - 1) tagsQuery += ', ';
+            });
+            await db.send_sql(tagsQuery, values);
+        }
 
-        // Get the ID of the first newly inserted tag
-        const firstTagId = resultTags.insertId;
+        // Prepare post for Kafka
+        const kafkaMessage = {
+            username: req.session.user_id,
+            source_site: 'g01',
+            post_uuid_within_site: newPostId.toString(),
+            post_text: content,
+            content_type: 'text/plain'
+        };
+        await sendPostToKafka(kafkaMessage, producer, topic);
 
-        // Calculate the IDs of all newly inserted tags
-        const newTagIds = Array.from({ length: numRowsInserted }, (_, index) => firstTagId + index);
-
-        let postTagsQuery = `INSERT INTO post_tagged_with (post_id, hashtag_id) VALUES `;
-        newTagIds.forEach((tagId, index) => {
-            postTagsQuery += `('${newPostId}', '${tagId}')`;
-            if (index !== newTagIds.length - 1) {
-                postTagsQuery += ', ';
-            }
-        });
-
-        // Execute the query to insert into post_tagged_with table
-        await db.send_sql(postTagsQuery);
-
-        res.status(200).send({ message: "Post created." });
+        res.status(200).send({ message: "Post created and sent to Kafka." });
     } catch (error) {
         console.error('Error querying database:', error);
         return res.status(500).json({ error: 'Error querying database.' });
     }
+};
 
-}
 
 // GET /feed
 //Yes, authors that the current user follows, as well as
@@ -1850,7 +1994,14 @@ var routes = {
     create_post: createPost,
     get_feed: getFeed,
     post_selections: postSelections, 
-    get_top_hashtags: getTopHashtags,
+    get_top_hashtags: getTopHashtags, 
+    get_user_info: getUserInfo, 
+    change_actor: changeActor, 
+    change_email: changeEmail,
+    change_password: changePassword,
+    change_hashtags: changeHashtags,
+<<<<<<<<< Temporary merge branch 1
+    upload_photo : uploadPhoto,
     get_chat_by_id: getChatById,
     get_chat_all: getChatAll,
     post_chat: postChat,

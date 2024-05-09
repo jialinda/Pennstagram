@@ -2,6 +2,7 @@ const mysql = require('mysql');
 const config = require('../config.json'); // Load configuration
 const process = require('process');
 
+
 /**
  * Implementation of a singleton pattern for database connections
  */
@@ -61,6 +62,15 @@ async function get_db_connection() {
     });
 }
 
+
+/**
+ * Sends an SQL query to the database
+ * 
+ * @param {*} query 
+ * @param {*} params 
+ * @returns promise
+ */
+
 /**
  * Sends an SQL query to the database
  * 
@@ -69,17 +79,41 @@ async function get_db_connection() {
  * @returns promise
  */
 async function send_sql(sql, params = []) {
-    console.log('sending sql');
-    const dbo = await get_db_connection();
-    return new Promise((resolve, reject)=> {
-            dbo.query(sql,  (error, results)=>{
-            if(error){
-                return reject(error);
-            }
-            return resolve(results);
+    let connection;
+    const dbconfig = {
+        ...config.database,
+        user: process.env.RDS_USER,
+        password: process.env.RDS_PWD
+    };
+
+    try {
+        connection = mysql.createConnection(dbconfig);
+        console.log('Connected to the MySQL server.');
+
+        return new Promise((resolve, reject) => {
+            connection.query(sql, params, (error, results, fields) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(results);
+                }
+            });
         });
-    });    
-  }
+    } catch (error) {
+        console.error('Failed to execute query:', error);
+        throw error;
+    } finally {
+        if (connection) {
+            connection.end(err => {
+                if (err) {
+                    console.error('Failed to close the database connection:', err);
+                } else {
+                    console.log('Database connection closed successfully.');
+                }
+            });
+        }
+    }
+}
 
 
   /**

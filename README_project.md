@@ -1,5 +1,3 @@
-* Your repository contains all the files needed to compile and run your solution (including all .js/.ejs files, and all Spark code); as well as README file that describes 1) the team number and team name, 2) the full names and SEAS login names of all team members, 3) a description of features implemented, 4) any extra credit claimed, 5) a list of source files included, 6) a declaration that all the code you are submitting was written by you, and 7) instructions for building an running your project. The instructions must be sufficiently detailed for us to set up and run your application.
-
 # NETS 2120 Course Project - Stream Team (#05) README
 
 Team member names: Iain Chen Li, Linda Shen, Joanna Fan, Chanya (Grace) Thanglerdsumpan 
@@ -49,41 +47,42 @@ In order to see who you’re friends with, search for new friends, and remove cu
 Users can create and search for “Groups” to join in the “Groups” interface of the app. Very similar logic to how the Friends page is, except that no invitation is required and we also added a feature where they are automatically added to a group chat with other group members.
 
 ## Source Files Included
-Below are all the files we have included in this project:
-/components
-    /chats
-        /ChatBar.tsx
-        /ChatbarComponent.tsx
-        /Chatroom.tsx
-        /CreatChatComponent.tsx
-        /FindFriendComponent.tsx
-        /InviteFriendComponent.tsx
-    /invites
-        /FInviteComponents.tsx
-        /InviteComponents.tsx
-        /Invites.tsx
-    /posts
-        /CreatePost.tsx
-        /CreatePostComponent.tsx
-/pages
-    /ChatInterface.tsx
-    /CreateChat.tsx
-    /EditProfile.tsx
-    /Feed.tsx
-    /Friends.tsx
-    /Group.tsx
-    /Home.tsx
-    /Homepage.tsx
-    /InviteFriend.tsx
-    /InviteFriendIntoChat.tsx
-    /Login.tsx
-    /Profile.tsx
-    /Search.tsx
-    /SetupProfile.tsx
-    /Signup.tsx
-App.tsx
-index.css
 
+Below are all the files we have included in this project:
+
+- `/components`
+  - `/chats`
+    - `ChatBar.tsx`
+    - `ChatbarComponent.tsx`
+    - `Chatroom.tsx`
+    - `CreatChatComponent.tsx`
+    - `FindFriendComponent.tsx`
+    - `InviteFriendComponent.tsx`
+  - `/invites`
+    - `FInviteComponents.tsx`
+    - `InviteComponents.tsx`
+    - `Invites.tsx`
+  - `/posts`
+    - `CreatePost.tsx`
+    - `CreatePostComponent.tsx`
+- `/pages`
+  - `ChatInterface.tsx`
+  - `CreateChat.tsx`
+  - `EditProfile.tsx`
+  - `Feed.tsx`
+  - `Friends.tsx`
+  - `Group.tsx`
+  - `Home.tsx`
+  - `Homepage.tsx`
+  - `InviteFriend.tsx`
+  - `InviteFriendIntoChat.tsx`
+  - `Login.tsx`
+  - `Profile.tsx`
+  - `Search.tsx`
+  - `SetupProfile.tsx`
+  - `Signup.tsx`
+- `App.tsx`
+- `index.css`
 
 
 ### All the code was written by members of our team.

@@ -7,7 +7,16 @@ const app = express();
 
 // Middleware setup
 app.use(cors({
-  origin: 'http://localhost:4567',
+  origin: function (origin, callback) {
+    // List of allowed origins
+    const allowedOrigins = ['http://localhost:4567', 'http://localhost:4568', 'http://localhost:4569', 'http://localhost:4570'];
+    // Check if the incoming origin is in the allowed list
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS not allowed from this origin'));
+    }
+  },
   methods: ['POST', 'PUT', 'GET', 'OPTIONS', 'HEAD'],
   credentials: true
 }));

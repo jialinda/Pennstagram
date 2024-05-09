@@ -72,7 +72,7 @@ public class ComputeRanksLivy {
         // Second call to Apache Livy to run SocialRankJob with back-links set to false
         // while(true)
         // {
-            SocialRankJob noBlJob = new SocialRankJob(d_max, i_max, 1000, false, debug);
+            SocialRankJob noBlJob = new SocialRankJob(d_max, i_max, 1000, false, true);
 
             List<MyPair<String, Double>> result = SparkJob.runJob(livy, noBlJob);
             System.out.println("Result: " + result);

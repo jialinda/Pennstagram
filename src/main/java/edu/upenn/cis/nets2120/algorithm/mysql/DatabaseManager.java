@@ -1,6 +1,6 @@
 package edu.upenn.cis.nets2120.algorithm.mysql;
 
-import edu.upenn.cis.nets2120.config.Config;
+import edu.upenn.cis.nets2120.configu.Config;
 
 /**
  * An example of a manager for a "singleton" database connection.

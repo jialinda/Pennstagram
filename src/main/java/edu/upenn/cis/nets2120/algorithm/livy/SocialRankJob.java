@@ -1,6 +1,12 @@
 package edu.upenn.cis.nets2120.algorithm.livy;
 
 import java.io.IOException;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -18,11 +24,13 @@ import java.sql.Statement;
 import java.sql.DatabaseMetaData;
 
 import org.apache.livy.JobContext;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaDoubleRDD;
 
-import edu.upenn.cis.nets2120.config.Config;
+import edu.upenn.cis.nets2120.configu.Config;
 import edu.upenn.cis.nets2120.algorithm.SparkJob;
 import com.google.common.collect.Iterables;
 import scala.Tuple2;
@@ -33,6 +41,7 @@ public class SocialRankJob extends SparkJob<List<MyPair<String, Double>>> {
      */
     private static final long serialVersionUID = 1L;
 
+    static Logger logger = LogManager.getLogger(SocialRankJob.class);
     private boolean useBacklinks;
     // Convergence condition variables
     protected double d_max; // largest change in a node's rank from iteration i to iteration i+1
@@ -41,6 +50,7 @@ public class SocialRankJob extends SparkJob<List<MyPair<String, Double>>> {
     JavaPairRDD<String, Double> labels;
     int MAX_ITERATIONS = 15;
     private String source;
+    Connection connection = null;
 
     int max_answers = 1000;
 
@@ -66,7 +76,14 @@ public class SocialRankJob extends SparkJob<List<MyPair<String, Double>>> {
         List<Tuple2<String, String>> userPostEdges = new ArrayList<>(); // (u,p) -> 0.4
         List<Tuple2<String, String>> userEdges = new ArrayList<>(); // (u,u') -> 0.3
 
-        try (Connection connection = DriverManager.getConnection(Config.DATABASE_CONNECTION, Config.DATABASE_USERNAME, Config.DATABASE_PASSWORD)) {
+        List<Tuple2<String, Tuple2<String, Double>>> sampleList = new ArrayList<>();
+        sampleList.add(new Tuple2<>("Key1", new Tuple2<>("RandomValue", Math.random() * 100))); // Key1, (RandomValue, some random double)
+
+        // Convert the list to a JavaPairRDD
+        JavaPairRDD<String, Tuple2<String, Double>> test = context.parallelizePairs(sampleList);
+
+        try {
+            connection = DriverManager.getConnection(Config.DATABASE_CONNECTION, Config.DATABASE_USERNAME, Config.DATABASE_PASSWORD);
             // Query for user-hashtag relationships
             try (ResultSet rsUserHashtags = connection.createStatement().executeQuery(
                     "SELECT u.user_id, h.hashtag_id FROM hashtag_by hb " +
@@ -84,8 +101,7 @@ public class SocialRankJob extends SparkJob<List<MyPair<String, Double>>> {
             try (ResultSet rsPostHashtags = connection.createStatement().executeQuery(
                     "SELECT p.post_id, h.hashtag_id FROM post_tagged_with pth " +
                     "JOIN posts p ON pth.post_id = p.post_id " +
-                    "JOIN hashtags h ON pth.hashtag_id = h.hashtag_id" +
-                    "WHERE p.date_posted = CURRENT_DATE")) {
+                    "JOIN hashtags h ON pth.hashtag_id = h.hashtag_id" )) { // "WHERE p.timestamp = CURRENT_DATE"
                 while (rsPostHashtags.next()) {
                     String postId = "p" + rsPostHashtags.getString("post_id");
                     String hashtagId = rsPostHashtags.getString("hashtag_id");
@@ -97,13 +113,13 @@ public class SocialRankJob extends SparkJob<List<MyPair<String, Double>>> {
             // Query for user-post "like" relationships
             try (ResultSet rsLikes = connection.createStatement().executeQuery(
                     "SELECT pl.liker_id, p.post_id FROM posts_liked_by pl " +
-                    "JOIN posts p ON pl.post_id = p.post_id"+
-                    "WHERE p.date_posted = CURRENT_DATE")) {
+                    "JOIN posts p ON pl.post_id = p.post_id")) { // "WHERE p.timestamp = CURRENT_DATE"
                 while (rsLikes.next()) {
                     String userId = "u" + rsLikes.getString("liker_id");
                     String postId = "p" + rsLikes.getString("post_id");
                     userPostEdges.add(new Tuple2<>(userId, postId));
                     postEdges.add(new Tuple2<>(postId, userId));
+                    System.err.println(userId);
                 }
             }
 
@@ -120,7 +136,8 @@ public class SocialRankJob extends SparkJob<List<MyPair<String, Double>>> {
             }
 
         } catch (SQLException e) {
-            System.err.println("SQL Exception: " + e.getMessage());
+            logger.error(e.getMessage(), e);
+            return null;
         }
 
         // Convert the list to a JavaRDD and then to a JavaPairRDD
@@ -244,6 +261,7 @@ public class SocialRankJob extends SparkJob<List<MyPair<String, Double>>> {
 
         // Load the social network, aka. the edges
         JavaPairRDD<String, Tuple2<String, Double>> edgeRDD = getSocialNetworkFromJDBC();
+        if (edgeRDD == null) return null;
 
         JavaPairRDD<String, Double> userLabels = this.users.keys().mapToPair(node -> new Tuple2<>(node, 1.0)).distinct();
 
@@ -277,28 +295,32 @@ public class SocialRankJob extends SparkJob<List<MyPair<String, Double>>> {
         // Collect the top 20 labels
         List<Tuple2<String, Double>> top20Labels = sortedLabels.take(20);
 
-        // try (Connection connection = DriverManager.getConnection(Config.DATABASE_CONNECTION, Config.DATABASE_USERNAME, Config.DATABASE_PASSWORD)) {
-        //     if (!tableExists(connection, "RankResults")) {
-        //         try (Statement statement = connection.createStatement()) {
-        //             String sqlCreate = "CREATE TABLE RankResults (" +
-        //                                "id INT AUTO_INCREMENT PRIMARY KEY, " +
-        //                                "node VARCHAR(255) NOT NULL, " +
-        //                                "rank DOUBLE NOT NULL)";
-        //             statement.executeUpdate(sqlCreate);
-        //         }
-        //     }
-        // }
-        // String query = "INSERT INTO RankResults (node, rank) VALUES (?, ?)";
-        // try (Connection connection = DriverManager.getConnection(Config.DATABASE_CONNECTION, Config.DATABASE_USERNAME, Config.DATABASE_PASSWORD);
-        //      PreparedStatement statement = connection.prepareStatement(query)) {
-        //     for (Tuple2<String, Double> result : top20Labels) {
-        //         statement.setString(1, result._1);
-        //         statement.setDouble(2, result._2);
-        //         statement.executeUpdate();
-        //     }
-        // }
+        try (Connection connection = DriverManager.getConnection(Config.DATABASE_CONNECTION, Config.DATABASE_USERNAME, Config.DATABASE_PASSWORD)) {
+            if (!tableExists(connection, "RankResults")) {
+                try (Statement statement = connection.createStatement()) {
+                    String sqlCreate = "CREATE TABLE RankResults (" +
+                                       "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                                       "node VARCHAR(255) NOT NULL, " +
+                                       "rank DOUBLE NOT NULL)";
+                    statement.executeUpdate(sqlCreate);
+                }
+            }
+        }
+        String query = "INSERT INTO RankResults (node, rank) VALUES (?, ?)";
+        try (Connection connection = DriverManager.getConnection(Config.DATABASE_CONNECTION, Config.DATABASE_USERNAME, Config.DATABASE_PASSWORD);
+             PreparedStatement statement = connection.prepareStatement(query)) {
+            for (Tuple2<String, Double> result : top20Labels) {
+                statement.setString(1, result._1);
+                statement.setDouble(2, result._2);
+                statement.executeUpdate();
+            }
+        }
 
-        return top20Labels.stream()
+        List<Tuple2<String, Double>> modifiableTop20Labels = new ArrayList<>(top20Labels);
+
+        modifiableTop20Labels.add(new Tuple2<>("TestLabel", 123.45));
+
+        return modifiableTop20Labels.stream()
                         .map(tuple -> new MyPair<>(tuple._1, tuple._2))
                         .collect(Collectors.toList());
         

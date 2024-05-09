@@ -217,6 +217,7 @@ var postSelections = async function (req, res) {
 
 var postLogin = async function (req, res) {
     // TODO: check username and password and login
+    console.log('logging in');
 
     if (!req.body.username || !req.body.password) {
         return res.status(400).json({ error: 'One or more of the fields you entered was empty, please try again.' });
@@ -291,10 +292,11 @@ var postOnline = async function (req, res) {
 
 // GET /logout
 var postLogout = async function (req, res) {
-    req.session.user_id = null;
-    session_user_id = null; // CHECK ASK GRACE
+    console.log('im logging out');
     const updateQuery = `UPDATE login SET is_online = 0 WHERE user_id = ${session_user_id}`;
     const logout = await db.send_sql(updateQuery);
+    req.session.user_id = null;
+    session_user_id = null; // CHECK ASK GRACE
     res.status(200).json({ message: "You were successfully logged out." });
 };
 
@@ -2000,8 +2002,7 @@ var routes = {
     change_email: changeEmail,
     change_password: changePassword,
     change_hashtags: changeHashtags,
-<<<<<<<<< Temporary merge branch 1
-    upload_photo : uploadPhoto,
+    // upload_photo : uploadPhoto,
     get_chat_by_id: getChatById,
     get_chat_all: getChatAll,
     post_chat: postChat,

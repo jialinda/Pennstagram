@@ -6,14 +6,12 @@ const server = http.createServer(app); // Create an HTTP server instance
 const io = socketIo(server); // Attach socket.io to the HTTP server
 // const { Chroma } = require("@langchain/community/vectorstores/chroma"); // call chroma
 
-const port = 8080;
+// const port = 8080;
 const registry = require('./routes/register_routes.js');
 const session = require('express-session');
 const cors = require('cors');
-const registry = require('./routes/register_routes');
+// const registry = require('./routes/register_routes');
 
-
-const app = express();
 
 // Middleware setup
 app.use(cors({

@@ -89,10 +89,8 @@ ssh -i ~/.ssh/tunnelgrace2.pem -4 -L 3306:instadb.cbbt2woocf66.us-east-1.rds.ama
 Run `sudo apt update` and then `sudo apt install mysql-client-core-8.0` so you have the MySQL client on EC2.  Next you'll need to log into the RDS server.  Do this by running (replacing the host with your version of the RDS database domain above, e.g., `imdbdatabase...amazonaws.com``):
 
 ```
-mysql --host=instadb.cbbt2woocf66.us-east-1.rds.amazonaws.com --user=admin --password=netsfinalproject
+mysql --host=instadb.XXXXXX.us-east-1.rds.amazonaws.com --user=admin --password=netsfinalproject
 ```
-<!-- instadb.cbbt2woocf66.us-east-1.rds.amazonaws.com -->
-<!-- my imdb link: imdbdatabase.cfeu8au62c9f.us-east-1.rds.amazonaws.com -->
 
 Until `ssh` exits, you'll have a "tunnel" set up so requests in your container for `localhost` port `3306` get redirected to the tunnel server; then it makes requests to the database server on your behalf.
 

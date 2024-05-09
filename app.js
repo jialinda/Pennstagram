@@ -1,9 +1,9 @@
 const express = require('express');
 const http = require('http'); // Required for integrating socket.io with Express
-const socketIo = require('socket.io'); // Import socket.io
+// const socketIo = require('socket.io'); // Import socket.io
 const app = express();
 const server = http.createServer(app); // Create an HTTP server instance
-const io = socketIo(server); // Attach socket.io to the HTTP server
+// const io = socketIo(server); // Attach socket.io to the HTTP server
 // const { Chroma } = require("@langchain/community/vectorstores/chroma"); // call chroma
 
 // const port = 8080;
@@ -40,23 +40,23 @@ app.use((err, req, res, next) => {
 });
 
 const port = process.env.PORT || 8080;
-console.log('io is in use');
-io.on('connection', (socket) => {
-  console.log('New client connected');
+// console.log('io is in use');
+// io.on('connection', (socket) => {
+//   console.log('New client connected');
 
-  socket.on('disconnect', () => {
-    console.log('Client disconnected');
-  });
+//   socket.on('disconnect', () => {
+//     console.log('Client disconnected');
+//   });
 
-  // Example of handling a message event
-  socket.on('sendMessage', (data) => {
-    console.log('Message received: ', data);
-    // Broadcast the message to all connected clients
-    io.emit('receiveMessage', data);
-  });
+//   // Example of handling a message event
+//   socket.on('sendMessage', (data) => {
+//     console.log('Message received: ', data);
+//     // Broadcast the message to all connected clients
+//     io.emit('receiveMessage', data);
+//   });
 
-  // Additional event handlers can be added here
-});
+//   // Additional event handlers can be added here
+// });
 
 // Change app.listen to server.listen to start HTTP and WebSocket server
 server.listen(port, () => {

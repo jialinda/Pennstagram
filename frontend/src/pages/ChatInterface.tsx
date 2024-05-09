@@ -8,17 +8,17 @@ import Invites from '../components/invites/Invites'
 import ChatBar from '../components/chats/ChatBar'
 import Chatroom from '../components/chats/Chatroom'
 import $ from 'jquery';
-import io from 'socket.io-client';
+// import io from 'socket.io-client';
 
-const socket = io('http://localhost:8080'); // Make sure this matches the server address and port
+// const socket = io('http://localhost:8080'); // Make sure this matches the server address and port
 
-// Listening for messages
-socket.on('receiveMessage', (message) => {
-  console.log('New message:', message);
-});
+// // Listening for messages
+// socket.on('receiveMessage', (message) => {
+//   console.log('New message:', message);
+// });
 
-// Sending a message
-socket.emit('sendMessage', { message: 'Hello, world!' });
+// // Sending a message
+// socket.emit('sendMessage', { message: 'Hello, world!' });
 
 
 const rootURL = config.serverRootURL;

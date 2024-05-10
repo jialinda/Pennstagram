@@ -27,7 +27,7 @@ export default function Login() {
       }
     } catch (error) {
       console.error("Log in error:", error);
-      alert("Log in failed. Please try again later.");
+      alert("Log in failed. Please try again later.h");
     }
 
     try {
@@ -37,7 +37,7 @@ export default function Login() {
       } 
     } catch (error) {
       console.error("Logging data in error:", error);
-      alert("Log in failed. Please try again later.");
+      alert("Log in failed. Please try again later.h");
     }
   };
 

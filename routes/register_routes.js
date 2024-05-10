@@ -32,7 +32,7 @@ function register_routes(app) {
     app.get('/hashtags/top', routes.get_top_hashtags);
     app.get('/:username/friends', routes.get_friends);
     app.get('/:username/recommendations', routes.get_friend_recs);
-    app.post('/:username/createPost', routes.create_post); 
+    app.post('/:username/createPost', upload.single('content'), routes.create_post); 
     app.get('/:username/feed', routes.get_feed);
     // TODO: register getMovie, which does not need a :username
     //       Make it compatible with the call from ChatInterface.tsx

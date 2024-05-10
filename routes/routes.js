@@ -26,8 +26,9 @@ const fs = require('fs');
 const tf = require('@tensorflow/tfjs-node');
 const faceapi = require('@vladmandic/face-api');
 const facehelper = require('../models/faceapp.js');
-
-const multer = require('multer');
+/* S3 Functions */
+const multer = require("multer");
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 const upload = multer({ dest: 'uploads/' }); 
 
 const mysql = require('mysql2');
@@ -36,20 +37,11 @@ const client = new ChromaClient();
 const parse = require('csv-parse').parse;
 const csvContent = fs.readFileSync('/nets2120/project-stream-team/names.csv', 'utf8');
 
-let session_user_id; // global
-
 AWS.config.update({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     region: process.env.AWS_REGION
 });
-
-/* S3 Functions */
-const multer = require("multer");
-const path = require("path");
-const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
-const AWS = require("aws-sdk");
-const fs = require("fs");
 
 const s3Client = new S3Client({
   region: "us-east-1",
@@ -861,29 +853,36 @@ var getGroupsALl = async function (req, res) {
 
 /// POST /createPost
 var createPost = async function (req, res) {
-    // if (!req.session.user_id || !helper.isLoggedIn(req.session.user_id)) {
-    //   return res.status(403).json({ error: 'Not logged in.' });
-    // }
-    console.log(req.body);
-    const { title, hashtags, content } = req.body;
-    // console.log(title);
-    // console.log(hashtags);
-    console.log(content);
-    // let content = req.file;  // Assuming content is a file uploaded and parsed by middleware like `multer`
-    let parent_id = req.body.parent_post || null;
-  
-    if (!title || !content) {
-      return res.status(400).json({ error: 'Title or content must be provided.' });
+    if (!session_user_id) {
+      return res.status(403).json({ error: 'Not logged in.' });
     }
+    // console.log(req.body);
+
+    console.log('Received fields:', req.body);
+    console.log('Received file:', req.file);
+
+    const { title, hashtags } = req.body;
+    const content = req.file; // treating content as imageURL for now, TODO: create table field
+
+    // console.log(title);
+    console.log("hi");
+    console.log(hashtags);
+    // console.log(content);
+    // let content = req.file;  // Assuming content is a file uploaded and parsed by middleware like `multer`
+    // let parent_id = req.body.parent_post || null;
   
+    console.log("Checking title: ", title);
+    console.log("Checking original filename: ", content.originalname);
     if (!helper.isOK(title) || (content && !helper.isOK(content.originalname))) {  // Validate file name if content is a file
+        console.log("here");
       return res.status(400).json({ error: 'Invalid characters in title or file name.' });
     }
-  
+
     try {
-      const postQuery = `INSERT INTO posts (author_id, title, content, parent_post, timestamp) VALUES (?, ?, ?, ?, NOW())`;
-      const postResult = await db.send_sql(postQuery, [req.session.user_id, title, content.path, parent_id]); // Assuming `content.path` is where the file is stored
+      const postQuery = `INSERT INTO posts (author_id, title, content, timestamp) VALUES (?, ?, ?, NOW())`;
+      const postResult = await db.send_sql(postQuery, [req.session.user_id, title, content.path]); // Assuming `content.path` is where the file is stored
       const newPostId = postResult.insertId;
+      console.log("inputted");
   
       if (hashtags) {
         const tags = hashtags.split(',').map(tag => tag.trim().startsWith('#') ? tag.trim() : `#${tag.trim()}`);

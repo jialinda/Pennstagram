@@ -16272,3 +16272,16 @@ ValueError: Collection user_post_collection does not exist.
 [32mINFO[0m:     [09-05-2024 01:41:59] 127.0.0.1:38610 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
 [32mINFO[0m:     [09-05-2024 01:42:00] 127.0.0.1:38610 - "POST /api/v1/collections/9443ab77-8aeb-4005-9a9b-be406604f89e/query HTTP/1.1" 400
 >>>>>>> cabe0d207e712d0cf05bd1f3b5b61d2b41d326d2
+[33mWARNING[0m:  [09-05-2024 06:10:01] chroma_server_nofile is set to 65535, but this is less than current soft limit of 1048576. chroma_server_nofile will not be set.
+[32mINFO[0m:     [09-05-2024 06:10:01] Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+[36mDEBUG[0m:    [09-05-2024 06:10:01] Starting component System
+[36mDEBUG[0m:    [09-05-2024 06:10:01] Starting component OpenTelemetryClient
+[36mDEBUG[0m:    [09-05-2024 06:10:01] Starting component SimpleAssignmentPolicy
+[36mDEBUG[0m:    [09-05-2024 06:10:01] Starting component SqliteDB
+[36mDEBUG[0m:    [09-05-2024 06:10:01] Starting component Posthog
+[36mDEBUG[0m:    [09-05-2024 06:10:01] Starting component LocalSegmentManager
+[36mDEBUG[0m:    [09-05-2024 06:10:01] Starting component SegmentAPI
+[32mINFO[0m:     [09-05-2024 06:10:01] Started server process [[36m15584[0m]
+[32mINFO[0m:     [09-05-2024 06:10:01] Waiting for application startup.
+[32mINFO[0m:     [09-05-2024 06:10:01] Application startup complete.
+[32mINFO[0m:     [09-05-2024 06:10:01] Uvicorn running on [1mhttp://0.0.0.0:8000[0m (Press CTRL+C to quit)

@@ -7,13 +7,14 @@ const Search = () => {
   const rootURL = config.serverRootURL;
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState([]);
+  const [results, setResults] = useState('');
 
   // Function to handle search
   const handleSearch = async () => {
     try {
       const response = await axios.post(`${rootURL}/search`, { question: query });
-      setResults(response.data.results); // Adjust according to the response structure
+      setResults(JSON.stringify(response.data, null, 2)); // Format JSON data nicely
+      console.log('search result:', response.data);
     } catch (error) {
       console.error("Error performing search:", error);
     }
@@ -38,14 +39,12 @@ const Search = () => {
       <div className='flex-1 flex flex-col items-center justify-around p-6'>
         <div className='text-center mt-6'>
           <h3 className='text-3xl font-bold mb-4 text-blue-400'>Search Results</h3>
-        </div>
-        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full'>
-          {results.map((result, index) => (
-            <div key={index} className='bg-sky-200 rounded-lg shadow-lg p-4 transition-transform duration-300 hover:scale-105'>
-              <h4 className='text-lg font-medium text-center'>{result.title}</h4>
-              <p>{result.summary}</p> {/* Display summary or part of the content */}
-            </div>
-          ))}
+          <textarea 
+            value={results} 
+            readOnly
+            className="w-full h-96 p-2 text-sm font-mono border rounded-lg overflow-auto"
+            style={{ whiteSpace: 'pre-wrap' }} // Keeps whitespace formatting from JSON.stringify
+          />
         </div>
       </div>
     </div>

@@ -19359,3 +19359,715 @@ ValueError: Collection user_post_collection does not exist.
 [32mINFO[0m:     [10-05-2024 05:17:15] 127.0.0.1:36800 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
 [32mINFO[0m:     [10-05-2024 05:17:15] 127.0.0.1:36800 - "POST /api/v1/collections/b9eccc0c-9da5-424a-9669-bfb888efc541/query HTTP/1.1" 400
 [32mINFO[0m:     [10-05-2024 05:19:48] 127.0.0.1:42762 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 17:25:38] Shutting down
+[32mINFO[0m:     [10-05-2024 17:25:38] Waiting for application shutdown.
+[32mINFO[0m:     [10-05-2024 17:25:38] Application shutdown complete.
+[32mINFO[0m:     [10-05-2024 17:25:38] Finished server process [[36m70140[0m]
+[33mWARNING[0m:  [10-05-2024 17:25:42] chroma_server_nofile is set to 65535, but this is less than current soft limit of 1048576. chroma_server_nofile will not be set.
+[32mINFO[0m:     [10-05-2024 17:25:42] Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+[36mDEBUG[0m:    [10-05-2024 17:25:42] Starting component System
+[36mDEBUG[0m:    [10-05-2024 17:25:42] Starting component OpenTelemetryClient
+[36mDEBUG[0m:    [10-05-2024 17:25:42] Starting component SimpleAssignmentPolicy
+[36mDEBUG[0m:    [10-05-2024 17:25:42] Starting component SqliteDB
+[36mDEBUG[0m:    [10-05-2024 17:25:42] Starting component Posthog
+[36mDEBUG[0m:    [10-05-2024 17:25:42] Starting component LocalSegmentManager
+[36mDEBUG[0m:    [10-05-2024 17:25:42] Starting component SegmentAPI
+[32mINFO[0m:     [10-05-2024 17:25:42] Started server process [[36m43319[0m]
+[32mINFO[0m:     [10-05-2024 17:25:42] Waiting for application startup.
+[32mINFO[0m:     [10-05-2024 17:25:42] Application startup complete.
+[32mINFO[0m:     [10-05-2024 17:25:42] Uvicorn running on [1mhttp://0.0.0.0:8000[0m (Press CTRL+C to quit)
+[32mINFO[0m:     [10-05-2024 17:26:30] 127.0.0.1:51338 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 17:26:30] 127.0.0.1:51352 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 17:26:30] 127.0.0.1:51338 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 17:26:50] 127.0.0.1:46848 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 17:26:50] 127.0.0.1:46862 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 17:26:50] 127.0.0.1:46848 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 17:26:54] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 17:26:55] 127.0.0.1:46848 - "POST /api/v1/collections/df9420ea-b852-4811-a4df-4d628bded092/add HTTP/1.1" 201
+[31mERROR[0m:    [10-05-2024 17:26:55] Collection test8 does not exist.
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/dist-packages/anyio/streams/memory.py", line 97, in receive
+    return self.receive_nowait()
+  File "/usr/local/lib/python3.10/dist-packages/anyio/streams/memory.py", line 92, in receive_nowait
+    raise WouldBlock
+anyio.WouldBlock
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 159, in call_next
+    message = await recv_stream.receive()
+  File "/usr/local/lib/python3.10/dist-packages/anyio/streams/memory.py", line 112, in receive
+    raise EndOfStream
+anyio.EndOfStream
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/server/fastapi/__init__.py", line 80, in catch_exceptions_middleware
+    return await call_next(request)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 165, in call_next
+    raise app_exc
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 151, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 189, in __call__
+    with collapse_excgroups():
+  File "/usr/lib/python3.10/contextlib.py", line 153, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    raise exc
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 191, in __call__
+    response = await self.dispatch_func(request, call_next)
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/server/fastapi/__init__.py", line 94, in check_http_version_middleware
+    return await call_next(request)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 165, in call_next
+    raise app_exc
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 151, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/usr/local/lib/python3.10/dist-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/routing.py", line 758, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/routing.py", line 778, in app
+    await route.handle(scope, receive, send)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/routing.py", line 299, in handle
+    await self.app(scope, receive, send)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/routing.py", line 79, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/usr/local/lib/python3.10/dist-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/routing.py", line 74, in app
+    response = await func(request)
+  File "/usr/local/lib/python3.10/dist-packages/fastapi/routing.py", line 299, in app
+    raise e
+  File "/usr/local/lib/python3.10/dist-packages/fastapi/routing.py", line 294, in app
+    raw_response = await run_endpoint_function(
+  File "/usr/local/lib/python3.10/dist-packages/fastapi/routing.py", line 193, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/concurrency.py", line 42, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func, *args)
+  File "/usr/local/lib/python3.10/dist-packages/anyio/to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+  File "/usr/local/lib/python3.10/dist-packages/anyio/_backends/_asyncio.py", line 2144, in run_sync_in_worker_thread
+    return await future
+  File "/usr/local/lib/python3.10/dist-packages/anyio/_backends/_asyncio.py", line 851, in run
+    result = context.run(func, *args)
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/telemetry/opentelemetry/__init__.py", line 127, in wrapper
+    return f(*args, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/auth/fastapi.py", line 234, in wrapped
+    return f(*args, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/server/fastapi/__init__.py", line 472, in delete_collection
+    return self._api.delete_collection(
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/telemetry/opentelemetry/__init__.py", line 127, in wrapper
+    return f(*args, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/api/segment.py", line 346, in delete_collection
+    raise ValueError(f"Collection {name} does not exist.")
+ValueError: Collection test8 does not exist.
+[32mINFO[0m:     [10-05-2024 17:26:55] 127.0.0.1:46862 - "DELETE /api/v1/collections/test8?tenant=default_tenant&database=default_database HTTP/1.1" 500
+[31mERROR[0m:    [10-05-2024 17:26:55] Collection test7 does not exist.
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/dist-packages/anyio/streams/memory.py", line 97, in receive
+    return self.receive_nowait()
+  File "/usr/local/lib/python3.10/dist-packages/anyio/streams/memory.py", line 92, in receive_nowait
+    raise WouldBlock
+anyio.WouldBlock
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 159, in call_next
+    message = await recv_stream.receive()
+  File "/usr/local/lib/python3.10/dist-packages/anyio/streams/memory.py", line 112, in receive
+    raise EndOfStream
+anyio.EndOfStream
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/server/fastapi/__init__.py", line 80, in catch_exceptions_middleware
+    return await call_next(request)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 165, in call_next
+    raise app_exc
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 151, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 189, in __call__
+    with collapse_excgroups():
+  File "/usr/lib/python3.10/contextlib.py", line 153, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    raise exc
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 191, in __call__
+    response = await self.dispatch_func(request, call_next)
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/server/fastapi/__init__.py", line 94, in check_http_version_middleware
+    return await call_next(request)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 165, in call_next
+    raise app_exc
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 151, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/usr/local/lib/python3.10/dist-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/routing.py", line 758, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/routing.py", line 778, in app
+    await route.handle(scope, receive, send)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/routing.py", line 299, in handle
+    await self.app(scope, receive, send)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/routing.py", line 79, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/usr/local/lib/python3.10/dist-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/routing.py", line 74, in app
+    response = await func(request)
+  File "/usr/local/lib/python3.10/dist-packages/fastapi/routing.py", line 299, in app
+    raise e
+  File "/usr/local/lib/python3.10/dist-packages/fastapi/routing.py", line 294, in app
+    raw_response = await run_endpoint_function(
+  File "/usr/local/lib/python3.10/dist-packages/fastapi/routing.py", line 193, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/concurrency.py", line 42, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func, *args)
+  File "/usr/local/lib/python3.10/dist-packages/anyio/to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+  File "/usr/local/lib/python3.10/dist-packages/anyio/_backends/_asyncio.py", line 2144, in run_sync_in_worker_thread
+    return await future
+  File "/usr/local/lib/python3.10/dist-packages/anyio/_backends/_asyncio.py", line 851, in run
+    result = context.run(func, *args)
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/telemetry/opentelemetry/__init__.py", line 127, in wrapper
+    return f(*args, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/auth/fastapi.py", line 234, in wrapped
+    return f(*args, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/server/fastapi/__init__.py", line 472, in delete_collection
+    return self._api.delete_collection(
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/telemetry/opentelemetry/__init__.py", line 127, in wrapper
+    return f(*args, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/api/segment.py", line 346, in delete_collection
+    raise ValueError(f"Collection {name} does not exist.")
+ValueError: Collection test7 does not exist.
+[32mINFO[0m:     [10-05-2024 17:26:55] 127.0.0.1:46848 - "DELETE /api/v1/collections/test7?tenant=default_tenant&database=default_database HTTP/1.1" 500
+[31mERROR[0m:    [10-05-2024 17:26:55] Collection user_post_collection does not exist.
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/dist-packages/anyio/streams/memory.py", line 97, in receive
+    return self.receive_nowait()
+  File "/usr/local/lib/python3.10/dist-packages/anyio/streams/memory.py", line 92, in receive_nowait
+    raise WouldBlock
+anyio.WouldBlock
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 159, in call_next
+    message = await recv_stream.receive()
+  File "/usr/local/lib/python3.10/dist-packages/anyio/streams/memory.py", line 112, in receive
+    raise EndOfStream
+anyio.EndOfStream
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/server/fastapi/__init__.py", line 80, in catch_exceptions_middleware
+    return await call_next(request)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 165, in call_next
+    raise app_exc
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 151, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 189, in __call__
+    with collapse_excgroups():
+  File "/usr/lib/python3.10/contextlib.py", line 153, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    raise exc
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 191, in __call__
+    response = await self.dispatch_func(request, call_next)
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/server/fastapi/__init__.py", line 94, in check_http_version_middleware
+    return await call_next(request)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 165, in call_next
+    raise app_exc
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 151, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/usr/local/lib/python3.10/dist-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/routing.py", line 758, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/routing.py", line 778, in app
+    await route.handle(scope, receive, send)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/routing.py", line 299, in handle
+    await self.app(scope, receive, send)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/routing.py", line 79, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/usr/local/lib/python3.10/dist-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/routing.py", line 74, in app
+    response = await func(request)
+  File "/usr/local/lib/python3.10/dist-packages/fastapi/routing.py", line 299, in app
+    raise e
+  File "/usr/local/lib/python3.10/dist-packages/fastapi/routing.py", line 294, in app
+    raw_response = await run_endpoint_function(
+  File "/usr/local/lib/python3.10/dist-packages/fastapi/routing.py", line 193, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/concurrency.py", line 42, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func, *args)
+  File "/usr/local/lib/python3.10/dist-packages/anyio/to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+  File "/usr/local/lib/python3.10/dist-packages/anyio/_backends/_asyncio.py", line 2144, in run_sync_in_worker_thread
+    return await future
+  File "/usr/local/lib/python3.10/dist-packages/anyio/_backends/_asyncio.py", line 851, in run
+    result = context.run(func, *args)
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/telemetry/opentelemetry/__init__.py", line 127, in wrapper
+    return f(*args, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/auth/fastapi.py", line 234, in wrapped
+    return f(*args, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/server/fastapi/__init__.py", line 472, in delete_collection
+    return self._api.delete_collection(
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/telemetry/opentelemetry/__init__.py", line 127, in wrapper
+    return f(*args, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/api/segment.py", line 346, in delete_collection
+    raise ValueError(f"Collection {name} does not exist.")
+ValueError: Collection user_post_collection does not exist.
+[32mINFO[0m:     [10-05-2024 17:26:55] 127.0.0.1:46862 - "DELETE /api/v1/collections/user_post_collection?tenant=default_tenant&database=default_database HTTP/1.1" 500
+[32mINFO[0m:     [10-05-2024 17:26:55] 127.0.0.1:46848 - "POST /api/v1/collections/df9420ea-b852-4811-a4df-4d628bded092/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 17:26:55] 127.0.0.1:46848 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 17:26:55] 127.0.0.1:46848 - "POST /api/v1/collections/df9420ea-b852-4811-a4df-4d628bded092/query HTTP/1.1" 400
+[32mINFO[0m:     [10-05-2024 18:15:30] 127.0.0.1:56100 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:15:30] 127.0.0.1:56110 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:15:30] 127.0.0.1:56100 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:15:45] 127.0.0.1:52482 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:15:45] 127.0.0.1:52494 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:15:45] 127.0.0.1:52482 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[31mERROR[0m:    [10-05-2024 18:15:45] Collection test8 does not exist.
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/dist-packages/anyio/streams/memory.py", line 97, in receive
+    return self.receive_nowait()
+  File "/usr/local/lib/python3.10/dist-packages/anyio/streams/memory.py", line 92, in receive_nowait
+    raise WouldBlock
+anyio.WouldBlock
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 159, in call_next
+    message = await recv_stream.receive()
+  File "/usr/local/lib/python3.10/dist-packages/anyio/streams/memory.py", line 112, in receive
+    raise EndOfStream
+anyio.EndOfStream
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/server/fastapi/__init__.py", line 80, in catch_exceptions_middleware
+    return await call_next(request)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 165, in call_next
+    raise app_exc
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 151, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 189, in __call__
+    with collapse_excgroups():
+  File "/usr/lib/python3.10/contextlib.py", line 153, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    raise exc
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 191, in __call__
+    response = await self.dispatch_func(request, call_next)
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/server/fastapi/__init__.py", line 94, in check_http_version_middleware
+    return await call_next(request)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 165, in call_next
+    raise app_exc
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 151, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/usr/local/lib/python3.10/dist-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/routing.py", line 758, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/routing.py", line 778, in app
+    await route.handle(scope, receive, send)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/routing.py", line 299, in handle
+    await self.app(scope, receive, send)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/routing.py", line 79, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/usr/local/lib/python3.10/dist-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/routing.py", line 74, in app
+    response = await func(request)
+  File "/usr/local/lib/python3.10/dist-packages/fastapi/routing.py", line 299, in app
+    raise e
+  File "/usr/local/lib/python3.10/dist-packages/fastapi/routing.py", line 294, in app
+    raw_response = await run_endpoint_function(
+  File "/usr/local/lib/python3.10/dist-packages/fastapi/routing.py", line 193, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/concurrency.py", line 42, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func, *args)
+  File "/usr/local/lib/python3.10/dist-packages/anyio/to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+  File "/usr/local/lib/python3.10/dist-packages/anyio/_backends/_asyncio.py", line 2144, in run_sync_in_worker_thread
+    return await future
+  File "/usr/local/lib/python3.10/dist-packages/anyio/_backends/_asyncio.py", line 851, in run
+    result = context.run(func, *args)
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/telemetry/opentelemetry/__init__.py", line 127, in wrapper
+    return f(*args, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/auth/fastapi.py", line 234, in wrapped
+    return f(*args, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/server/fastapi/__init__.py", line 472, in delete_collection
+    return self._api.delete_collection(
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/telemetry/opentelemetry/__init__.py", line 127, in wrapper
+    return f(*args, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/api/segment.py", line 346, in delete_collection
+    raise ValueError(f"Collection {name} does not exist.")
+ValueError: Collection test8 does not exist.
+[32mINFO[0m:     [10-05-2024 18:15:45] 127.0.0.1:52482 - "DELETE /api/v1/collections/test8?tenant=default_tenant&database=default_database HTTP/1.1" 500
+[32mINFO[0m:     [10-05-2024 18:21:13] 127.0.0.1:45104 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:21:13] 127.0.0.1:45116 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:21:13] 127.0.0.1:45104 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:21:14] 127.0.0.1:45104 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 18:21:14] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 18:21:14] 127.0.0.1:45116 - "POST /api/v1/collections/cde6155b-337f-4c2f-89ca-33ea6bbc3ea4/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:21:14] 127.0.0.1:45104 - "POST /api/v1/collections/3d8d6a5e-d388-4c42-a969-99c8b31c9038/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:21:15] 127.0.0.1:45104 - "POST /api/v1/collections/cde6155b-337f-4c2f-89ca-33ea6bbc3ea4/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:23:55] 127.0.0.1:40752 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:23:56] 127.0.0.1:40758 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:23:56] 127.0.0.1:40752 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:23:57] 127.0.0.1:40752 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 18:23:57] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 18:23:57] 127.0.0.1:40758 - "POST /api/v1/collections/2dcfff9a-764a-4393-837e-fe768ac618f8/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:23:57] 127.0.0.1:40752 - "POST /api/v1/collections/de703ab7-44b1-4e64-8616-f939bdaf493f/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:24:01] 127.0.0.1:40752 - "POST /api/v1/collections/2dcfff9a-764a-4393-837e-fe768ac618f8/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:25:04] 127.0.0.1:37598 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:25:04] 127.0.0.1:37608 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:25:04] 127.0.0.1:37598 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:25:05] 127.0.0.1:37598 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 18:25:05] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 18:25:05] 127.0.0.1:37608 - "POST /api/v1/collections/00740ea2-5ac4-4c8e-b19d-3b50c8065981/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:25:05] 127.0.0.1:37598 - "POST /api/v1/collections/2b616bef-56a7-4f80-9b6f-1bd328c2a07b/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:25:06] 127.0.0.1:37598 - "POST /api/v1/collections/00740ea2-5ac4-4c8e-b19d-3b50c8065981/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:25:22] 127.0.0.1:43564 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:25:22] 127.0.0.1:43574 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:25:22] 127.0.0.1:43564 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:25:25] 127.0.0.1:43564 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 18:25:25] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 18:25:25] 127.0.0.1:43574 - "POST /api/v1/collections/0b7d2715-d6ff-4eb6-9302-79987b4e18ef/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:25:25] 127.0.0.1:43564 - "POST /api/v1/collections/78153914-a767-4013-8b7e-a493e4e2ec38/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:25:25] 127.0.0.1:43564 - "POST /api/v1/collections/0b7d2715-d6ff-4eb6-9302-79987b4e18ef/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:26:46] 127.0.0.1:36036 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:26:46] 127.0.0.1:36038 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:26:46] 127.0.0.1:36036 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:26:48] 127.0.0.1:36036 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 18:26:48] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 18:26:48] 127.0.0.1:36038 - "POST /api/v1/collections/aad5a56b-e2d4-4f7a-957b-a53fa0e54555/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:26:48] 127.0.0.1:36036 - "POST /api/v1/collections/e032c69f-960a-4d92-8969-197aa635172f/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:26:48] 127.0.0.1:36036 - "POST /api/v1/collections/aad5a56b-e2d4-4f7a-957b-a53fa0e54555/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:27:07] 127.0.0.1:38340 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:27:07] 127.0.0.1:38352 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:27:07] 127.0.0.1:38340 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:27:08] 127.0.0.1:38340 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 18:27:09] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 18:27:09] 127.0.0.1:38352 - "POST /api/v1/collections/c8239567-702f-40e7-b687-3000e48f79f2/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:27:09] 127.0.0.1:38340 - "POST /api/v1/collections/7a93f6ef-2e1d-4f95-aec2-c8c95b2e65d2/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:27:09] 127.0.0.1:38340 - "POST /api/v1/collections/c8239567-702f-40e7-b687-3000e48f79f2/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:28:35] 127.0.0.1:49904 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:28:35] 127.0.0.1:49914 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:28:35] 127.0.0.1:49904 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:28:37] 127.0.0.1:49904 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 18:28:37] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 18:28:37] 127.0.0.1:49914 - "POST /api/v1/collections/388f2e2b-d7b6-4681-8d25-2252b69a3bf5/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:28:37] 127.0.0.1:49904 - "POST /api/v1/collections/f3181d0c-4bbb-4ce1-908c-7145c44e709a/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:28:37] 127.0.0.1:49904 - "POST /api/v1/collections/388f2e2b-d7b6-4681-8d25-2252b69a3bf5/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:30:41] 127.0.0.1:48462 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:30:41] 127.0.0.1:48464 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:30:41] 127.0.0.1:48462 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:30:42] 127.0.0.1:48462 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 18:30:43] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 18:30:43] 127.0.0.1:48464 - "POST /api/v1/collections/00f6efa1-404f-431a-8aa2-47a5d95e22b1/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:30:43] 127.0.0.1:48462 - "POST /api/v1/collections/a87326c3-6609-40e1-91f3-bd02ce2d6ce2/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:30:43] 127.0.0.1:48462 - "POST /api/v1/collections/00f6efa1-404f-431a-8aa2-47a5d95e22b1/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:30:59] 127.0.0.1:58856 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:30:59] 127.0.0.1:58860 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:30:59] 127.0.0.1:58856 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:31:00] 127.0.0.1:58856 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 18:31:00] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 18:31:00] 127.0.0.1:58860 - "POST /api/v1/collections/666137b1-9437-4c3b-806d-75aae7c6e673/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:31:00] 127.0.0.1:58856 - "POST /api/v1/collections/90d2c8e3-bd28-4172-93ae-60b17339f72e/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:31:01] 127.0.0.1:58856 - "POST /api/v1/collections/666137b1-9437-4c3b-806d-75aae7c6e673/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:32:52] 127.0.0.1:35820 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:32:52] 127.0.0.1:35834 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:32:52] 127.0.0.1:35820 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:32:53] 127.0.0.1:35820 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 18:32:53] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 18:32:53] 127.0.0.1:35834 - "POST /api/v1/collections/df484dfd-52b5-465b-9ff2-f074531f98dc/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:32:53] 127.0.0.1:35820 - "POST /api/v1/collections/4c1e9cd8-62a5-4a48-9f60-697f51e3d6dc/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:32:54] 127.0.0.1:35820 - "POST /api/v1/collections/df484dfd-52b5-465b-9ff2-f074531f98dc/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:33:15] 127.0.0.1:37912 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:33:15] 127.0.0.1:37924 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:33:15] 127.0.0.1:37912 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:33:16] 127.0.0.1:37912 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 18:33:16] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 18:33:17] 127.0.0.1:37924 - "POST /api/v1/collections/b051c3cf-0a36-464d-b9cb-0a18f3223d56/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:33:17] 127.0.0.1:37912 - "POST /api/v1/collections/9ee160bc-7b3f-452b-8ba4-51a02b126db2/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:33:17] 127.0.0.1:37912 - "POST /api/v1/collections/b051c3cf-0a36-464d-b9cb-0a18f3223d56/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:33:54] 127.0.0.1:43678 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:33:55] 127.0.0.1:43694 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:33:55] 127.0.0.1:43678 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:33:56] 127.0.0.1:43678 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 18:33:56] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 18:33:56] 127.0.0.1:43694 - "POST /api/v1/collections/38896108-7aad-459f-924d-71a66cd837ec/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:33:56] 127.0.0.1:43678 - "POST /api/v1/collections/848fd126-1940-4bf4-affa-e7103be23547/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:33:57] 127.0.0.1:43678 - "POST /api/v1/collections/38896108-7aad-459f-924d-71a66cd837ec/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:34:35] 127.0.0.1:59794 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:34:35] 127.0.0.1:59808 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:34:35] 127.0.0.1:59794 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:34:37] 127.0.0.1:59794 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 18:34:37] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 18:34:37] 127.0.0.1:59808 - "POST /api/v1/collections/a737a8f7-ba35-48e0-8bf5-60eaa697509c/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:34:37] 127.0.0.1:59794 - "POST /api/v1/collections/d437ebee-39ef-41cf-b692-683add2ee0fc/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:34:37] 127.0.0.1:59794 - "POST /api/v1/collections/a737a8f7-ba35-48e0-8bf5-60eaa697509c/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:34:53] 127.0.0.1:56980 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:34:53] 127.0.0.1:56992 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:34:53] 127.0.0.1:56980 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:34:55] 127.0.0.1:56980 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 18:34:55] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 18:34:55] 127.0.0.1:56992 - "POST /api/v1/collections/62db7534-9826-4718-a854-eb786986fbb9/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:34:55] 127.0.0.1:56980 - "POST /api/v1/collections/63a07c1d-9709-4796-8613-efba418b33e7/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:34:56] 127.0.0.1:56980 - "POST /api/v1/collections/62db7534-9826-4718-a854-eb786986fbb9/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:35:33] 127.0.0.1:49322 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:35:33] 127.0.0.1:49338 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:35:33] 127.0.0.1:49322 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:35:34] 127.0.0.1:49322 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 18:35:35] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 18:35:35] 127.0.0.1:49338 - "POST /api/v1/collections/18879116-c822-4a13-a654-3080da62710b/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:35:35] 127.0.0.1:49322 - "POST /api/v1/collections/402ea152-f4f2-45fb-9464-5adda9bdff78/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:35:35] 127.0.0.1:49322 - "POST /api/v1/collections/18879116-c822-4a13-a654-3080da62710b/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:35:50] 127.0.0.1:44570 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:35:50] 127.0.0.1:44574 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:35:50] 127.0.0.1:44570 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:35:51] 127.0.0.1:44570 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 18:35:51] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 18:35:52] 127.0.0.1:44574 - "POST /api/v1/collections/fe221fb1-73ab-40f5-be8a-7e18c87824a6/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:35:52] 127.0.0.1:44570 - "POST /api/v1/collections/4e530241-5a6f-44f5-933f-8e5e06f2f7b0/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:35:52] 127.0.0.1:44570 - "POST /api/v1/collections/fe221fb1-73ab-40f5-be8a-7e18c87824a6/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:36:03] 127.0.0.1:38952 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:36:03] 127.0.0.1:38968 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:36:03] 127.0.0.1:38952 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:36:04] 127.0.0.1:38952 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 18:36:04] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 18:36:05] 127.0.0.1:38968 - "POST /api/v1/collections/e5b0bb33-f19c-448f-bc33-3509c7ef5cc5/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:36:05] 127.0.0.1:38952 - "POST /api/v1/collections/015e473c-cac9-4627-a68e-59db4f8f706d/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:36:05] 127.0.0.1:38952 - "POST /api/v1/collections/e5b0bb33-f19c-448f-bc33-3509c7ef5cc5/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:36:20] 127.0.0.1:59356 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:36:20] 127.0.0.1:59364 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:36:20] 127.0.0.1:59356 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:36:21] 127.0.0.1:59356 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 18:36:22] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 18:36:22] 127.0.0.1:59364 - "POST /api/v1/collections/e654c988-afae-41c6-8df8-dff0ba49c495/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:36:22] 127.0.0.1:59356 - "POST /api/v1/collections/e6a393e6-8c95-48e0-8d1d-900a1534345d/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:36:22] 127.0.0.1:59356 - "POST /api/v1/collections/e654c988-afae-41c6-8df8-dff0ba49c495/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:38:46] 127.0.0.1:45320 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:38:47] 127.0.0.1:45328 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:38:47] 127.0.0.1:45320 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:38:48] 127.0.0.1:45320 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 18:38:48] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 18:38:48] 127.0.0.1:45328 - "POST /api/v1/collections/0318b297-26a2-45fe-a626-dd13f3df535a/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:38:48] 127.0.0.1:45320 - "POST /api/v1/collections/da9956e8-9903-40b4-8a0f-98cf1149595f/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:38:49] 127.0.0.1:45320 - "POST /api/v1/collections/0318b297-26a2-45fe-a626-dd13f3df535a/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:39:44] 127.0.0.1:60236 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:39:44] 127.0.0.1:60240 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:39:44] 127.0.0.1:60236 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:39:45] 127.0.0.1:60236 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 18:39:45] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 18:39:45] 127.0.0.1:60240 - "POST /api/v1/collections/a33f8c78-e483-49e4-b3f9-a7a9e2418ed0/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:39:45] 127.0.0.1:60236 - "POST /api/v1/collections/f3801e36-354d-4472-b690-f71e77ce0590/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:39:46] 127.0.0.1:60236 - "POST /api/v1/collections/a33f8c78-e483-49e4-b3f9-a7a9e2418ed0/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:41:10] 127.0.0.1:49648 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:41:10] 127.0.0.1:49656 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:41:10] 127.0.0.1:49648 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:41:11] 127.0.0.1:49648 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:41:11] 127.0.0.1:49656 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:41:11] 127.0.0.1:49648 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:41:11] 127.0.0.1:49648 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 18:41:12] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 18:41:12] 127.0.0.1:49656 - "POST /api/v1/collections/4b210af1-ae07-475f-8d13-0451771b7fff/upsert HTTP/1.1" 200
+[31mERROR[0m:    [10-05-2024 18:41:12] coroutine raised StopIteration
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/dist-packages/anyio/_backends/_asyncio.py", line 851, in run
+    result = context.run(func, *args)
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/telemetry/opentelemetry/__init__.py", line 127, in wrapper
+    return f(*args, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/auth/fastapi.py", line 234, in wrapped
+    return f(*args, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/server/fastapi/__init__.py", line 547, in get
+    return self._api._get(
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/telemetry/opentelemetry/__init__.py", line 127, in wrapper
+    return f(*args, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/api/segment.py", line 496, in _get
+    metadata_segment = self._manager.get_segment(collection_id, MetadataReader)
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/telemetry/opentelemetry/__init__.py", line 127, in wrapper
+    return f(*args, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/segment/impl/manager/local.py", line 156, in get_segment
+    segment = next(filter(lambda s: s["type"] in known_types, segments))
+StopIteration
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/server/fastapi/__init__.py", line 80, in catch_exceptions_middleware
+    return await call_next(request)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 165, in call_next
+    raise app_exc
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 151, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 189, in __call__
+    with collapse_excgroups():
+  File "/usr/lib/python3.10/contextlib.py", line 153, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    raise exc
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 191, in __call__
+    response = await self.dispatch_func(request, call_next)
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/server/fastapi/__init__.py", line 94, in check_http_version_middleware
+    return await call_next(request)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 165, in call_next
+    raise app_exc
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 151, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/usr/local/lib/python3.10/dist-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/routing.py", line 758, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/routing.py", line 778, in app
+    await route.handle(scope, receive, send)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/routing.py", line 299, in handle
+    await self.app(scope, receive, send)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/routing.py", line 79, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/usr/local/lib/python3.10/dist-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/routing.py", line 74, in app
+    response = await func(request)
+  File "/usr/local/lib/python3.10/dist-packages/fastapi/routing.py", line 299, in app
+    raise e
+  File "/usr/local/lib/python3.10/dist-packages/fastapi/routing.py", line 294, in app
+    raw_response = await run_endpoint_function(
+  File "/usr/local/lib/python3.10/dist-packages/fastapi/routing.py", line 193, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/concurrency.py", line 42, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func, *args)
+  File "/usr/local/lib/python3.10/dist-packages/anyio/to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+  File "/usr/local/lib/python3.10/dist-packages/anyio/_backends/_asyncio.py", line 2144, in run_sync_in_worker_thread
+    return await future
+RuntimeError: coroutine raised StopIteration
+[32mINFO[0m:     [10-05-2024 18:41:12] 127.0.0.1:49648 - "POST /api/v1/collections/08ffab1d-e0c4-4b50-911a-a6b41ea7e5b7/get HTTP/1.1" 500
+[32mINFO[0m:     [10-05-2024 18:41:28] 127.0.0.1:59682 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:41:28] 127.0.0.1:59684 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:41:28] 127.0.0.1:59682 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:41:30] 127.0.0.1:59682 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 18:41:30] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 18:41:30] 127.0.0.1:59684 - "POST /api/v1/collections/8b9236d2-1490-4d17-a80b-73920ca37e85/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:41:30] 127.0.0.1:59682 - "POST /api/v1/collections/3a7bec1f-4055-491b-954b-76d3e01e3534/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:41:30] 127.0.0.1:59682 - "POST /api/v1/collections/8b9236d2-1490-4d17-a80b-73920ca37e85/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:43:46] 127.0.0.1:34206 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:43:46] 127.0.0.1:34212 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:43:46] 127.0.0.1:34206 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:43:47] 127.0.0.1:34206 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 18:43:48] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 18:43:48] 127.0.0.1:34212 - "POST /api/v1/collections/6c08ce3a-a4a1-4dae-86b1-65f872caf553/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:43:48] 127.0.0.1:34206 - "POST /api/v1/collections/0f33579d-0246-4d6b-b03f-bff923ac50aa/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:43:48] 127.0.0.1:34206 - "POST /api/v1/collections/6c08ce3a-a4a1-4dae-86b1-65f872caf553/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:44:17] 127.0.0.1:45932 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:44:17] 127.0.0.1:45934 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:44:17] 127.0.0.1:45932 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:44:19] 127.0.0.1:45932 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 18:44:19] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 18:44:19] 127.0.0.1:45934 - "POST /api/v1/collections/cdb7a06b-1062-4e01-aa46-f8b466de32b6/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:44:19] 127.0.0.1:45932 - "POST /api/v1/collections/28cf7cd1-cd99-4e6a-bab1-f9c9398da7e5/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:44:19] 127.0.0.1:45932 - "POST /api/v1/collections/cdb7a06b-1062-4e01-aa46-f8b466de32b6/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:45:01] 127.0.0.1:39682 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:45:01] 127.0.0.1:39684 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:45:01] 127.0.0.1:39682 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:45:03] 127.0.0.1:39682 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 18:45:03] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 18:45:03] 127.0.0.1:39684 - "POST /api/v1/collections/a5f5d3ed-6ece-41e6-b6d7-41681dee7537/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:45:03] 127.0.0.1:39682 - "POST /api/v1/collections/251365b1-aa76-460c-98c7-21e9e0708660/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:45:03] 127.0.0.1:39682 - "POST /api/v1/collections/a5f5d3ed-6ece-41e6-b6d7-41681dee7537/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:45:28] 127.0.0.1:59214 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:45:28] 127.0.0.1:59222 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:45:28] 127.0.0.1:59214 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:45:29] 127.0.0.1:59214 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 18:45:30] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 18:45:30] 127.0.0.1:59222 - "POST /api/v1/collections/a31d2cfb-7eab-4fe5-bde3-640f3d105121/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:45:30] 127.0.0.1:59214 - "POST /api/v1/collections/6b56fa6a-ddc5-4527-827b-ddaac0d83abd/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:45:30] 127.0.0.1:59214 - "POST /api/v1/collections/a31d2cfb-7eab-4fe5-bde3-640f3d105121/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:48:30] 127.0.0.1:41684 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:48:30] 127.0.0.1:41694 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:48:30] 127.0.0.1:41684 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:48:32] 127.0.0.1:41684 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 18:48:32] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 18:48:32] 127.0.0.1:41694 - "POST /api/v1/collections/eede0732-2553-4aa3-a65d-7b8f58504524/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:48:32] 127.0.0.1:41684 - "POST /api/v1/collections/622d9edb-2727-44b9-907c-b3ebd2279d47/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:48:32] 127.0.0.1:41684 - "POST /api/v1/collections/eede0732-2553-4aa3-a65d-7b8f58504524/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:50:06] 127.0.0.1:49890 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:50:06] 127.0.0.1:49904 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:50:06] 127.0.0.1:49890 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:50:08] 127.0.0.1:49890 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 18:50:08] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 18:50:08] 127.0.0.1:49904 - "POST /api/v1/collections/6fd47a72-7b39-44b4-9757-a36c7570a229/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:50:08] 127.0.0.1:49890 - "POST /api/v1/collections/8378378a-b2de-42ae-960f-2568df145e7b/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:50:08] 127.0.0.1:49890 - "POST /api/v1/collections/6fd47a72-7b39-44b4-9757-a36c7570a229/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:51:26] 127.0.0.1:57078 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:51:26] 127.0.0.1:57084 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:51:26] 127.0.0.1:57078 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:51:27] 127.0.0.1:57078 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 18:51:27] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 18:51:28] 127.0.0.1:57084 - "POST /api/v1/collections/47b04d08-55ee-4f23-bdcb-a10038db7216/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:51:28] 127.0.0.1:57078 - "POST /api/v1/collections/3eab981c-6bdb-4089-8832-1fdd369c076d/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:51:28] 127.0.0.1:57078 - "POST /api/v1/collections/47b04d08-55ee-4f23-bdcb-a10038db7216/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:52:19] 127.0.0.1:45534 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:52:19] 127.0.0.1:45536 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:52:19] 127.0.0.1:45534 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:52:21] 127.0.0.1:45534 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 18:52:21] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 18:52:21] 127.0.0.1:45536 - "POST /api/v1/collections/a2eae933-c2ab-471e-a588-315243753e80/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:52:21] 127.0.0.1:45534 - "POST /api/v1/collections/0ae14de1-96c8-4242-a0c5-43aa8bb04a70/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:52:21] 127.0.0.1:45534 - "POST /api/v1/collections/a2eae933-c2ab-471e-a588-315243753e80/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:52:46] 127.0.0.1:60470 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:52:46] 127.0.0.1:60474 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:52:46] 127.0.0.1:60470 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:52:47] 127.0.0.1:60470 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 18:52:47] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 18:52:48] 127.0.0.1:60474 - "POST /api/v1/collections/0985e3b7-aa41-461b-b3a5-f5e94da0f283/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:52:48] 127.0.0.1:60470 - "POST /api/v1/collections/d94c3186-aac4-4201-836c-cc35f8f9b3fc/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:52:48] 127.0.0.1:60470 - "POST /api/v1/collections/0985e3b7-aa41-461b-b3a5-f5e94da0f283/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:54:19] 127.0.0.1:47530 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:54:19] 127.0.0.1:47538 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:54:19] 127.0.0.1:47530 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:54:23] 127.0.0.1:47530 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 18:54:23] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 18:54:23] 127.0.0.1:47538 - "POST /api/v1/collections/b3c1398f-372e-4872-952a-b62c38e3bf41/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:54:23] 127.0.0.1:47530 - "POST /api/v1/collections/fb6e51c8-c820-4f52-b339-6f13913230e4/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 18:54:23] 127.0.0.1:47530 - "POST /api/v1/collections/b3c1398f-372e-4872-952a-b62c38e3bf41/query HTTP/1.1" 200

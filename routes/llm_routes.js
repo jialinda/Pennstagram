@@ -32,6 +32,7 @@ const { ChromaClient } = require("chromadb");
 const fs = require('fs');
 
 const mysql = require('mysql2');
+// const { PortkeySession } = require('langchain/llms/portkey');
 const client = new ChromaClient();
 const parse = require('csv-parse').parse;
 const db = dbsingleton;
@@ -40,12 +41,19 @@ const api_key = process.env.OPENAI_API_KEY;
 var vectorStore = null;
 
 var getVectorStore = async function (req) {
-    if (vectorStore == null) {
-        vectorStore = await Chroma.fromExistingCollection(new OpenAIEmbeddings(), {
+    if (!vectorStore) {
+        vectorStore = await Chroma.fromExistingCollection({
+            apiKey: process.env.OPENAI_API_KEY,
+            batchSize: 512,
+            model: "text-embedding-3-large",
+        }, {
             collectionName: "llm_embeddings",
-            url: "http://localhost:8000", // Optional, will default to this value
+            url: "http://localhost:8000", // This is the default value, can be omitted if not changed
+            collectionMetadata: {
+                "hnsw:space": "cosine",
+            }
         });
-        console.log('vector store:', vectorStore);
+        console.log("VECTOR STORE INITIALIZED: ", vectorStore);
     }
     return vectorStore;
 }
@@ -84,54 +92,35 @@ var getNaturalSearch = async function (req, res) {
     //  console.log('post content', postContent);
 
      // Retrieve user aliases
-     const userAlias = await db.send_sql('SELECT user_id, username FROM users');
+    //  const userAlias = await db.send_sql('SELECT user_id, username FROM users');
 
      const allDocs = [];
     const allIds = [];
     const metadatas = [];
+    var contentHolder = [];
 
-    postsResult.forEach(post => {
-        allDocs.push(post.content);
-        allIds.push(`post-${post.post_id}`); // Adjusted to use post_id instead of id
-        metadatas.push({ source: 'post' });
+    postsResult.map(post => {
+        const embedding = post.post_id + "|" + post.content;
+        contentHolder.push(new Document({pageContent: embedding, metadata: {source: post.post_id}}));
+        allIds.push(post.post_id);
+    })
+
+    vectorStore = await Chroma.fromDocuments(contentHolder, new OpenAIEmbeddings({
+        apiKey: process.env.OPENAI_API_KEY,
+        batchSize: 512,
+        model: "text-embedding-3-large",
+    }), allIds, {
+        collectionName: "llm_embeddings",
+        url: "http://localhost:8000", // This is the default value, can be omitted if not changed
+        collectionMetadata: {
+            "hnsw:space": "cosine",
+        }
     });
-    
-    // Handle user aliases
-    userAlias.forEach(user => {
-        allDocs.push(user.username); // Adjusted to use username instead of alias
-        allIds.push(`user-${user.user_id}`); // Adjusted to use user_id instead of id
-        metadatas.push({ source: 'user' });
-    });
-
-    await collection.add({
-        documents: allDocs,
-        metadatas: metadatas,
-        ids: allIds,
-    });
-
-    // const documents = users.map(user => ({
-    //     id: `user-${user.user_id}`,
-    //     content: `${user.username} ${user.firstname} ${user.lastname}`
-    // })).concat(posts.map(post => ({
-    //     id: `post-${post.post_id}`,
-    //     content: `${post.title} ${post.content}`
-    // })));
 
 
-    await client.deleteCollection({ name: "test8" });
-    await client.deleteCollection({ name: "test7" });
-    await client.deleteCollection({ name: "user_post_collection" });
-
-    // const results = await collection.search({
-    //     query: "hi",
-    //     maxResults: 10 // Limiting number of results for simplicity
-    // });
     console.log("result query", await collection.peek());
 
 
-
-    const vs = await getVectorStore();
-    const retriever = vs.asRetriever();
 
     const question = req.body.question;
     // const prompt = PromptTemplate.fromTemplate(`
@@ -141,73 +130,48 @@ var getNaturalSearch = async function (req, res) {
     // `);
     console.log("question:", question);
 
-    const context = await retriever.pipe(formatDocumentsAsString);
+
+
+    const vs = await getVectorStore();
+    const retriever = vs.asRetriever();
+    const similars = await vs.similaritySearch(question, 10);
+    console.log('similars:', similars);
+    const context = similars.map((p) => p.pageContent).join("\n");
+    console.log('context:', context);
+
+    
+
+    // const context = await retriever.pipe(formatDocumentsAsString);
     const llm = new ChatOpenAI({ apiKey: process.env.OPENAI_API_KEY, modelName: 'gpt-3.5-turbo-16k-0613' });
 
 
-    const prompt = PromptTemplate.fromTemplate(`
-    Context: {{context}}
-    Question: ${question}
-    Given the context above, find a matching user or post for the question.
-`);
-
-const retrieverContext = await retriever.pipe(formatDocumentsAsString);
-console.log("Retriever context:", retrieverContext);
-
-const ragChain = RunnableSequence.from([
-    {
-        context: retrieverContext,  // Ensure context is correctly formatted and passed
-        question: new RunnablePassthrough(),
-    },
-    prompt,
-    llm,
-    new StringOutputParser(),
-]);
-
-try {
-    const result = await ragChain.invoke(question);
-    console.log('Result:', result);
-    res.status(200).json({ message: result });
-} catch (error) {
-    console.error('Error during retrieval:', error);
-    res.status(500).json({ error: 'Failed to process your query.' });
-}
-}
-
-
-
-
-var getMovie = async function(req, res) {
-    const vs = await getVectorStore();
-    const retriever = vs.asRetriever();
-
-    const prompt =
-    PromptTemplate.fromTemplate(`
-    Given the reviews:
-    {{context}}
-    How will you recommend this movie?
+    const prompt = PromptTemplate.fromTemplate(`Based on the context ${context} you have, find me posts similar to  ${question}
     `);
-    const llm = new ChatOpenAI({
-        model: "gpt-3.5-turbo",
-        openaiApiKey: process.env.OPENAI_API_KEY 
-    }); // TODO: replace with your language model
+
+// const retrieverContext = await retriever.pipe(formatDocumentsAsString);
+// console.log("Retriever context:", retrieverContext);
 
     const ragChain = RunnableSequence.from([
         {
-            context: retriever.pipe(formatDocumentsAsString),
+            context: new RunnablePassthrough(),  // Ensure context is correctly formatted and passed
             question: new RunnablePassthrough(),
-          },
-      prompt,
-      llm,
-      new StringOutputParser(),
+        },
+        prompt,
+        llm,
+        new StringOutputParser(),
     ]);
 
-    console.log(req.body.question);
-
-    result = await ragChain.invoke(req.body.question);
-    console.log(result);
-    res.status(200).json({message:result});
+    try {
+        console.log('inputted context:', context);
+        const result = await ragChain.invoke(context, question);
+        console.log('Result:', result);
+        res.status(200).json({ message: result });
+    } catch (error) {
+        console.error('Error during retrieval:', error);
+        res.status(500).json({ error: 'Failed to process your query.' });
+    }
 }
+
 
 
 var llmroutes = {

@@ -7,7 +7,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SparkSession;
 
-import edu.upenn.cis.nets2120.config.Config;
+import edu.upenn.cis.nets2120.configu.Config;
 
 public class SparkConnector {
     /**

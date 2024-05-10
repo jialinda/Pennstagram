@@ -19,7 +19,7 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaDoubleRDD;
 
 
-import edu.upenn.cis.nets2120.config.Config;
+import edu.upenn.cis.nets2120.configu.Config;
 import com.google.common.collect.Iterables;
 
 import scala.Tuple2;
@@ -82,8 +82,7 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
             try (ResultSet rsPostHashtags = connection.createStatement().executeQuery(
                     "SELECT p.post_id, h.hashtag_id FROM post_tagged_with pth " +
                     "JOIN posts p ON pth.post_id = p.post_id " +
-                    "JOIN hashtags h ON pth.hashtag_id = h.hashtag_id" +
-                    "WHERE p.date_posted = CURRENT_DATE")) {
+                    "JOIN hashtags h ON pth.hashtag_id = h.hashtag_id" )) { // "WHERE p.timestamp = CURRENT_DATE"
                 while (rsPostHashtags.next()) {
                     String postId = "p" + rsPostHashtags.getString("post_id");
                     String hashtagId = rsPostHashtags.getString("hashtag_id");
@@ -95,8 +94,7 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
             // Query for user-post "like" relationships
             try (ResultSet rsLikes = connection.createStatement().executeQuery(
                     "SELECT pl.liker_id, p.post_id FROM posts_liked_by pl " +
-                    "JOIN posts p ON pl.post_id = p.post_id"+
-                    "WHERE p.date_posted = CURRENT_DATE")) {
+                    "JOIN posts p ON pl.post_id = p.post_id")) { // "WHERE p.timestamp = CURRENT_DATE"
                 while (rsLikes.next()) {
                     String userId = "u" + rsLikes.getString("liker_id");
                     String postId = "p" + rsLikes.getString("post_id");
@@ -113,6 +111,7 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
                     String followed = "u" + rsFriends.getString("followed");
                     userEdges.add(new Tuple2<>(follower, followed));
                     userEdges.add(new Tuple2<>(followed, follower));
+                    System.err.println(follower);
                 }
             }
 
@@ -237,7 +236,7 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Double>>> {
      * @throws IOException          if there is an error reading the social network data
      * @throws InterruptedException if the execution is interrupted
      */
-        public List<Tuple2<String, Double>> run(boolean debug) throws IOException, InterruptedException, SQLException {
+    public List<Tuple2<String, Double>> run(boolean debug) throws IOException, InterruptedException, SQLException {
 
         // Load the social network, aka. the edges
         JavaPairRDD<String, Tuple2<String, Double>> edgeRDD = getSocialNetworkFromJDBC();

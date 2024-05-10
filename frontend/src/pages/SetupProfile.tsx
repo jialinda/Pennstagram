@@ -53,7 +53,7 @@ function SetupProfile() {
                 actor: selectedActor,
                 hashtags: selectedHashtags
             });
-            navigate(`/${username}/home`);
+            navigate(`/${username}/feed`); // brings you to feed?
         } catch (error) {
             console.error('Failed to submit selections:', error);
         }

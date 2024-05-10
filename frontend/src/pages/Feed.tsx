@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
-import PostComponent from '/nets2120/project-stream-team/frontend/src/components/PostComponent.tsx'; 
+import PostComponent from '../components/posts/PostComponent';
+// import PostComponent from '/nets2120/project-stream-team/frontend/src/components/PostComponent.tsx'; 
 import config from '../../config.json';
 
 const Feed = () => {

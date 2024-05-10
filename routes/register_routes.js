@@ -70,6 +70,9 @@ function register_routes(app) {
     app.get('/getUserByUsername', routes.get_user_by_username);
     
     app.post('/postOnline', routes.post_online);
+    app.post('/likePost', routes.like_post);
+    app.post('/unlikePost', routes.unlike_post);
+    app.post('/postComment', routes.post_comment);
 // ); 
   }
   

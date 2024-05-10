@@ -59,7 +59,7 @@ export default function ChatInterface() {
     console.log('this is currChat', currChat);
 
     const feed = () => {
-        navigate('/' + username + '/home');
+        navigate('/' + username + '/feed'); // changed from home to feed
     };
     const friends = () => {
         navigate("/"+ username+"/friends");

@@ -45,11 +45,11 @@ AWS.config.update({
 });
 
 /* S3 Functions */
-const multer = require("multer");
-const path = require("path");
+// const multer = require("multer");
+// const path = require("path");
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
-const AWS = require("aws-sdk");
-const fs = require("fs");
+// const AWS = require("aws-sdk");
+// const fs = require("fs");
 
 const s3Client = new S3Client({
   region: "us-east-1",
@@ -112,7 +112,7 @@ const uploadPostsToS3 = async (file, postId, bucketName) => {
 
 // Database connection setup
 const db = dbsingleton;
-let session_user_id;
+// let session_user_id;
 
 var getHelloWorld = function (req, res) {
     res.status(200).send({ message: "Hello, world!" });
@@ -163,10 +163,10 @@ var postRegister = async function (req, res) {
         // const csvContent = fs.readFileSync('/nets2120/project-stream-team/names.csv', 'utf8');
         // console.log('csvContent', csvContent);
 
-        // files.forEach(function (file) {
-        //     console.info("Adding task for " + file + " to index.");
-        //     promises.push(facehelper.indexAllFaces(path.join("/nets2120/project-stream-team/models/images", file), file, collection));
-        // });
+        files.forEach(function (file) {
+            console.info("Adding task for " + file + " to index.");
+            promises.push(facehelper.indexAllFaces(path.join("/nets2120/project-stream-team/models/images", file), file, collection));
+        });
 
         console.info("Done adding promises, waiting for completion.");
         await Promise.all(promises);
@@ -911,11 +911,16 @@ var createPost = async function (req, res) {
 var getFeed = async function (req, res) {
     console.log('getFeed is called', req.session.user_id);
 
-    if (!req.session.user_id) {  // Ensuring user is logged in
+    // if (!req.session.user_id) {  // Ensuring user is logged in
+    //     return res.status(403).json({ error: 'Not logged in.' });
+    // }
+    // if (!req.session.user_id) {  // Ensuring user is logged in
+    if (!session_user_id) {
         return res.status(403).json({ error: 'Not logged in.' });
     }
 
-    const userId = req.session.user_id;
+    // const userId = req.session.user_id;
+    const userId = session_user_id;
     console.log('curr id: ', userId);
     
     try {
@@ -1309,10 +1314,6 @@ var postInvite = async function(req, res) {
     }
     const inviteeId = req.body.invitee_id; // would it be id or name..?
     try {
-        // add another column into user_chats
-        // is_active
-        // if is_active is true return chat already exist
-        // if not active then say chat exists, rejoin?
         console.log('trying post invite');
         const checkChat = `WITH agg AS (
             SELECT DISTINCT chat_id,
@@ -1330,10 +1331,6 @@ var postInvite = async function(req, res) {
             const existing_chat_id = check[0].chat_id;
             console.log('existing_chat_id', existing_chat_id);
             try {
-                // add another column into user_chats
-                // is_active
-                // if is_active is true return chat already exist
-                // if not active then say chat exists, rejoin?
                 console.log('checking if active or not');
                 const checkActive = `SELECT * FROM user_chats WHERE chat_id = ${existing_chat_id}`;
                 const active = await db.send_sql(checkActive);
@@ -1434,8 +1431,7 @@ var postInviteChat = async function(req, res) {
         SELECT * FROM agg WHERE user_ids = '${newChatMembers}'
         `;
         const check = await db.send_sql(userChats);
-        // const checkInvite = `SELECT * FROM user_chats WHERE user_id = ${inviteeId} and chat_id = ${chatId}`;
-        // const check = await db.send_sql(checkInvite);
+
         if (check.length > 0) {
             return res.status(409).json({ error: 'User is already in chat! Please add another user!' });
         } else {
@@ -2098,6 +2094,96 @@ var getTextByChatId = async function(req, res) {
     }
 }
 
+// POST /likePost
+var likePost = async function(req, res) {
+
+    console.log('posting likes');
+
+    console.log('user id', session_user_id);
+    if (!session_user_id) {
+        return res.status(403).json({ error: 'Not logged in.' });
+    }
+
+    console.log('this is the req being sent', req);
+
+    const author_id = session_user_id;
+    const post_id = req.body.post_id;
+
+    try {
+        // Insert the message into the database
+        const insertQuery = `INSERT INTO posts_liked_by (liker_id, post_id) VALUES (${author_id}, ${post_id})`;
+        await db.send_sql(insertQuery);
+
+        res.status(201).json({ message: "Like sent successfully." });
+    } catch (error) {
+        console.error('Error querying database:', error);
+        return res.status(500).json({ error: 'Error querying database.' });
+    }
+}
+
+
+// POST /unlikePost
+var unlikePost = async function(req, res) {
+
+    console.log('unliking post');
+
+    console.log('user id', session_user_id);
+    if (!session_user_id) {
+        return res.status(403).json({ error: 'Not logged in.' });
+    }
+
+    console.log('this is the req being sent', req);
+
+    const author_id = session_user_id;
+    const post_id = req.body.post_id;
+
+    try {
+
+        // Insert the message into the database
+        const deleteUInvite = `DELETE FROM posts_liked_by WHERE liker_id = ${author_id} AND post_id = ${post_id}`;
+        // const insertQuery = `DELETE FROM posts_liked_by (liker_id, post_id) VALUES (${author_id}, ${post_id})`;
+        await db.send_sql(deleteUInvite);
+
+        res.status(201).json({ message: "Like deleted sent successfully." });
+    } catch (error) {
+        console.error('Error querying database:', error);
+        return res.status(500).json({ error: 'Error querying database.' });
+    }
+}
+
+
+// POST /postComment
+var postComment = async function(req, res) {
+
+    console.log('sending text');
+    console.log('user id', session_user_id);
+
+    if (!session_user_id) {
+        return res.status(403).json({ error: 'Not logged in.' });
+    }
+    console.log('this is the req being sent', req);
+
+    const author_id = session_user_id;
+    const timestamp = req.body.timestamp; // are we doing this?
+    const content = req.body.content;
+    const post_id = req.body.post_od;
+
+    try {
+        // Insert the message into the database
+        const insertQuery = `INSERT INTO comments (content, timestamp, post_id, author_id) VALUES (${content}, ${timestamp}, '${post_id}', '${author_id}')`;
+        await db.send_sql(insertQuery);
+
+        // // Insert the message into the invites table - PROBA won't need this?
+        // await db.send_sql(inviteQuery, [chatId, inviteeId, senderId]);
+
+        // Send a success response
+        res.status(201).json({ message: "Message sent successfully." });
+    } catch (error) {
+        console.error('Error querying database:', error);
+        return res.status(500).json({ error: 'Error querying database.' });
+    }
+}
+
 
 /* Here we construct an object that contains a field for each route
    we've defined, so we can call the routes from app.js. */
@@ -2142,7 +2228,10 @@ var routes = {
     delete_f_invite: deleteFInvite,
     delete_u_f_invite: deleteUFInvite,
     remove_friend: removeFriend,
-    post_online: postOnline
+    post_online: postOnline,
+    like_post: likePost,
+    unlike_post: unlikePost,
+    post_comment: postComment
   };
 
 

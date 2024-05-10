@@ -99,4 +99,5 @@ Run `chroma run --host 0.0.0.0` to start the Chromadb.
 ### 3. Running the frontend
 To run the frontend, you will need to install the required packages using `npm install` and then run the app using `npm run dev --host` from inside the `frontend` directory and from the Docker terminal. The frontend will be running on `http://localhost:4567`.
 
+Please also run these commands to download the icons we have imported: `npm install --save @fortawesome/react-fontawesome @fortawesome/free-solid-svg-icons @fortawesome/fontawesome-svg-core`
 

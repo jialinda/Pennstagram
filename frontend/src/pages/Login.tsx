@@ -33,7 +33,7 @@ export default function Login() {
     try {
       const response = await axios.post(`${rootURL}/postOnline`);
       if (response.status === 200) {
-        navigate(`/${username}/home`);
+        navigate(`/${username}/feed`); // changed
       } 
     } catch (error) {
       console.error("Logging data in error:", error);

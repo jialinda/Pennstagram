@@ -5,10 +5,30 @@ import PostComponent from '../components/posts/PostComponent';
 // import PostComponent from '/nets2120/project-stream-team/frontend/src/components/PostComponent.tsx'; 
 import config from '../../config.json';
 
+
+export interface Post {
+  username: string;
+  parent_post: string;
+  post_id: string;
+  post_author: string;
+  post_timestamp: string;
+  title: string;
+  content: string;
+  hashtags: string[];
+  comments: Comment[];
+  likes_count: number;
+}
+
+export interface Comment {
+  content: string;
+  timestamp: string;
+  author: string;
+}
+
 const Feed = () => {
   const { username } = useParams();
   const navigate = useNavigate();
-  const [feed, setFeed] = useState([]);
+  const [feed, setFeed] = useState<Post[]>([]);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -38,6 +58,7 @@ const Feed = () => {
             key={post.post_id}
             username={post.username}
             timestamp={post.post_timestamp}
+            hashtags={post.hashtags}
             title={post.title}
             content={post.content}
             comments={post.comments}

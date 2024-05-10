@@ -6,36 +6,35 @@ import config from '../../config.json';
 export default function CreatePost() {
   const navigate = useNavigate();
   const { username } = useParams();
+
   const rootURL = config.serverRootURL;
 
   const [title, setTitle] = useState('');
-  const [content, setContent] = useState(any); // Changed to null for clarity
+  const [content, setContent] = useState<File | null>(null);
   const [hashtags, setHashtags] = useState('');
 
-  const handleCreatePost = async (event) => {
-    event.preventDefault();
+  const handleCreatePost = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!title && !content && !hashtags) {
+      alert("At least one field (title, picture, or hashtags) must contain some content.");
+      return;
+    }
     const formData = new FormData();
-    // formData.append('title', title);
-    // formData.append('content', content); // Ensure this matches the file input
-    // formData.append('hashtags', hashtags);
-    formData.append('linda', 'sucks');
-    console.log("Creating post...");
-    console.log(content);
-  //   {
-  //     'title': title,
-  //     'content': content,
-  //     'hashtags': hashtags
-  // }
+    formData.append('title', title);
+    formData.append('hashtags', hashtags);
+
+    if (content) formData.append('content', content);
+
     try {
-      const response = await axios.post(`${rootURL}/${username}/createPost`, content, 
-      {headers : {
-        'Content-Type': content.type
-      }});
-  
+
+      const response = await axios.post(`${rootURL}/${username}/createPost`, formData);
+
+      console.log(response.data);
+
       if (response.status === 200) {
         navigate(`/${username}/feed`);
       } else {
-        alert("Post Creation failed: " + response.data.error);
+        alert("Post Creation failed.");
       }
     } catch (error) {
       console.error("Post Creation Failed:", error);
@@ -43,14 +42,17 @@ export default function CreatePost() {
     }
   };
 
-  
-  const handlePhotoChange = (event) => {
-    console.log("Handling file upload...");
-    if (event.target.files && event.target.files[0]) {
+  const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
       setContent(event.target.files[0]);
+      console.log("photo set to:",event.target.files[0]);
     } else {
       setContent(null);
     }
+  };
+
+  const handleBackToHome = () => {
+    navigate('/');
   };
 
   return (
@@ -59,22 +61,32 @@ export default function CreatePost() {
         <div className='rounded-md bg-slate-50 p-6 space-y-4 w-full max-w-md'>
           <div className='font-bold text-2xl mb-4 text-center'>Create a Post</div>
           <input
+            id="content"
             type="file"
             onChange={handlePhotoChange}
           />
           <input
+            id="title"
             type="text"
             placeholder="Caption"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
           <input
+            id="hashtag"
             type="text"
             placeholder="Hashtags, comma-separated"
             value={hashtags}
             onChange={(e) => setHashtags(e.target.value)}
           />
           <button type="submit" className='bg-indigo-500 text-white font-bold py-2 px-4 rounded'>Create Post</button>
+          <button
+            type="button"
+            className='bg-gray-300 text-black font-bold py-2 px-4 rounded'
+            onClick={handleBackToHome}
+          >
+            Back to Home
+          </button>
         </div>
       </form>
     </div>

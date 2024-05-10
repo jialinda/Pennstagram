@@ -45,99 +45,12 @@ var getVectorStore = async function (req) {
             collectionName: "llm_embeddings",
             url: "http://localhost:8000", // Optional, will default to this value
         });
+        console.log('vector store:', vectorStore);
     }
     return vectorStore;
 }
 
-async function createCollectionIfNotExists(collectionName) {
-    console.log("start creating...");
-    try {
-        // const collections = await client.listCollections();
-        const collections = await client.listCollections();
-        console.log("collection list: ");
-        console.log(collections);
 
-
-        const collection = await client.createCollection({
-            name: collectionName,
-            embeddingsModel: emb_fn
-        });
-        console.log('collection created:', collection);
-        return collection
-    } catch (error) {
-        console.error('Error accessing or creating collection:', error);
-        throw error;
-    }
-}
-
-
-async function getEmbeddings(texts) {
-    const embeddings = new OpenAIEmbeddings({
-        apiKey: process.env.OPENAI_API_KEY,
-        batchSize: 512,
-        model: "text-embedding-3-small"
-    });
-
-    try {
-        const vectors = await embeddings.embedDocuments(texts)
-        return vectors;
-    } catch (error) {
-        console.error('Failed to get embeddings:', error);
-        throw error;
-    }
-}
-
-
-async function indexDocuments() {
-    // const users = await db.send_sql('SELECT * FROM users');
-    // const posts = await db.send_sql('SELECT * FROM posts');
-
-    // // Create documents formatted for embedding generation
-    // const userDocuments = users.map(user => ({
-    //     id: `user-${user.user_id}`,
-    //     content: `${user.username} ${user.firstname} ${user.lastname}`
-    // }));
-    // const postDocuments = posts.map(post => ({
-    //     id: `post-${post.post_id}`,
-    //     content: `${post.title} ${post.content}`
-    // }));
-
-    // const vectorStore = createCollectionIfNotExists("test6");
-
-    const vectorStore = await client.createCollection({
-        name: "test8",
-        embeddingFunction: emb_fn,
-    })
-
-    // Add documents to ChromaDB
-    console.log("newly created collection:", vectorStore);
-
-    const testDocuments = ["I love playing basketball.", "I love playing football.", "I love playing tennis.", "Alice", "Bob", "Charlie"];
-    const metadatas = [
-        { 'source': "post" },
-        { 'source': "post" },
-        { 'source': "post" },
-        { 'source': "user" },
-        { 'source': "user" },
-        { 'source': "user" }
-    ];
-    const ids = ["p1", "p2", "p3", "u1", "u2", "u3"];
-
-    const embeddings = await getEmbeddings(testDocuments);
-    await vectorStore.add({
-        documents: embeddings,
-        metadatas: metadatas,
-        // embeddings: embeddings,  // Only include this line if embeddings are required
-        ids: ids
-    });
-
-
-    console.log("vector store collection:", vectorStore);
-
-
-    // await vectorStore.add(userDocuments.concat(postDocuments));
-    console.log("Documents indexed in ChromaDB");
-}
 
 
 var getNaturalSearch = async function (req, res) {
@@ -158,82 +71,142 @@ var getNaturalSearch = async function (req, res) {
         embeddingsModel: emb_fn,
     });
 
+
+
     console.log('collection created:', collection);
+    const users = await db.send_sql('SELECT * FROM users');
+    const posts = await db.send_sql('SELECT * FROM posts');
+     // Retrieve post contents
+     const postsResult = await db.send_sql('SELECT post_id, content FROM posts');
+     console.log('post result', postsResult);
+    //  const postContent = postsResult[0]; // This now should contain all rows if db.send_sql returns [rows, fields]
 
+    //  console.log('post content', postContent);
 
-    await collection.add({
-        documents: ["I love playing basketball.", "I love playing football.", "I love playing tennis.", "Alice", "Bob", "Charlie"],
-        metadatas: [
-            { 'source': "post" },
-            { 'source': "post" },
-            { 'source': "post" },
-            { 'source': "user" },
-            { 'source': "user" },
-            { 'source': "user" }
-        ],
-        ids: ["p1", "p2", "p3", "u1", "u2", "u3"]
+     // Retrieve user aliases
+     const userAlias = await db.send_sql('SELECT user_id, username FROM users');
+
+     const allDocs = [];
+    const allIds = [];
+    const metadatas = [];
+
+    postsResult.forEach(post => {
+        allDocs.push(post.content);
+        allIds.push(`post-${post.post_id}`); // Adjusted to use post_id instead of id
+        metadatas.push({ source: 'post' });
+    });
+    
+    // Handle user aliases
+    userAlias.forEach(user => {
+        allDocs.push(user.username); // Adjusted to use username instead of alias
+        allIds.push(`user-${user.user_id}`); // Adjusted to use user_id instead of id
+        metadatas.push({ source: 'user' });
     });
 
+    await collection.add({
+        documents: allDocs,
+        metadatas: metadatas,
+        ids: allIds,
+    });
 
-
+    // const documents = users.map(user => ({
+    //     id: `user-${user.user_id}`,
+    //     content: `${user.username} ${user.firstname} ${user.lastname}`
+    // })).concat(posts.map(post => ({
+    //     id: `post-${post.post_id}`,
+    //     content: `${post.title} ${post.content}`
+    // })));
 
 
     await client.deleteCollection({ name: "test8" });
     await client.deleteCollection({ name: "test7" });
     await client.deleteCollection({ name: "user_post_collection" });
 
+    // const results = await collection.search({
+    //     query: "hi",
+    //     maxResults: 10 // Limiting number of results for simplicity
+    // });
+    console.log("result query", await collection.peek());
+
 
 
     const vs = await getVectorStore();
     const retriever = vs.asRetriever();
 
-
-    // console.log('vs:', vs);
-    // const retriever = vs.asRetriever();
-    // const results = await vs.search({ query: req.body.question });
-    // const context = 'Find the related user and post based on the {question}';
     const question = req.body.question;
+    // const prompt = PromptTemplate.fromTemplate(`
+    // Context: {{context}}
+    // Question: ${question}
+    // Given the context above, can you give me a post or user for question?
+    // `);
+    console.log("question:", question);
+
+    const context = await retriever.pipe(formatDocumentsAsString);
+    const llm = new ChatOpenAI({ apiKey: process.env.OPENAI_API_KEY, modelName: 'gpt-3.5-turbo-16k-0613' });
+
 
     const prompt = PromptTemplate.fromTemplate(`
-                Context: context
-                Question: ${question}
-                Please provide related user or post based on the given context.
-            `);
+    Context: {{context}}
+    Question: ${question}
+    Given the context above, find a matching user or post for the question.
+`);
 
-console.log('prompt:', prompt);
+const retrieverContext = await retriever.pipe(formatDocumentsAsString);
+console.log("Retriever context:", retrieverContext);
+
+const ragChain = RunnableSequence.from([
+    {
+        context: retrieverContext,  // Ensure context is correctly formatted and passed
+        question: new RunnablePassthrough(),
+    },
+    prompt,
+    llm,
+    new StringOutputParser(),
+]);
+
+try {
+    const result = await ragChain.invoke(question);
+    console.log('Result:', result);
+    res.status(200).json({ message: result });
+} catch (error) {
+    console.error('Error during retrieval:', error);
+    res.status(500).json({ error: 'Failed to process your query.' });
+}
+}
 
 
 
-    // const prompt =
-    //     PromptTemplate.fromTemplate('
-    //         Context: {context}
-    //         contextParams: { question: req.body.question }
-    //         ');
-    //const llm = null; // TODO: replace with your language model
-    const llm = new ChatOpenAI({ apiKey: process.env.OPENAI_API_KEY, modelName: 'gpt-3.5-turbo' });
+
+var getMovie = async function(req, res) {
+    const vs = await getVectorStore();
+    const retriever = vs.asRetriever();
+
+    const prompt =
+    PromptTemplate.fromTemplate(`
+    Given the reviews:
+    {{context}}
+    How will you recommend this movie?
+    `);
+    const llm = new ChatOpenAI({
+        model: "gpt-3.5-turbo",
+        openaiApiKey: process.env.OPENAI_API_KEY 
+    }); // TODO: replace with your language model
 
     const ragChain = RunnableSequence.from([
         {
             context: retriever.pipe(formatDocumentsAsString),
-            // context: results,
             question: new RunnablePassthrough(),
-        },
-        prompt,
-        llm,
-        new StringOutputParser(),
+          },
+      prompt,
+      llm,
+      new StringOutputParser(),
     ]);
 
     console.log(req.body.question);
 
-    try {
-        console.log("start invoking ragchain");
-        console.log('ragChain:', ragChain);
-        const result = await ragChain.invoke(req.body.question);
-        console.log('result:', result);
-        return res.status(200).json({ message: result });
-    } catch (error) {
-        console.log('error');
-    };
+    result = await ragChain.invoke(req.body.question);
+    console.log(result);
+    res.status(200).json({message:result});
 }
 
 

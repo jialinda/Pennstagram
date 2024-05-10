@@ -9,6 +9,10 @@ import axios from 'axios';
 const rootURL = config.serverRootURL;
 
 const PostComponent = ({ username, timestamp, title, content, comments, likesCount, likedByUser }) => {
+
+  // console.log('username', username);
+  // console.log('comments', comments);
+
   const [likes, setLikes] = useState(likesCount);
   const [liked, setLiked] = useState(likedByUser);
   const [commentText, setCommentText] = useState('');
@@ -32,15 +36,39 @@ const PostComponent = ({ username, timestamp, title, content, comments, likesCou
 
   const handleCommentChange = (event) => {
     setCommentText(event.target.value);
+    console.log('this is comment text', commentText);
   };
 
   const submitComment = async (event) => {
     console.log('commenting frontend');
     event.preventDefault(); // do I need this?
+
+    const timestamp = new Date(); // Get the current timestamp
+    const year = timestamp.getFullYear();
+    const month = String(timestamp.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed, so add 1
+    const day = String(timestamp.getDate()).padStart(2, '0');
+    const hours = String(timestamp.getHours()).padStart(2, '0');
+    const minutes = String(timestamp.getMinutes()).padStart(2, '0');
+    const formattedTimestamp = `${year}-${month}-${day} ${hours}:${minutes}`;
+
     try {
-      const response = await axios.post(`/api/posts/${post_id}/comments`, { content: commentText });
-      setCurrentComments([...currentComments, response.data.comment]);
+      const response = await axios.post(`${rootURL}/postComment`, {
+        author_id: username,
+        content: commentText,
+        timestamp: formattedTimestamp,
+        // post_id:
+      });
+      const newMessage = {
+        author_id: username,
+        content: commentText,
+        timestamp: formattedTimestamp,
+        // post_id: 
+      };
+      console.log('adding new comment', newMessage);
+      setCurrentComments([...currentComments, newMessage]);
+      // setCurrentComments([...currentComments, response.data.comment]);
       setCommentText('');  // Clear the input after submission
+      // console.log('this')
     } catch (error) {
       console.error('Failed to submit comment:', error);
     }

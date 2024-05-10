@@ -853,6 +853,7 @@ var getGroupsALl = async function (req, res) {
 
 /// POST /createPost
 var createPost = async function (req, res) {
+    console.log('creating post right now');
     if (!session_user_id) {
       return res.status(403).json({ error: 'Not logged in.' });
     }
@@ -872,10 +873,17 @@ var createPost = async function (req, res) {
     // let parent_id = req.body.parent_post || null;
   
     console.log("Checking title: ", title);
-    console.log("Checking original filename: ", content.originalname);
-    if (!helper.isOK(title) || (content && !helper.isOK(content.originalname))) {  // Validate file name if content is a file
+    // console.log("Checking original filename: ", content.originalname);
+    if (!helper.isOK(title)) {
         console.log("here");
       return res.status(400).json({ error: 'Invalid characters in title or file name.' });
+    }
+
+    if (content) {
+        console.log("Checking original filename: ", content.originalname);
+        if (!helper.isOK(content.originalname)) {  // Validate file name if content is a file)
+            return res.status(400).json({ error: 'Invalid characters in title or file name.' });
+        }
     }
 
     try {
@@ -921,6 +929,8 @@ var getFeed = async function (req, res) {
     // const userId = req.session.user_id;
     const userId = session_user_id;
     console.log('curr id: ', userId);
+
+    // ask if we need anything from comments_on)post_by
     
     try {
         console.log('trying to fetch feed');

@@ -14,11 +14,13 @@ export default function CreatePost() {
   const [hashtags, setHashtags] = useState('');
 
   const handleCreatePost = async (e: React.FormEvent<HTMLFormElement>) => {
+    console.log('creating post fe');
     e.preventDefault();
     if (!title && !content && !hashtags) {
       alert("At least one field (title, picture, or hashtags) must contain some content.");
       return;
     }
+    console.log('a');
     const formData = new FormData();
     formData.append('title', title);
     formData.append('hashtags', hashtags);
@@ -26,6 +28,8 @@ export default function CreatePost() {
     if (content) formData.append('content', content);
 
     try {
+
+      console.log('b');
 
       const response = await axios.post(`${rootURL}/${username}/createPost`, formData);
 
@@ -52,7 +56,7 @@ export default function CreatePost() {
   };
 
   const handleBackToHome = () => {
-    navigate('/');
+    navigate(`/${username}/feed`)
   };
 
   return (
@@ -85,7 +89,7 @@ export default function CreatePost() {
             className='bg-gray-300 text-black font-bold py-2 px-4 rounded'
             onClick={handleBackToHome}
           >
-            Back to Home
+            Back to Feed
           </button>
         </div>
       </form>

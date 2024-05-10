@@ -22,12 +22,18 @@ const PostComponent = ({ postId, username, timestamp, title, content, comments, 
   const toggleLike = async () => {
     try {
       if (!liked) {
-        // await axios.post(`${rootURL}/likePost`); // Ensure you have the correct API endpoint
-        // setLikes(likes + 1);
+        await axios.post(`${rootURL}/likePost`, {
+          liker: username,
+          post_id: postId
+        });
+        setLikes(likes + 1);
         setLiked(true);
       } else {
-        // await axios.post(`${rootURL}/unlikePost`); // Ensure you have the correct API endpoint
-        // setLikes(likes - 1);
+        await axios.post(`${rootURL}/unlikePost`, {
+          liker: username,
+          post_id: postId
+        }); // Ensure you have the correct API endpoint
+        setLikes(likes - 1);
         setLiked(false);
       }
     } catch (error) {

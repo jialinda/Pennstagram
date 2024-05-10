@@ -14,6 +14,7 @@ import Feed from "./pages/Feed";
 import CreatePost from "./pages/CreatePost";
 import SetupProfile from "./pages/SetupProfile";
 import Search from "./pages/Search";
+import Groups from "./pages/Groups";
 
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
         <Route path="/:username/profile" element={<Profile />} />
         <Route path="/:username/editprofile" element={<EditProfile />} />
         <Route path='/:username/friends' element={<Friends />} />
+        <Route path='/:username/groups' element={<Groups />} />
         <Route path="/:username/chat" element={<ChatInterface />} />
         <Route path="/:username/createChat" element={<CreateChat />} />
         <Route path="/:username/createChat/:chat_id/inviteFriend" element={<InviteFriend />} />

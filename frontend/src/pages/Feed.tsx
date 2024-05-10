@@ -57,7 +57,9 @@ const Feed = () => {
         {feed.map(post => (
           <PostComponent
             key={post.post_id}
+            postId={post.post_id}
             username={post.username}
+            // username={username}
             timestamp={post.post_timestamp}
             hashtags={post.hashtags}
             title={post.title}

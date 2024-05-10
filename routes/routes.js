@@ -874,17 +874,17 @@ var createPost = async function (req, res) {
   
     console.log("Checking title: ", title);
     // console.log("Checking original filename: ", content.originalname);
-    if (!helper.isOK(title)) {
+    if (!helper.isOK(title) || (content && !helper.isOK(content.originalname))) {
         console.log("here");
       return res.status(400).json({ error: 'Invalid characters in title or file name.' });
     }
 
-    if (content) {
-        console.log("Checking original filename: ", content.originalname);
-        if (!helper.isOK(content.originalname)) {  // Validate file name if content is a file)
-            return res.status(400).json({ error: 'Invalid characters in title or file name.' });
-        }
-    }
+    // if (content) {
+    //     console.log("Checking original filename: ", content.originalname);
+    //     if (!helper.isOK(content.originalname)) {  // Validate file name if content is a file)
+    //         return res.status(400).json({ error: 'Invalid characters in title or file name.' });
+    //     }
+    // }
 
     try {
       const postQuery = `INSERT INTO posts (author_id, title, content, timestamp) VALUES (?, ?, ?, NOW())`;
@@ -934,6 +934,7 @@ var getFeed = async function (req, res) {
     
     try {
         console.log('trying to fetch feed');
+        //BELOW IS MY EDIT
         const feedQuery = `
             SELECT 
                 p.post_id AS post_id, 
@@ -956,9 +957,7 @@ var getFeed = async function (req, res) {
             LEFT JOIN 
                 posts_liked_by plb ON plb.post_id = p.post_id
             LEFT JOIN 
-                comments_on_post_by copb ON copb.post_id = p.post_id
-            LEFT JOIN 
-                comments c ON copb.comment_id = c.comment_id
+                comments c ON c.post_id = p.post_id
             LEFT JOIN 
                 users cu ON c.author_id = cu.user_id
             GROUP BY
@@ -966,7 +965,6 @@ var getFeed = async function (req, res) {
             ORDER BY 
                 p.timestamp DESC;
         `;
-
         const feed = await db.send_sql(feedQuery);
 
         const results = feed.map(post => ({
@@ -2164,29 +2162,29 @@ var unlikePost = async function(req, res) {
 // POST /postComment
 var postComment = async function(req, res) {
 
-    console.log('sending text');
+    console.log('sending comment');
     console.log('user id', session_user_id);
 
     if (!session_user_id) {
         return res.status(403).json({ error: 'Not logged in.' });
     }
-    console.log('this is the req being sent', req);
+    // console.log('this is the req being sent', req);
 
     const author_id = session_user_id;
     const timestamp = req.body.timestamp; // are we doing this?
     const content = req.body.content;
-    const post_id = req.body.post_od;
+    const post_id = req.body.post_id;
 
     try {
         // Insert the message into the database
-        const insertQuery = `INSERT INTO comments (content, timestamp, post_id, author_id) VALUES (${content}, ${timestamp}, '${post_id}', '${author_id}')`;
+        const insertQuery = `INSERT INTO comments (content, timestamp, post_id, author_id) VALUES ('${content}', '${timestamp}', ${post_id}, ${author_id})`;
         await db.send_sql(insertQuery);
 
         // // Insert the message into the invites table - PROBA won't need this?
         // await db.send_sql(inviteQuery, [chatId, inviteeId, senderId]);
 
         // Send a success response
-        res.status(201).json({ message: "Message sent successfully." });
+        res.status(201).json({ message: "Comment sent successfully." });
     } catch (error) {
         console.error('Error querying database:', error);
         return res.status(500).json({ error: 'Error querying database.' });

@@ -3,15 +3,16 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart as farHeart } from '@fortawesome/free-regular-svg-icons';
 import { faHeart as fasHeart } from '@fortawesome/free-solid-svg-icons';
 import './posts.css'; // Make sure your styles are correctly imported
-import config from '/../config.json';
+// import config from '/../config.json';
+import config from '../../../config.json';
 import axios from 'axios';
 
-const rootURL = config.serverRootURL;
-
-const PostComponent = ({ username, timestamp, title, content, comments, likesCount, likedByUser }) => {
+const PostComponent = ({ postId, username, timestamp, title, content, comments, likesCount, likedByUser }) => {
 
   // console.log('username', username);
+  // console.log('this is postId', postId);
   // console.log('comments', comments);
+  const rootURL = config.serverRootURL;
 
   const [likes, setLikes] = useState(likesCount);
   const [liked, setLiked] = useState(likedByUser);
@@ -42,7 +43,6 @@ const PostComponent = ({ username, timestamp, title, content, comments, likesCou
   const submitComment = async (event) => {
     console.log('commenting frontend');
     event.preventDefault(); // do I need this?
-
     const timestamp = new Date(); // Get the current timestamp
     const year = timestamp.getFullYear();
     const month = String(timestamp.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed, so add 1
@@ -52,17 +52,18 @@ const PostComponent = ({ username, timestamp, title, content, comments, likesCou
     const formattedTimestamp = `${year}-${month}-${day} ${hours}:${minutes}`;
 
     try {
+      console.log('a', rootURL);
       const response = await axios.post(`${rootURL}/postComment`, {
-        author_id: username,
+        author: username,
         content: commentText,
         timestamp: formattedTimestamp,
-        // post_id:
+        post_id: postId
       });
       const newMessage = {
-        author_id: username,
+        author: username,
         content: commentText,
         timestamp: formattedTimestamp,
-        // post_id: 
+        post_id: postId
       };
       console.log('adding new comment', newMessage);
       setCurrentComments([...currentComments, newMessage]);

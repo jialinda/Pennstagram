@@ -20087,3 +20087,60 @@ RuntimeError: coroutine raised StopIteration
 [32mINFO[0m:     [10-05-2024 18:59:09] 127.0.0.1:59076 - "POST /api/v1/collections/984b18fc-87df-4188-9ce0-c11c043045d2/upsert HTTP/1.1" 200
 [32mINFO[0m:     [10-05-2024 18:59:09] 127.0.0.1:59062 - "POST /api/v1/collections/791b408d-597a-4161-b80a-5c832467eddf/get HTTP/1.1" 200
 [32mINFO[0m:     [10-05-2024 18:59:09] 127.0.0.1:59062 - "POST /api/v1/collections/984b18fc-87df-4188-9ce0-c11c043045d2/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:30:08] Shutting down
+[32mINFO[0m:     [10-05-2024 21:30:09] Waiting for application shutdown.
+[32mINFO[0m:     [10-05-2024 21:30:09] Application shutdown complete.
+[32mINFO[0m:     [10-05-2024 21:30:09] Finished server process [[36m43319[0m]
+[33mWARNING[0m:  [10-05-2024 21:31:14] chroma_server_nofile is set to 65535, but this is less than current soft limit of 1048576. chroma_server_nofile will not be set.
+[32mINFO[0m:     [10-05-2024 21:31:14] Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+[36mDEBUG[0m:    [10-05-2024 21:31:14] Starting component System
+[36mDEBUG[0m:    [10-05-2024 21:31:14] Starting component OpenTelemetryClient
+[36mDEBUG[0m:    [10-05-2024 21:31:14] Starting component SimpleAssignmentPolicy
+[36mDEBUG[0m:    [10-05-2024 21:31:14] Starting component SqliteDB
+[36mDEBUG[0m:    [10-05-2024 21:31:14] Starting component Posthog
+[36mDEBUG[0m:    [10-05-2024 21:31:14] Starting component LocalSegmentManager
+[36mDEBUG[0m:    [10-05-2024 21:31:14] Starting component SegmentAPI
+[32mINFO[0m:     [10-05-2024 21:31:14] Started server process [[36m45102[0m]
+[32mINFO[0m:     [10-05-2024 21:31:14] Waiting for application startup.
+[32mINFO[0m:     [10-05-2024 21:31:14] Application startup complete.
+[32mINFO[0m:     [10-05-2024 21:31:14] Uvicorn running on [1mhttp://0.0.0.0:8000[0m (Press CTRL+C to quit)
+[32mINFO[0m:     [10-05-2024 21:31:39] 127.0.0.1:50594 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:31:39] 127.0.0.1:50606 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:31:39] 127.0.0.1:50594 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:31:40] 127.0.0.1:50594 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 21:31:41] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 21:31:41] 127.0.0.1:50606 - "POST /api/v1/collections/3b19f84b-a132-41f1-8a4c-0e2f36a46a65/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:31:41] 127.0.0.1:50594 - "POST /api/v1/collections/fb6ff4d8-be7a-42e3-8fe1-eb9896b48b69/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:31:41] 127.0.0.1:50594 - "POST /api/v1/collections/3b19f84b-a132-41f1-8a4c-0e2f36a46a65/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:41:24] 127.0.0.1:33438 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:41:24] 127.0.0.1:33444 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:41:24] 127.0.0.1:33438 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:41:26] 127.0.0.1:33438 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 21:41:26] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 21:41:26] 127.0.0.1:33444 - "POST /api/v1/collections/feca1dbe-8d94-4c87-8f19-233f43143bd7/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:41:26] 127.0.0.1:33438 - "POST /api/v1/collections/211da385-6214-41c2-8d2b-faf132f280b4/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:41:26] 127.0.0.1:33438 - "POST /api/v1/collections/feca1dbe-8d94-4c87-8f19-233f43143bd7/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:41:40] 127.0.0.1:46714 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:41:40] 127.0.0.1:46726 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:41:40] 127.0.0.1:46714 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:41:42] 127.0.0.1:46714 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 21:41:42] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 21:41:42] 127.0.0.1:46726 - "POST /api/v1/collections/bd4d265e-c02b-4d52-b7c9-deadf0e71113/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:41:42] 127.0.0.1:46714 - "POST /api/v1/collections/0da45371-4892-426e-a781-2707d4b6401a/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:41:42] 127.0.0.1:46714 - "POST /api/v1/collections/bd4d265e-c02b-4d52-b7c9-deadf0e71113/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:42:18] 127.0.0.1:45290 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:42:18] 127.0.0.1:45294 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:42:18] 127.0.0.1:45290 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:42:19] 127.0.0.1:45290 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 21:42:20] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 21:42:20] 127.0.0.1:45294 - "POST /api/v1/collections/15b784df-18c6-424d-82ef-0640b587de11/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:42:20] 127.0.0.1:45290 - "POST /api/v1/collections/99da232f-cb05-4ccb-bf72-4ab5bc2799d1/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:42:20] 127.0.0.1:45290 - "POST /api/v1/collections/15b784df-18c6-424d-82ef-0640b587de11/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:42:52] 127.0.0.1:54058 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:42:52] 127.0.0.1:54060 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:42:52] 127.0.0.1:54058 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:42:53] 127.0.0.1:54058 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 21:42:53] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 21:42:53] 127.0.0.1:54060 - "POST /api/v1/collections/5fffc087-d065-4579-ab2c-f0dbb714e6f2/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:42:53] 127.0.0.1:54058 - "POST /api/v1/collections/96ee9bb1-57d5-40bc-8acb-501000502279/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:42:54] 127.0.0.1:54058 - "POST /api/v1/collections/5fffc087-d065-4579-ab2c-f0dbb714e6f2/query HTTP/1.1" 200

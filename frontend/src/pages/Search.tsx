@@ -2,10 +2,12 @@ import { useState } from 'react';
 import axios from 'axios';
 import config from '../../config.json';
 import { useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 const Search = () => {
   const rootURL = config.serverRootURL;
   const navigate = useNavigate();
+  const { username } = useParams();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState('');
   const [loading, setLoading] = useState(false); // State to handle loading indicator
@@ -29,7 +31,7 @@ const Search = () => {
     <div className='w-screen h-screen flex flex-col bg-gray-50'>
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 bg-blue-500 text-black">
-        <button onClick={() => navigate("/profile")} className="px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-600 focus:outline-none focus:bg-blue-600">My Profile</button>
+        <button onClick={() => navigate("/"+username+"/feed")} className="px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-600 focus:outline-none focus:bg-blue-600">Back to Feed</button>
         <input 
           type="text" 
           value={query} 

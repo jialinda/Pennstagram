@@ -29,7 +29,7 @@ function App() {
         <Route path="/:username/chat" element={<ChatInterface />} />
         <Route path="/:username/feed" element={<Feed />} />
         <Route path="/:username/createPost" element={<CreatePost />} />
-        <Route path="/search" element={<Search />} />
+        <Route path="/:username/search" element={<Search />} />
       </Routes>
     </BrowserRouter>
   )

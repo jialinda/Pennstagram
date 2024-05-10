@@ -34,6 +34,7 @@ const Feed = () => {
         <div className="flex space-x-4">
           <button onClick={() => navigate("/"+username+"/chat")} className="px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-600 focus:outline-none focus:bg-blue-600">Chat</button>
           <button onClick={() => navigate("/notifications")} className="px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-600 focus:outline-none focus:bg-blue-600">Notifications</button>
+          <button onClick={() => navigate("/"+username+"/search")} className="px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-600 focus:outline-none focus:bg-blue-600">Search</button> {/* New Search Button */}
         </div>
       </div>
       

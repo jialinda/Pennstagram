@@ -15,6 +15,8 @@ app.use(cors({
 
 app.use(express.json()); 
 
+// app.use('/uploads', express.static('/nets2120/project-stream-team/uploads'));
+
 app.use(session({
   secret: 'nets2120_insecure', 
   saveUninitialized: true,

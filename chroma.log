@@ -20144,3 +20144,23 @@ RuntimeError: coroutine raised StopIteration
 [32mINFO[0m:     [10-05-2024 21:42:53] 127.0.0.1:54060 - "POST /api/v1/collections/5fffc087-d065-4579-ab2c-f0dbb714e6f2/upsert HTTP/1.1" 200
 [32mINFO[0m:     [10-05-2024 21:42:53] 127.0.0.1:54058 - "POST /api/v1/collections/96ee9bb1-57d5-40bc-8acb-501000502279/get HTTP/1.1" 200
 [32mINFO[0m:     [10-05-2024 21:42:54] 127.0.0.1:54058 - "POST /api/v1/collections/5fffc087-d065-4579-ab2c-f0dbb714e6f2/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:49:43] 127.0.0.1:53274 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:49:43] 127.0.0.1:53276 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:49:43] 127.0.0.1:53274 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:49:45] 127.0.0.1:53274 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 21:49:45] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 21:49:46] 127.0.0.1:53276 - "POST /api/v1/collections/6ecab7b4-8205-46f1-a249-c5eb121c3362/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:49:46] 127.0.0.1:53274 - "POST /api/v1/collections/7ac077d2-3a97-4449-9831-5dd0d0e105b6/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:49:46] 127.0.0.1:53274 - "POST /api/v1/collections/6ecab7b4-8205-46f1-a249-c5eb121c3362/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:50:09] 127.0.0.1:58018 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:50:09] 127.0.0.1:58022 - "DELETE /api/v1/collections/llm_embeddings?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:50:09] 127.0.0.1:58018 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:50:11] 127.0.0.1:58018 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [10-05-2024 21:50:11] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [10-05-2024 21:50:11] 127.0.0.1:58022 - "POST /api/v1/collections/6907dd01-ba90-45b6-9a0b-44cad1970f1a/upsert HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:50:11] 127.0.0.1:58018 - "POST /api/v1/collections/43333b1f-4c84-4163-8f06-b8be996c1031/get HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:50:12] 127.0.0.1:58018 - "POST /api/v1/collections/6907dd01-ba90-45b6-9a0b-44cad1970f1a/query HTTP/1.1" 200
+[32mINFO[0m:     [10-05-2024 21:58:13] 127.0.0.1:45870 - "GET /uploads/1714079672158-423944057_1461939054356673_4217162015685765151_n.png HTTP/1.1" 404
+[32mINFO[0m:     [10-05-2024 21:58:16] 127.0.0.1:45874 - "GET /uploads/1714079672158-423944057_1461939054356673_4217162015685765151_n.png HTTP/1.1" 404
+[32mINFO[0m:     [10-05-2024 21:58:17] 127.0.0.1:45876 - "GET /uploads/1714079672158-423944057_1461939054356673_4217162015685765151_n.png HTTP/1.1" 404
+[32mINFO[0m:     [10-05-2024 21:59:17] 127.0.0.1:43584 - "GET /uploads/1714079672158-423944057_1461939054356673_4217162015685765151_n.png HTTP/1.1" 404

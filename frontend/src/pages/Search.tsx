@@ -8,18 +8,23 @@ const Search = () => {
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState('');
-
-  // Function to handle search
+  const [loading, setLoading] = useState(false); // State to handle loading indicator
   const handleSearch = async () => {
+    setLoading(true); // Set loading to true when search starts
     try {
       const response = await axios.post(`${rootURL}/search`, { question: query });
-      setResults(JSON.stringify(response.data, null, 2)); // Format JSON data nicely
+      // Assuming the response data structure includes a "message" key
+      const message = response.data.message; // Directly extracting the message from the response data
+      setResults(message); // Set results to the extracted message
       console.log('search result:', response.data);
     } catch (error) {
       console.error("Error performing search:", error);
+      setResults('Failed to fetch results'); // Handle error case
+    } finally {
+      setLoading(false); // Set loading to false when search completes
     }
   };
-
+  
   return (
     <div className='w-screen h-screen flex flex-col bg-gray-50'>
       {/* Header */}
@@ -39,16 +44,21 @@ const Search = () => {
       <div className='flex-1 flex flex-col items-center justify-around p-6'>
         <div className='text-center mt-6'>
           <h3 className='text-3xl font-bold mb-4 text-blue-400'>Search Results</h3>
-          <textarea 
-            value={results} 
-            readOnly
-            className="w-full h-96 p-2 text-sm font-mono border rounded-lg overflow-auto"
-            style={{ whiteSpace: 'pre-wrap' }} // Keeps whitespace formatting from JSON.stringify
-          />
+          {loading ? (
+            <div>Loading...</div> // Display a simple loading text; you can replace this with a spinner or other indicator
+          ) : (
+            <textarea 
+              value={results}
+              readOnly
+              className="w-full h-full p-2 text-sm font-mono border rounded-lg overflow-auto" // Set height to full to use maximum available space
+              style={{ whiteSpace: 'pre-wrap' }} // Keeps whitespace formatting from JSON.stringify
+            />
+          )}
         </div>
       </div>
     </div>
   );
+  
 };
 
 export default Search;

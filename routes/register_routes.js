@@ -73,6 +73,12 @@ function register_routes(app) {
     app.post('/likePost', routes.like_post);
     app.post('/unlikePost', routes.unlike_post);
     app.post('/postComment', routes.post_comment);
+    // GROUP-related posts
+    app.post('/postGroup', routes.post_group);
+    app.get('/:username/getGroupsAll', routes.get_groups_all);
+    app.get('/getGroupByName', routes.get_group_by_name);
+    app.post('/joinGroup', routes.join_group);
+    app.post('/leaveGroup', routes.leave_group);
 // ); 
   }
   

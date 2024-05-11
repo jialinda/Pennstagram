@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+
 const NavBar = ({ username }) => {
   const navigate = useNavigate();
   const [showNav, setShowNav] = useState(false); // State to toggle navigation
@@ -24,7 +25,6 @@ const NavBar = ({ username }) => {
             <button onClick={() => navigate(`/${username}/groups`)} className="px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-600 focus:outline-none focus:bg-blue-600">Groups</button>
             <button onClick={() => navigate("/notifications")} className="px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-600 focus:outline-none focus:bg-blue-600">Notifications</button>
             <button onClick={() => navigate(`/${username}/search`)} className="px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-600 focus:outline-none focus:bg-blue-600">Search</button>
-
           </div>
         )}
       </div>

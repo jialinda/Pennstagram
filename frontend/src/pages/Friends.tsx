@@ -5,6 +5,7 @@ import config from '../../config.json';
 import $ from 'jquery';
 import FindFriendComponent from '../components/chats/FindFriendComponent';
 import FInvites from '../components/invites/FInvites';
+import NavBar from '../components/Navbar';
 
 const rootURL = config.serverRootURL;
 
@@ -91,8 +92,10 @@ export default function Friends() {
     const offlineFriends = usersFriends.filter(friend => !friend.is_online);
 
     return (
+        <div>
+            <NavBar username={username}></NavBar>
         <div className='w-full max-w-7xl mx-auto px-4'>
-            <div className='text-2xl flex justify-between items-center my-4'>
+            {/* <div className='text-2xl flex justify-between items-center my-4'>
                 <span>Pennstagram - {username}</span>
                 <div>
                     <button onClick={feed} className='mx-2 px-2 py-2 rounded-md bg-gray-500 text-white'>
@@ -102,7 +105,7 @@ export default function Friends() {
                         Chat
                     </button>
                 </div>
-            </div>
+            </div> */}
             <div className='grid grid-cols-4 gap-4'>
                 <div>
                     <h2 className='font-bold text-xl mb-2'>Friends</h2>
@@ -142,6 +145,7 @@ export default function Friends() {
                     <FInvites invites={invites} />
                 </div>
             </div>
+        </div>
         </div>
     );
 }

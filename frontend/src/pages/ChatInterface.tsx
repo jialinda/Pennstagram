@@ -212,10 +212,9 @@ export default function ChatInterface() {
         <div>
         <NavBar username={username}></NavBar>
         <div className='w-screen h-screen flex flex-col items-center'>
-        <div className='w-full h-16 flex justify-center mb-2'>
-        <div className='font-bold text-3xl'>Chatroom</div>
+            <div className='w-full h-2 flex justify-center mb-2'>
+            {/* <div className='font-bold text-3xl'>Chatroom</div> */}
         </div>
-            
             <div className="p-4 w-full flex items-center justify-between bg-blue-200">
             <button className='px-2 py-2 rounded-md bg-blue-500 outline-none text-white' onClick = {createChatroom}>Create Chatroom</button>
             {/* You can add toolbar content here */}

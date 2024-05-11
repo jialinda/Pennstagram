@@ -35,6 +35,11 @@ function CreatePostComponent({ updatePosts }) {
   return (
     <div className='w-screen h-screen flex justify-center'>
     <form>
+    <div className='flex space-x-4 items-center justify-between'>
+  <label htmlFor="photo" className='font-semibold'>Photo</label>
+  <input id="photo" type="file" className='outline-none bg-white rounded-md border border-slate-100 p-2'
+    onChange={(e) => setPhoto(e.target.files[0])} />
+</div>
       <div className='rounded-md bg-slate-50 p-6 space-y-2 w-full'>
         <div className='font-bold flex w-full justify-center text-2xl mb-4'>
           Create Post

@@ -71,7 +71,6 @@ const uploadPostsToS3 = async (file, postId, bucketName) => {
     Bucket: bucketName,
     Key: keyName,
     Body: fileContent,
-    ACL: "public-read",
   };
 
   try {
@@ -84,27 +83,10 @@ const uploadPostsToS3 = async (file, postId, bucketName) => {
   }
 };
 
-// const getS3Object = async (bucketName, fileKey) => {
-//   try {
-//     const data = await s3Client.send(
-//       new GetObjectCommand({
-//         Bucket: bucketName,
-//         Key: fileKey,
-//       })
-//     );
-//     const bodyContents = await streamToString(data.Body);
-//     console.log(bodyContents);
-//     return bodyContents;
-//   } catch (err) {
-//     console.error("Error", err);
-//     throw err;
-//   }
-// };
-
 
 // Database connection setup
 const db = dbsingleton;
-// let session_user_id;
+let session_user_id;
 
 var getHelloWorld = function (req, res) {
     res.status(200).send({ message: "Hello, world!" });
@@ -313,7 +295,6 @@ var postLogin = async function (req, res) {
 };
 
 var postOnline = async function (req, res) {
-
     if (!session_user_id) {
         return res.status(403).json({ error: 'Not logged in.' });
     }
@@ -383,8 +364,9 @@ var getUserInfo = async function (req, res) {
             WHERE username = '${username}'
             GROUP BY users.user_id
         `;
+        
         const results = await db.send_sql(query);
-        console.log('getTophashtags result', results);
+        console.log('get user info result', results);
         res.status(200).json(results);
     } catch (error) {
         console.error('Error querying top hashtags:', error);
@@ -976,45 +958,33 @@ var createPost = async function (req, res) {
     if (!session_user_id) {
       return res.status(403).json({ error: 'Not logged in.' });
     }
-    // console.log(req.body);
-
+    
     console.log('Received fields:', req.body);
     console.log('Received file:', req.file);
 
     const { title, hashtags } = req.body;
-    const content = req.file; // treating content as imageURL for now, TODO: create table field
+    const content = req.file;  // This is the file object received from the upload form
 
-    // console.log(title);
-    console.log("hi");
-    console.log(hashtags);
-    // console.log(content);
-    // let content = req.file;  // Assuming content is a file uploaded and parsed by middleware like `multer`
-    // let parent_id = req.body.parent_post || null;
-  
     console.log("Checking title: ", title);
-    // console.log("Checking original filename: ", content.originalname);
     if (!helper.isOK(title) || (content && !helper.isOK(content.originalname))) {
-        console.log("here");
+      console.log("here");
       return res.status(400).json({ error: 'Invalid characters in title or file name.' });
     }
 
-    // if (content) {
-    //     console.log("Checking original filename: ", content.originalname);
-    //     if (!helper.isOK(content.originalname)) {  // Validate file name if content is a file)
-    //         return res.status(400).json({ error: 'Invalid characters in title or file name.' });
-    //     }
-    // }
-
     try {
+      // Assuming uploadPostsToS3 correctly returns the URL of the uploaded image
+      const imageUrl = await uploadPostsToS3(req.file, new Date().getTime(), 'nets-project-posts');
+      console.log("Image uploaded to S3:", imageUrl);
+      
+      // Now use imageUrl instead of content.path
       const postQuery = `INSERT INTO posts (author_id, title, content, timestamp) VALUES (?, ?, ?, NOW())`;
-      const postResult = await db.send_sql(postQuery, [req.session.user_id, title, content.path]); // Assuming `content.path` is where the file is stored
+      const postResult = await db.send_sql(postQuery, [req.session.user_id, title, imageUrl]);
       const newPostId = postResult.insertId;
-      console.log("inputted");
-  
+
       if (hashtags) {
         const tags = hashtags.split(',').map(tag => tag.trim().startsWith('#') ? tag.trim() : `#${tag.trim()}`);
         tags.forEach(async (tag) => {
-          let tagId = (await db.send_sql(`SELECT hashtag_id FROM hashtags WHERE hashtagname = ?`, [tag]))[0]?.hashtag_id;
+          let tagId = (await db.send_sql(`SELECT hashtag_id FROM hashtags WHERE hashtagname = ?`, [tag]))[0]?.hashtagId;
           if (!tagId) {
             tagId = (await db.send_sql(`INSERT INTO hashtags (hashtagname) VALUES (?)`, [tag])).insertId;
           }
@@ -1022,12 +992,13 @@ var createPost = async function (req, res) {
         });
       }
   
-      res.status(200).send({ message: "Post created successfully." });
+      res.status(200).send({ message: "Post created successfully.", imageUrl: imageUrl });
     } catch (error) {
       console.error('Error querying database:', error);
       return res.status(500).json({ error: 'Error querying database.' });
     }
   };
+
 
 
 // GET /posts 
@@ -1085,7 +1056,6 @@ var getFeed = async function (req, res) {
                 p.timestamp DESC;
         `;
         const feed = await db.send_sql(feedQuery);
-
         const results = feed.map(post => ({
             post_id: post.post_id,
             username: post.post_author,
@@ -1107,6 +1077,7 @@ var getFeed = async function (req, res) {
         }));
 
         res.status(200).json({ results });
+        console.log('Feed results:', results);
     } catch (error) {
         console.error('Error querying database:', error);
         res.status(500).json({ error: 'Error querying database.' });

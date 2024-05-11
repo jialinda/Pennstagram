@@ -7,7 +7,7 @@ import './posts.css'; // Make sure your styles are correctly imported
 import config from '../../../config.json';
 import axios from 'axios';
 
-const PostComponent = ({ postId, username, timestamp, title, content, comments, likesCount, likedByUser }) => {
+const PostComponent = ({ postId, username, timestamp, title, content, comments, likesCount, likedByUser}) => {
 
   // console.log('username', username);
   // console.log('this is postId', postId);
@@ -65,7 +65,9 @@ const PostComponent = ({ postId, username, timestamp, title, content, comments, 
         timestamp: formattedTimestamp,
         post_id: postId
       });
+      console.log("Image URL:", content);
       const newMessage = {
+        // need to add instead of author of the post, author of the commenter
         author: username,
         content: commentText,
         timestamp: formattedTimestamp,
@@ -74,8 +76,7 @@ const PostComponent = ({ postId, username, timestamp, title, content, comments, 
       console.log('adding new comment', newMessage);
       setCurrentComments([...currentComments, newMessage]);
       // setCurrentComments([...currentComments, response.data.comment]);
-      setCommentText('');  // Clear the input after submission
-      // console.log('this')
+      setCommentText(''); 
     } catch (error) {
       console.error('Failed to submit comment:', error);
     }
@@ -90,9 +91,9 @@ const PostComponent = ({ postId, username, timestamp, title, content, comments, 
       <div className='post-title'>
         {title}
       </div>
-      <p className='post-content'>
-        {content}
-      </p>
+      <div className='post-content'>
+  {content && <img src={content} alt="Post" style={{ width: '100%', height: 'auto' }} />}
+</div>
       <div className="likes-comments">
         <span onClick={toggleLike} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
           <FontAwesomeIcon icon={liked ? fasHeart : farHeart} color={liked ? 'red' : 'black'} style={{ marginRight: '8px' }} />

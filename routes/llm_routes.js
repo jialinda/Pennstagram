@@ -47,7 +47,7 @@ var getVectorStore = async function (req) {
             batchSize: 512,
             model: "text-embedding-3-large",
         }, {
-            collectionName: "llm_embeddings",
+            collectionName: "llm_embeddings_1",
             url: "http://localhost:8000", // This is the default value, can be omitted if not changed
             collectionMetadata: {
                 "hnsw:space": "cosine",
@@ -66,7 +66,7 @@ var getNaturalSearch = async function (req, res) {
     const collectionList = await client.listCollections();
     console.log("collection list: ");
     console.log(collectionList);
-    await client.deleteCollection({ name: "llm_embeddings" });
+    await client.deleteCollection({ name: "llm_embeddings_1" });
 
     const emb_fn = new OpenAIEmbeddingFunction({
         openai_api_key: api_key,
@@ -75,7 +75,7 @@ var getNaturalSearch = async function (req, res) {
 
 
     const collection = await client.createCollection({
-        name: "llm_embeddings",
+        name: "llm_embeddings_1",
         embeddingsModel: emb_fn,
     });
 
@@ -110,7 +110,7 @@ var getNaturalSearch = async function (req, res) {
         batchSize: 512,
         model: "text-embedding-3-large",
     }), allIds, {
-        collectionName: "llm_embeddings",
+        collectionName: "llm_embeddings_1",
         url: "http://localhost:8000", // This is the default value, can be omitted if not changed
         collectionMetadata: {
             "hnsw:space": "cosine",

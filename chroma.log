@@ -16271,3 +16271,122 @@ ValueError: Collection user_post_collection does not exist.
 [32mINFO[0m:     [09-05-2024 01:41:59] 127.0.0.1:38612 - "DELETE /api/v1/collections/user_post_collection?tenant=default_tenant&database=default_database HTTP/1.1" 500
 [32mINFO[0m:     [09-05-2024 01:41:59] 127.0.0.1:38610 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
 [32mINFO[0m:     [09-05-2024 01:42:00] 127.0.0.1:38610 - "POST /api/v1/collections/9443ab77-8aeb-4005-9a9b-be406604f89e/query HTTP/1.1" 400
+[33mWARNING[0m:  [11-05-2024 06:50:41] chroma_server_nofile is set to 65535, but this is less than current soft limit of 1048576. chroma_server_nofile will not be set.
+[32mINFO[0m:     [11-05-2024 06:50:41] Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+[36mDEBUG[0m:    [11-05-2024 06:50:41] Starting component System
+[36mDEBUG[0m:    [11-05-2024 06:50:41] Starting component OpenTelemetryClient
+[36mDEBUG[0m:    [11-05-2024 06:50:41] Starting component SimpleAssignmentPolicy
+[36mDEBUG[0m:    [11-05-2024 06:50:41] Starting component SqliteDB
+[36mDEBUG[0m:    [11-05-2024 06:50:41] Starting component Posthog
+[36mDEBUG[0m:    [11-05-2024 06:50:41] Starting component LocalSegmentManager
+[36mDEBUG[0m:    [11-05-2024 06:50:41] Starting component SegmentAPI
+[32mINFO[0m:     [11-05-2024 06:50:41] Started server process [[36m10082[0m]
+[32mINFO[0m:     [11-05-2024 06:50:41] Waiting for application startup.
+[32mINFO[0m:     [11-05-2024 06:50:41] Application startup complete.
+[32mINFO[0m:     [11-05-2024 06:50:41] Uvicorn running on [1mhttp://0.0.0.0:8000[0m (Press CTRL+C to quit)
+[32mINFO[0m:     [11-05-2024 06:51:06] 127.0.0.1:46602 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [11-05-2024 06:51:06] 127.0.0.1:46608 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [11-05-2024 06:51:09] 127.0.0.1:46602 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [11-05-2024 06:51:09] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [11-05-2024 06:51:09] 127.0.0.1:46608 - "POST /api/v1/collections/03c69e3d-eb5e-4f5e-9848-79a3a77dd266/upsert HTTP/1.1" 200
+[32mINFO[0m:     [11-05-2024 06:51:09] 127.0.0.1:46602 - "POST /api/v1/collections/7006269e-bab9-47bf-8dd6-49bf4f118f04/get HTTP/1.1" 200
+[32mINFO[0m:     [11-05-2024 06:51:09] 127.0.0.1:46602 - "POST /api/v1/collections/03c69e3d-eb5e-4f5e-9848-79a3a77dd266/query HTTP/1.1" 200
+[32mINFO[0m:     [11-05-2024 06:52:14] 127.0.0.1:57270 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[31mERROR[0m:    [11-05-2024 06:52:14] Collection llm_embeddings_1 already exists
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/dist-packages/anyio/streams/memory.py", line 97, in receive
+    return self.receive_nowait()
+  File "/usr/local/lib/python3.10/dist-packages/anyio/streams/memory.py", line 92, in receive_nowait
+    raise WouldBlock
+anyio.WouldBlock
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 159, in call_next
+    message = await recv_stream.receive()
+  File "/usr/local/lib/python3.10/dist-packages/anyio/streams/memory.py", line 112, in receive
+    raise EndOfStream
+anyio.EndOfStream
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/server/fastapi/__init__.py", line 80, in catch_exceptions_middleware
+    return await call_next(request)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 165, in call_next
+    raise app_exc
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 151, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 189, in __call__
+    with collapse_excgroups():
+  File "/usr/lib/python3.10/contextlib.py", line 153, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/_utils.py", line 93, in collapse_excgroups
+    raise exc
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 191, in __call__
+    response = await self.dispatch_func(request, call_next)
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/server/fastapi/__init__.py", line 94, in check_http_version_middleware
+    return await call_next(request)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 165, in call_next
+    raise app_exc
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/base.py", line 151, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/middleware/exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/usr/local/lib/python3.10/dist-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/routing.py", line 758, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/routing.py", line 778, in app
+    await route.handle(scope, receive, send)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/routing.py", line 299, in handle
+    await self.app(scope, receive, send)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/routing.py", line 79, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/usr/local/lib/python3.10/dist-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/routing.py", line 74, in app
+    response = await func(request)
+  File "/usr/local/lib/python3.10/dist-packages/fastapi/routing.py", line 299, in app
+    raise e
+  File "/usr/local/lib/python3.10/dist-packages/fastapi/routing.py", line 294, in app
+    raw_response = await run_endpoint_function(
+  File "/usr/local/lib/python3.10/dist-packages/fastapi/routing.py", line 193, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+  File "/usr/local/lib/python3.10/dist-packages/starlette/concurrency.py", line 42, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func, *args)
+  File "/usr/local/lib/python3.10/dist-packages/anyio/to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+  File "/usr/local/lib/python3.10/dist-packages/anyio/_backends/_asyncio.py", line 2144, in run_sync_in_worker_thread
+    return await future
+  File "/usr/local/lib/python3.10/dist-packages/anyio/_backends/_asyncio.py", line 851, in run
+    result = context.run(func, *args)
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/telemetry/opentelemetry/__init__.py", line 127, in wrapper
+    return f(*args, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/auth/fastapi.py", line 234, in wrapped
+    return f(*args, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/server/fastapi/__init__.py", line 408, in create_collection
+    return self._api.create_collection(
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/telemetry/opentelemetry/__init__.py", line 127, in wrapper
+    return f(*args, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/api/segment.py", line 166, in create_collection
+    coll, created = self._sysdb.create_collection(
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/telemetry/opentelemetry/__init__.py", line 127, in wrapper
+    return f(*args, **kwargs)
+  File "/usr/local/lib/python3.10/dist-packages/chromadb/db/mixins/sysdb.py", line 225, in create_collection
+    raise UniqueConstraintError(f"Collection {name} already exists")
+chromadb.db.base.UniqueConstraintError: Collection llm_embeddings_1 already exists
+[32mINFO[0m:     [11-05-2024 06:52:14] 127.0.0.1:57272 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 500
+[32mINFO[0m:     [11-05-2024 06:52:34] 127.0.0.1:44706 - "GET /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [11-05-2024 06:52:34] 127.0.0.1:44722 - "DELETE /api/v1/collections/llm_embeddings_1?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [11-05-2024 06:52:34] 127.0.0.1:44706 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[32mINFO[0m:     [11-05-2024 06:52:36] 127.0.0.1:44706 - "POST /api/v1/collections?tenant=default_tenant&database=default_database HTTP/1.1" 200
+[36mDEBUG[0m:    [11-05-2024 06:52:36] Starting component PersistentLocalHnswSegment
+[32mINFO[0m:     [11-05-2024 06:52:37] 127.0.0.1:44722 - "POST /api/v1/collections/9700c34e-dbad-4087-bf61-c5737a7ac05f/upsert HTTP/1.1" 200
+[32mINFO[0m:     [11-05-2024 06:52:37] 127.0.0.1:44706 - "POST /api/v1/collections/26140c12-031a-4a49-9ac3-e73a250c9586/get HTTP/1.1" 200
+[32mINFO[0m:     [11-05-2024 06:52:37] 127.0.0.1:44706 - "POST /api/v1/collections/9700c34e-dbad-4087-bf61-c5737a7ac05f/query HTTP/1.1" 200

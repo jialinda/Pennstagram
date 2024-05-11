@@ -46,17 +46,6 @@ const Feed = () => {
   return (
     <div className='w-screen h-screen flex flex-col bg-gray-50'>
       <NavBar username={username}></NavBar>
-      {/* <div className="flex items-center justify-between px-6 py-4 bg-blue-500 text-white">
-        <button onClick={() => navigate("/"+username+"/profile")} className="px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-600 focus:outline-none focus:bg-blue-600">My Profile</button>
-        <div className="flex space-x-4">
-          <button onClick={() => navigate(`/${username}/createPost`)} className="px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-600 focus:outline-none focus:bg-blue-600">Create a Post</button>
-          <button onClick={() => navigate(`/${username}/chat`)} className="px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-600 focus:outline-none focus:bg-blue-600">Chat</button>
-          <button onClick={() => navigate(`/${username}/friends`)} className="px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-600 focus:outline-none focus:bg-blue-600">Friends</button>
-          <button onClick={() => navigate(`/${username}/groups`)} className="px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-600 focus:outline-none focus:bg-blue-600">Groups</button>
-          <button onClick={() => navigate("/notifications")} className="px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-600 focus:outline-none focus:bg-blue-600">Notifications</button>
-          <button onClick={() => navigate("/"+username+"/search")} className="px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-600 focus:outline-none focus:bg-blue-600">Search</button> {/* New Search Button */}
-        </div>
-      </div> */}
       <div className='flex-1 flex flex-col items-center justify-around p-6'>
         {feed.map(post => (
           <PostComponent

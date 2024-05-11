@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import Invites from '../components/invites/Invites'
 import ChatBar from '../components/chats/ChatBar'
 import Chatroom from '../components/chats/Chatroom'
-import $ from 'jquery';
+// import $ from 'jquery';
 // import io from 'socket.io-client';
 
 // const socket = io('http://localhost:8080'); // Make sure this matches the server address and port

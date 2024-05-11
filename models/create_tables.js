@@ -128,6 +128,7 @@ async function create_tables(db) {
       chat_id INT AUTO_INCREMENT PRIMARY KEY, \
       chatname VARCHAR(255), \
       admin_id INT, \
+      groupchat_name VARCHAR(255), \
       FOREIGN KEY (admin_id) REFERENCES users(user_id) \
     );')
 
@@ -198,24 +199,23 @@ async function create_tables(db) {
         FOREIGN KEY (user_id) REFERENCES users(user_id)\
         );')
 
-    // var qgroups = db.create_tables('CREATE TABLE IF NOT EXISTS communities ( \
-    //   communities_id INT AUTO_INCREMENT PRIMARY KEY, \
-    //   communities_name VARCHAR(500),\
-    //   chat_id INT,\
-    //   admin_id INT,\
-    //   FOREIGN KEY (chat_id) REFERENCES chats(chat_id),\
-    //   FOREIGN KEY (admin_id) REFERENCES users(user_id)\
-    // );')
+    var qgroups = db.create_tables('CREATE TABLE IF NOT EXISTS communities ( \
+      communities_id INT AUTO_INCREMENT PRIMARY KEY, \
+      communities_name VARCHAR(500),\
+      chat_id INT,\
+      admin_id INT,\
+      FOREIGN KEY (chat_id) REFERENCES chats(chat_id),\
+      FOREIGN KEY (admin_id) REFERENCES users(user_id)\
+    );')
   
-    // var qusergroups = db.create_tables('CREATE TABLE IF NOT EXISTS user_communities ( \
-    //   user_id INT, \
-    //   communities_id INT, \
-    //   FOREIGN KEY (user_id) REFERENCES users(user_id),\
-    //   FOREIGN KEY (communities_id) REFERENCES communities(communities_id)\
-    // );')
+    var qusergroups = db.create_tables('CREATE TABLE IF NOT EXISTS user_communities ( \
+      user_id INT, \
+      communities_id INT, \
+      FOREIGN KEY (user_id) REFERENCES users(user_id),\
+      FOREIGN KEY (communities_id) REFERENCES communities(communities_id)\
+    );')
 
-    return await Promise.all([qrecs, qusers, qposts, qpostslikers, qcommenters, qposttags, qusertags, qchats, quserchats, qtexts, qinvites, quserinvites, qfriends, qcomments, qfinvites, quserfinvites, qlogin]);
-      // qgroups, qusergroups]);
+    return await Promise.all([qrecs, qusers, qposts, qpostslikers, qcommenters, qposttags, qusertags, qchats, quserchats, qtexts, qinvites, quserinvites, qfriends, qcomments, qfinvites, quserfinvites, qlogin, qgroups, qusergroups]);
 }
 
 // Database connection setup

@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import Invites from '../components/invites/Invites'
 import ChatBar from '../components/chats/ChatBar'
 import Chatroom from '../components/chats/Chatroom'
+import NavBar from '../components/Navbar';
 import $ from 'jquery';
 // import io from 'socket.io-client';
 
@@ -69,16 +70,6 @@ export default function ChatInterface() {
         // consider doing to invite friends instead..?
         navigate('/' + username + '/createChat');
     };
-
-    const testChats = [
-        { chatname: 'CIS tutoring' },
-        { chatname: 'every now & then'}
-    ];
-
-    const testCurrChat = { chat_id: 1,
-        chatname: 'every now & then',
-        admin: 1};
-
 
     useEffect(() => {
         fetchInvites(userId);
@@ -218,17 +209,13 @@ export default function ChatInterface() {
     }
 
     return (
+        <div>
+        <NavBar username={username}></NavBar>
         <div className='w-screen h-screen flex flex-col items-center'>
-        <div className='w-full h-16 bg-slate-50 flex justify-center mb-2'>
-            <div className='font-bold text-2xl max-w-[1800px] w-full flex items-center'>
-                Chat with your PennstaFriends, {username} ! &nbsp;
-            <button type="button" className='px-2 py-2 rounded-md bg-blue-500 outline-none text-white'
-              onClick={feed}>Feed</button>&nbsp;
-            <button type="button" className='px-2 py-2 rounded-md bg-blue-500 outline-none text-white'
-              onClick={friends}>Friends</button>
-            </div>
+        <div className='w-full h-16 flex justify-center mb-2'>
+        <div className='font-bold text-3xl'>Chatroom</div>
         </div>
-            <div className='font-bold text-3xl'>Chatroom</div>
+            
             <div className="p-4 w-full flex items-center justify-between bg-blue-200">
             <button className='px-2 py-2 rounded-md bg-blue-500 outline-none text-white' onClick = {createChatroom}>Create Chatroom</button>
             {/* You can add toolbar content here */}
@@ -246,7 +233,7 @@ export default function ChatInterface() {
                 </div>
                 {currChat && currChat.chatname && (
                 <div className='w-1/3'> {/* Second div */}
-                    <div className='font-bold text-2xl'>{currChat.chatname}</div>
+                    <div className='font-bold text-2xl'>{currChat.groupchat_name ? currChat.groupchat_name : currChat.chatname}</div>
                     <div className='h-100% w-[30rem] bg-slate-100 p-3'>
                     <div className='h-[90%] overflow-scroll'>
                         <div className='space-y-2'>
@@ -282,6 +269,7 @@ export default function ChatInterface() {
                 )}
             </div>
             
+        </div>
         </div>
     )
 }

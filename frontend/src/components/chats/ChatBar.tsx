@@ -15,7 +15,7 @@ function ChatBar({ chatbars, setCurrChat, handleChatClick }) {
                         className="w-full text-left px-4 py-2 rounded-md bg-white shadow-md hover:bg-gray-100 focus:outline-none"
                         onClick={() => handleChatClick(chatbar)} // Assuming chatbar has an 'id' property
                     >
-                        <ChatbarComponent chatname={chatbar.chatname} />
+                        <ChatbarComponent chatname={chatbar.groupchat_name ? chatbar.groupchat_name : chatbar.chatname} />
                     </button>
                 </div>
             ))}

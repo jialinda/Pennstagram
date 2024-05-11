@@ -764,9 +764,64 @@ var getFriendRecs = async function (req, res) {
 
 }
 
+// GROUP-RELATED ROUTES
+
+// POST /postGroup // used when creating one
+var postGroup = async function(req, res) {
+    console.log('creating a group');
+
+    if (!req.body.group_name) {
+        return res.status(400).json({ error: 'One or more of the fields you entered was empty, please try again.' });
+    }
+    const chatAdmin = session_user_id;
+    // const chatAdmin = req.body.user_id;
+    const chatName = req.body.group_name;
+
+    // screen the title and content to be alphanumeric
+    if (!helper.isOK(chatName)) {
+        return res.status(400).json({ error: 'Groupname should only contain alphanumeric characters, spaces, periods, question marks, commas, and underscores.' });
+    }
+
+    try {
+        const chatQuery = `INSERT INTO chats (chatname, admin_id, groupchat_name) VALUES ('${chatName}', '${chatAdmin}', '${chatName}')`;
+        await db.send_sql(chatQuery);
+
+        const countChatsQuery = `SELECT * FROM chats ORDER BY chat_id DESC LIMIT 1`;
+        const countResult = await db.send_sql(countChatsQuery);
+        const chatId = countResult[0].chat_id;
+
+        const postQuery = `INSERT INTO communities (communities_name, chat_id, admin_id) VALUES ('${chatName}', ${chatId}, ${chatAdmin})`;
+        await db.send_sql(postQuery);
+
+        const countComsQuery = `SELECT * FROM communities ORDER BY communities_id DESC LIMIT 1`;
+        const countResult1 = await db.send_sql(countComsQuery);
+        const comId = countResult1[0].communities_id;
+
+        // add chat and user relation
+        const postUserGroup = `INSERT INTO user_communities (user_id, communities_id) VALUES ('${chatAdmin}', '${comId}')`;
+        await db.send_sql(postUserGroup);
+        // res.status(201).send({
+        //     message: "group created.",
+        //     com_id: comId
+        // });
+
+        const postUserChat = `INSERT INTO user_chats (user_id, chat_id, is_active) VALUES ('${chatAdmin}', '${chatId}', 1)`;
+        await db.send_sql(postUserChat);
+        return res.status(201).send({
+            message: "chat and group added for user",
+            chat_id: chatId,
+            com_id: comId
+        });
+
+    } catch (error) {
+        console.error('Error querying database:', error);
+        return res.status(500).json({ error: 'Error querying database.' });
+    }
+}
+
 // GET /friends
-// getALLFRIENDS
-var getGroupsALl = async function (req, res) {
+// getGroupsAll
+var getGroupsAll = async function (req, res) {
 
     console.log('getting groups');
 
@@ -799,7 +854,7 @@ var getGroupsALl = async function (req, res) {
             chatId: friend.chat_id,
             adminId: friend.admin_id
         }));
-        res.status(200).json({ results });
+        return res.status(200).json({ results });
     } catch (error) {
         console.error('Error querying database:', error);
         return res.status(500).json({ error: 'Error querying database.' });
@@ -809,46 +864,110 @@ var getGroupsALl = async function (req, res) {
 
 // GET /friends
 // getALLFRIENDS
-var getGroupsALl = async function (req, res) {
+var getGroupByName = async function (req, res) {
 
-    console.log('getting groups');
-
-    if (!req.params.username) {
-        return res.status(403).json({ error: 'Not logged in.' });
-    }
-
-    const username = req.params.username;
-    
-    // TODO: get all friends of current user
     if (!session_user_id) {
         return res.status(403).json({ error: 'Not logged in.' });
     }
-    const userId = session_user_id;
+
+    if (!req.query.communities_name) {
+        return res.status(400).json({ error: 'Friend username is missing.' });
+    }
+
+    const gName = req.query.communities_name;
+    console.log('finding group with name', gName);
+
+    const findGQuery = `
+    SELECT *
+    FROM communities
+    WHERE communities_name LIKE '%${gName}%'`;
 
     try {
-        const getGroupQuery = ` WITH filtered_coms AS (
-            SELECT * FROM user_communities WHERE user_id = ${userId}
-        ) 
-        SELECT t1.communities_id, t2.communities_name, t2.chat_id, t2.admin_id
-        FROM filtered_coms t1
-        JOIN communities t2 ON t1.communities_id = t2.communities_id
-        `;
-
-        const friends = await db.send_sql(getGroupQuery);
-        // followed data
-        const results = friends.map(friend => ({
-            communities_id: friend.communities_id,
-            communities_name: friend.communities_name,
-            chatId: friend.chat_id,
-            adminId: friend.admin_id
+        const coms = await db.send_sql(findGQuery);
+        if (coms.length <= 0) {
+            return res.status(409).json({ error: 'No group with this name found!' });
+        }
+        const results = coms.map(com => ({
+            cId: com.communities_id,
+            cName: com.communities_name,
+            chatId: com.chat_id,
+            adminId: com.admin_id
         }));
-        res.status(200).json({ results });
+        return res.status(200).json({ results });
     } catch (error) {
         console.error('Error querying database:', error);
         return res.status(500).json({ error: 'Error querying database.' });
     }
-
 }
+
+var joinGroup = async function(req, res) {
+    console.log('joining a group');
+
+    if (!req.body.groupId) {
+        return res.status(400).json({ error: 'One or more of the fields you entered was empty, please try again.' });
+    }
+    const chatAdmin = session_user_id;
+    // const chatAdmin = req.body.user_id;
+    const groupId = req.body.groupId;
+
+    try {
+        const countChatsQuery = `SELECT * FROM communities WHERE communities_id = ${groupId}`;
+        const countResult = await db.send_sql(countChatsQuery);
+        const chatId = countResult[0].chat_id;
+
+        // add chat and user relation
+        const postUComChat = `INSERT INTO user_communities (user_id, communities_id) VALUES ('${chatAdmin}', '${groupId}')`;
+        await db.send_sql(postUComChat);
+
+        const postUserChat = `INSERT INTO user_chats (user_id, chat_id, is_active) VALUES ('${chatAdmin}', '${chatId}', 1)`;
+        await db.send_sql(postUserChat);
+        return res.status(201).send({
+            message: "joined group chat successfully.",
+        });
+
+    } catch (error) {
+        console.error('Error querying database:', error);
+        return res.status(500).json({ error: 'Error querying database.' });
+    }
+}
+
+// DELETE /leaveGroup
+var leaveGroup = async function(req, res) {
+    // Check if the user is logged in
+    // console.log('leaving chatroom with req', req);
+    if (!session_user_id) {
+    // if (!req.session.user_id || !helper.isLoggedIn(req.session.user_id)) {
+        return res.status(403).json({ error: 'Not logged in.' });
+    }
+
+    if (!req.body.groupId) {
+        return res.status(400).json({ error: 'chat ID is missing.' });
+    }
+
+    const user_id = session_user_id;
+
+    // const user_id = req.session.user_id;
+    const groupId = req.body.groupId;
+
+    try {
+        const getChatIdQuery = `SELECT * FROM communities WHERE communities_id = ${groupId}`;
+        const chatRed = await db.send_sql(getChatIdQuery);
+        const chatId = chatRed[0].chat_id;
+        console.log('chat id is ', chatId);
+
+        const deleteQuery = `DELETE FROM user_communities WHERE user_id = ${user_id} AND communities_id = ${groupId}`;
+        await db.send_sql(deleteQuery);
+
+        const deleteChatQuery = `DELETE FROM user_chats WHERE user_id = ${user_id} AND chat_id = ${chatId}`;
+        await db.send_sql(deleteChatQuery);
+
+        res.status(200).json({ message: "Left group and chatroom successfully." });
+    } catch (error) {
+        console.error('Error deleting group membership:', error);
+        return res.status(500).json({ error: 'Error leaving group chatroom.' });
+    }
+}
+
 
 
 /// POST /createPost
@@ -1104,10 +1223,14 @@ var getChatAll = async function (req, res) {
             SELECT t1.chat_id, t2.username
             FROM (SELECT * FROM chat_agg WHERE is_active = 1) t1
             JOIN users t2 ON t1.user_id = t2.user_id
-        )
-        SELECT chat_id, GROUP_CONCAT(username SEPARATOR ', ') AS users
-        FROM with_name
-        GROUP BY chat_id;        
+        ), users_agg AS (
+            SELECT chat_id, GROUP_CONCAT(username SEPARATOR ', ') AS users
+            FROM with_name
+            GROUP BY chat_id
+        )      
+        SELECT t1.chat_id, t1.users, t2.groupchat_name
+        FROM users_agg t1
+        JOIN chats t2 ON t1.chat_id = t2.chat_id
         `;
 
         const allChats = await db.send_sql(getChatQuery);
@@ -1117,6 +1240,7 @@ var getChatAll = async function (req, res) {
         const results = allChats.map(chat => ({
             chat_id: chat.chat_id,
             chatname: chat.users,
+            groupchat_name: chat.groupchat_name
         }));
         console.log('results backend', results);
         res.status(200).json({ results });
@@ -2011,25 +2135,11 @@ var postText = async function(req, res) {
 
     console.log('sending text');
 
-    // if (!req.session.user_id || !helper.isLoggedIn(req.session.user_id)) {
-    //     return res.status(403).json({ error: 'Not logged in.' });
-    // }
-
-    // const message = req.body.message;
-    // const senderId = req.session.user_id; // Assuming the user ID is stored in the session
-    // const inviteeId = req.body.inviteeId; // Assuming the invitee ID is provided in the request body
-    // const chatId = req.body.chatId; // Assuming the chat ID is provided in the request body
-
-    // const author_id = req.sessions.user_id;
     console.log('user id', session_user_id);
     if (!session_user_id) {
         return res.status(403).json({ error: 'Not logged in.' });
     }
     console.log('this is the req being sent', req);
-    // const author_id = req.query.user_id;
-    // const chat_id = req.query.chat_id; // Assuming the user ID is stored in the session
-    // const timestamp = req.query.timestamp; // Assuming the invitee ID is provided in the request body
-    // const content = req.query.content;
     const author_id = session_user_id;
     const chat_id = req.body.chat_id;
     const timestamp = req.body.timestamp;
@@ -2039,9 +2149,6 @@ var postText = async function(req, res) {
         // Insert the message into the database
         const insertQuery = `INSERT INTO texts (author_id, chat_id, content, timestamp) VALUES (${author_id}, ${chat_id}, '${content}', '${timestamp}')`;
         await db.send_sql(insertQuery);
-
-        // // Insert the message into the invites table - PROBA won't need this?
-        // await db.send_sql(inviteQuery, [chatId, inviteeId, senderId]);
 
         // Send a success response
         res.status(201).json({ message: "Message sent successfully." });
@@ -2238,7 +2345,13 @@ var routes = {
     post_online: postOnline,
     like_post: likePost,
     unlike_post: unlikePost,
-    post_comment: postComment
+    post_comment: postComment,
+    // group-related routes
+    post_group: postGroup,
+    get_groups_all: getGroupsAll,
+    get_group_by_name: getGroupByName,
+    join_group: joinGroup,
+    leave_group: leaveGroup
   };
 
 

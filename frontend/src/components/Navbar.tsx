@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+
 const NavBar = ({ username }) => {
   const navigate = useNavigate();
   const [showNav, setShowNav] = useState(false); // State to toggle navigation

@@ -113,17 +113,6 @@ async function create_tables(db) {
       FOREIGN KEY (hashtag_id) REFERENCES hashtags(hashtag_id) \
     );')
 
-    /**** chat-related table ***/
-    // ADDED CHECK
-    // this one has circular dependency might have to delete it
-    // var qchats = db.create_tables('CREATE TABLE IF NOT EXISTS chats ( \
-    //   chat_id INT AUTO_INCREMENT PRIMARY KEY, \
-    //   chatname VARCHAR(255), \
-    //   latest_text_id INT,\
-    //   admin_id INT, \
-    //   FOREIGN KEY (latest_text_id) REFERENCES texts(text_id), \
-    //   FOREIGN KEY (admin_id) REFERENCES chats(user_id) \
-    // );')
     var qchats = db.create_tables('CREATE TABLE IF NOT EXISTS chats ( \
       chat_id INT AUTO_INCREMENT PRIMARY KEY, \
       chatname VARCHAR(255), \

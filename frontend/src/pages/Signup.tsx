@@ -72,7 +72,7 @@ export default function Signup() {
 
   // Navigate back to home
   const handleBackToHome = () => {
-    navigate('/'); // Change '/' to the correct home route
+    navigate('/login'); // Change '/' to the correct home route
   };
 
   return (

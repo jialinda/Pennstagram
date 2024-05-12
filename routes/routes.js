@@ -731,29 +731,31 @@ var getFriendRecs = async function (req, res) {
 
     // TODO: get all friend recommendations of current user
 
-    const { username } = req.params;
-
-
-    if (!helper.isLoggedIn(req, req.session.user_id) || !helper.isOK(username)) {
+    // const { username } = req.params;
+    const userId = session_user_id;
+    if (!session_user_id) {
         return res.status(403).json({ error: 'Not logged in.' });
     }
-    // if (!helper.isLoggedIn(req.session.user_id) || !helper.isOK(username)) {
-    // // if (!req.session.user_id) {
-    //     return res.status(403).json({ error: 'Not logged in.' });
-    // }
 
     try {
-        const recommendations = await db.send_sql(`
-        SELECT DISTINCT recommendations.recommendation, nRec.primaryName
-        FROM names n JOIN users ON users.linked_nconst = n.nconst
-        JOIN recommendations ON n.nconst = recommendations.person
-        JOIN names nRec ON recommendations.recommendation = nRec.nconst
-        WHERE users.user_id = '${req.session.user_id}'
-        `);
+        const q1 = `
+            SELECT DISTINCT u.user_id, u.username
+            FROM friends AS f1
+            JOIN friends AS f2 ON f1.followed = f2.follower_id
+            JOIN users AS u ON f2.followed = u.user_id
+            WHERE f1.follower_id = ${userId}
+            AND f2.followed NOT IN (
+                SELECT followed
+                FROM friends
+                WHERE follower_id = ${userId}
+            )
+        `;
 
-        const results = recommendations.map(item => ({
-            recommendation: item.recommendation,
-            primaryName: item.primaryName
+        const myFriendRes =  await db.send_sql(q1);
+
+        const results = myFriendRes.map(res => ({
+            userId: res.user_id,
+            username: res.username
         }));
 
         res.status(200).json({ results });

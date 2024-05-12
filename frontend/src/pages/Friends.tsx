@@ -69,6 +69,16 @@ export default function Friends() {
                 }
             });
         };
+        const fetchRes = async () => {
+            try {
+                const recs = await axios.get(`${rootURL}/recommendations`);
+                setUsersRecs(recs.data.results);
+                console.log('all recs here', recs);
+                
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
 
         const fetchData = async () => {
             try {
@@ -83,6 +93,7 @@ export default function Friends() {
 
         fetchInvites();
         fetchData();
+        fetchRes();
     }, [username, rootURL]);
     // });
 
@@ -130,11 +141,11 @@ export default function Friends() {
                 </div> */}
                 <div>
                     <h2 className='font-bold text-xl mb-2'>Recommended Friends</h2>
-                    {/* <div className='space-y-2'>
-                        {usersRecs.map((rec, index) => (
-                            <FriendComponent key={index} friend={rec} />
-                        ))}
-                    </div> */}
+                    <div className='space-y-2'>
+                    {usersRecs.map((recs, index) => (
+                        <FriendComponent key={index} friend={recs} />
+                    ))}
+                    </div>
                 </div>
                 <div>
                     <h2 className='font-bold text-xl mb-2'>Search Friends</h2>

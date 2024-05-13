@@ -1364,22 +1364,40 @@ var postInvite = async function(req, res) {
 
     // const inviterId = req.session.user_id;
 
-    if (!req.body.invitee_id) {
+    if (!req.body.invitee_id || !req.body.individual) {
         return res.status(400).json({ error: 'One or more of the fields you entered was empty, please try again.' });
     }
-    const inviteeId = req.body.invitee_id; // would it be id or name..?
+    const inviteeId = req.body.invitee_id; 
+    const individual = req.body.individual; // CHECKS whether it's 1-1 or chatroom
     try {
         console.log('trying post invite');
-        const checkChat = `WITH agg AS (
-            SELECT DISTINCT chat_id,
-            GROUP_CONCAT(user_id ORDER BY user_id) AS user_ids
-            FROM user_chats
-            GROUP BY chat_id
-        )
-        SELECT chat_id
-        FROM agg
-        WHERE FIND_IN_SET(${inviterId}, user_ids) > 0
-          AND FIND_IN_SET(${inviteeId}, user_ids) > 0`;
+        let checkChat;
+        if (individual) {
+            checkChat = `WITH agg AS (
+                SELECT DISTINCT chat_id,
+                GROUP_CONCAT(user_id ORDER BY user_id) AS user_ids
+                FROM user_chats
+                GROUP BY chat_id
+            )
+            SELECT chat_id
+            FROM agg
+            WHERE FIND_IN_SET(${inviterId}, user_ids) > 0
+              AND FIND_IN_SET(${inviteeId}, user_ids) > 0
+              AND (
+                LENGTH(user_ids) - LENGTH(REPLACE(user_ids, ',', '')) = 1
+            )`;
+        } else {
+            checkChat = `WITH agg AS (
+                SELECT DISTINCT chat_id,
+                GROUP_CONCAT(user_id ORDER BY user_id) AS user_ids
+                FROM user_chats
+                GROUP BY chat_id
+            )
+            SELECT chat_id
+            FROM agg
+            WHERE FIND_IN_SET(${inviterId}, user_ids) > 0
+              AND FIND_IN_SET(${inviteeId}, user_ids) > 0`;
+        }
         const check = await db.send_sql(checkChat);
         console.log('this is check', check);
         if (check.length > 0) {

@@ -43,7 +43,8 @@ function CreateChatComponent() {
                 chat_id: chat_id,
                 invitee_id: user.user_id,
                 inviter_id: 2, // Adjust based on session or authentication context
-                confirmed: 0
+                confirmed: 0,
+                individual: 1
             });
 
             if (response.status === 201) {

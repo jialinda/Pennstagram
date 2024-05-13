@@ -83,7 +83,8 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Tuple2<String, Do
             try (ResultSet rsPostHashtags = connection.createStatement().executeQuery(
                     "SELECT p.post_id, h.hashtag_id FROM post_tagged_with pth " +
                     "JOIN posts p ON pth.post_id = p.post_id " +
-                    "JOIN hashtags h ON pth.hashtag_id = h.hashtag_id" )) { // "WHERE p.timestamp = CURRENT_DATE"
+                    "JOIN hashtags h ON pth.hashtag_id = h.hashtag_id " +
+                    "WHERE DATE(p.timestamp) = CURRENT_DATE()" )) { // "WHERE p.timestamp = CURRENT_DATE"
                 while (rsPostHashtags.next()) {
                     String postId = "p" + rsPostHashtags.getString("post_id");
                     String hashtagId = "h" + rsPostHashtags.getString("hashtag_id");
@@ -95,7 +96,8 @@ public class ComputeRanks extends SparkJob<List<Tuple2<String, Tuple2<String, Do
             // Query for user-post "like" relationships
             try (ResultSet rsLikes = connection.createStatement().executeQuery(
                     "SELECT pl.liker_id, p.post_id FROM posts_liked_by pl " +
-                    "JOIN posts p ON pl.post_id = p.post_id")) { // "WHERE p.timestamp = CURRENT_DATE"
+                    "JOIN posts p ON pl.post_id = p.post_id " +
+                    "WHERE DATE(p.timestamp) = CURRENT_DATE()")) { // "WHERE p.timestamp = CURRENT_DATE"
                 while (rsLikes.next()) {
                     String userId = "u" + rsLikes.getString("liker_id");
                     String postId = "p" + rsLikes.getString("post_id");

@@ -32,6 +32,7 @@ const { ChromaClient } = require("chromadb");
 const fs = require('fs');
 
 const mysql = require('mysql2');
+// const { PortkeySession } = require('langchain/llms/portkey');
 const client = new ChromaClient();
 const parse = require('csv-parse').parse;
 const db = dbsingleton;
@@ -40,104 +41,24 @@ const api_key = process.env.OPENAI_API_KEY;
 var vectorStore = null;
 
 var getVectorStore = async function (req) {
-    if (vectorStore == null) {
-        vectorStore = await Chroma.fromExistingCollection(new OpenAIEmbeddings(), {
-            collectionName: "llm_embeddings",
-            url: "http://localhost:8000", // Optional, will default to this value
+    if (!vectorStore) {
+        vectorStore = await Chroma.fromExistingCollection({
+            apiKey: process.env.OPENAI_API_KEY,
+            batchSize: 512,
+            model: "text-embedding-3-large",
+        }, {
+            collectionName: "llm_embeddings_1",
+            url: "http://localhost:8000", // This is the default value, can be omitted if not changed
+            collectionMetadata: {
+                "hnsw:space": "cosine",
+            }
         });
+        console.log("VECTOR STORE INITIALIZED: ", vectorStore);
     }
     return vectorStore;
 }
 
-async function createCollectionIfNotExists(collectionName) {
-    console.log("start creating...");
-    try {
-        // const collections = await client.listCollections();
-        const collections = await client.listCollections();
-        console.log("collection list: ");
-        console.log(collections);
 
-
-        const collection = await client.createCollection({
-            name: collectionName,
-            embeddingsModel: emb_fn
-        });
-        console.log('collection created:', collection);
-        return collection
-    } catch (error) {
-        console.error('Error accessing or creating collection:', error);
-        throw error;
-    }
-}
-
-
-async function getEmbeddings(texts) {
-    const embeddings = new OpenAIEmbeddings({
-        apiKey: process.env.OPENAI_API_KEY,
-        batchSize: 512,
-        model: "text-embedding-3-small"
-    });
-
-    try {
-        const vectors = await embeddings.embedDocuments(texts)
-        return vectors;
-    } catch (error) {
-        console.error('Failed to get embeddings:', error);
-        throw error;
-    }
-}
-
-
-async function indexDocuments() {
-    // const users = await db.send_sql('SELECT * FROM users');
-    // const posts = await db.send_sql('SELECT * FROM posts');
-
-    // // Create documents formatted for embedding generation
-    // const userDocuments = users.map(user => ({
-    //     id: `user-${user.user_id}`,
-    //     content: `${user.username} ${user.firstname} ${user.lastname}`
-    // }));
-    // const postDocuments = posts.map(post => ({
-    //     id: `post-${post.post_id}`,
-    //     content: `${post.title} ${post.content}`
-    // }));
-
-    // const vectorStore = createCollectionIfNotExists("test6");
-
-    const vectorStore = await client.createCollection({
-        name: "test8",
-        embeddingFunction: emb_fn,
-    })
-
-    // Add documents to ChromaDB
-    console.log("newly created collection:", vectorStore);
-
-    const testDocuments = ["I love playing basketball.", "I love playing football.", "I love playing tennis.", "Alice", "Bob", "Charlie"];
-    const metadatas = [
-        { 'source': "post" },
-        { 'source': "post" },
-        { 'source': "post" },
-        { 'source': "user" },
-        { 'source': "user" },
-        { 'source': "user" }
-    ];
-    const ids = ["p1", "p2", "p3", "u1", "u2", "u3"];
-
-    const embeddings = await getEmbeddings(testDocuments);
-    await vectorStore.add({
-        documents: embeddings,
-        metadatas: metadatas,
-        // embeddings: embeddings,  // Only include this line if embeddings are required
-        ids: ids
-    });
-
-
-    console.log("vector store collection:", vectorStore);
-
-
-    // await vectorStore.add(userDocuments.concat(postDocuments));
-    console.log("Documents indexed in ChromaDB");
-}
 
 
 var getNaturalSearch = async function (req, res) {
@@ -145,7 +66,7 @@ var getNaturalSearch = async function (req, res) {
     const collectionList = await client.listCollections();
     console.log("collection list: ");
     console.log(collectionList);
-    await client.deleteCollection({ name: "llm_embeddings" });
+    await client.deleteCollection({ name: "llm_embeddings_1" });
 
     const emb_fn = new OpenAIEmbeddingFunction({
         openai_api_key: api_key,
@@ -154,68 +75,85 @@ var getNaturalSearch = async function (req, res) {
 
 
     const collection = await client.createCollection({
-        name: "llm_embeddings",
+        name: "llm_embeddings_1",
         embeddingsModel: emb_fn,
     });
 
+
+
     console.log('collection created:', collection);
+    const users = await db.send_sql('SELECT * FROM users');
+    const posts = await db.send_sql('SELECT * FROM posts');
+     // Retrieve post contents
+     const postsResult = await db.send_sql('SELECT post_id, content FROM posts');
+     console.log('post result', postsResult);
+    //  const postContent = postsResult[0]; // This now should contain all rows if db.send_sql returns [rows, fields]
 
+    //  console.log('post content', postContent);
 
-    await collection.add({
-        documents: ["I love playing basketball.", "I love playing football.", "I love playing tennis.", "Alice", "Bob", "Charlie"],
-        metadatas: [
-            { 'source': "post" },
-            { 'source': "post" },
-            { 'source': "post" },
-            { 'source': "user" },
-            { 'source': "user" },
-            { 'source': "user" }
-        ],
-        ids: ["p1", "p2", "p3", "u1", "u2", "u3"]
+     // Retrieve user aliases
+    //  const userAlias = await db.send_sql('SELECT user_id, username FROM users');
+
+     const allDocs = [];
+    const allIds = [];
+    const metadatas = [];
+    var contentHolder = [];
+
+    postsResult.map(post => {
+        const embedding = post.post_id + "|" + post.content;
+        contentHolder.push(new Document({pageContent: embedding, metadata: {source: post.post_id}}));
+        allIds.push(post.post_id);
+    })
+
+    vectorStore = await Chroma.fromDocuments(contentHolder, new OpenAIEmbeddings({
+        apiKey: process.env.OPENAI_API_KEY,
+        batchSize: 512,
+        model: "text-embedding-3-large",
+    }), allIds, {
+        collectionName: "llm_embeddings_1",
+        url: "http://localhost:8000", // This is the default value, can be omitted if not changed
+        collectionMetadata: {
+            "hnsw:space": "cosine",
+        }
     });
 
 
+    console.log("result query", await collection.peek());
 
 
 
-    await client.deleteCollection({ name: "test8" });
-    await client.deleteCollection({ name: "test7" });
-    await client.deleteCollection({ name: "user_post_collection" });
+    const question = req.body.question;
+    // const prompt = PromptTemplate.fromTemplate(`
+    // Context: {{context}}
+    // Question: ${question}
+    // Given the context above, can you give me a post or user for question?
+    // `);
+    console.log("question:", question);
 
 
 
     const vs = await getVectorStore();
     const retriever = vs.asRetriever();
+    const similars = await vs.similaritySearch(question, 10);
+    console.log('similars:', similars);
+    const context = similars.map((p) => p.pageContent).join("\n");
+    console.log('context:', context);
+
+    
+
+    // const context = await retriever.pipe(formatDocumentsAsString);
+    const llm = new ChatOpenAI({ apiKey: process.env.OPENAI_API_KEY, modelName: 'gpt-3.5-turbo-16k-0613' });
 
 
-    // console.log('vs:', vs);
-    // const retriever = vs.asRetriever();
-    // const results = await vs.search({ query: req.body.question });
-    // const context = 'Find the related user and post based on the {question}';
-    const question = req.body.question;
+    const prompt = PromptTemplate.fromTemplate(`Based on the context ${context} you have, find me posts similar to  ${question}
+    `);
 
-    const prompt = PromptTemplate.fromTemplate(`
-                Context: context
-                Question: ${question}
-                Please provide related user or post based on the given context.
-            `);
-
-console.log('prompt:', prompt);
-
-
-
-    // const prompt =
-    //     PromptTemplate.fromTemplate('
-    //         Context: {context}
-    //         contextParams: { question: req.body.question }
-    //         ');
-    //const llm = null; // TODO: replace with your language model
-    const llm = new ChatOpenAI({ apiKey: process.env.OPENAI_API_KEY, modelName: 'gpt-3.5-turbo' });
+// const retrieverContext = await retriever.pipe(formatDocumentsAsString);
+// console.log("Retriever context:", retrieverContext);
 
     const ragChain = RunnableSequence.from([
         {
-            context: retriever.pipe(formatDocumentsAsString),
-            // context: results,
+            context: new RunnablePassthrough(),  // Ensure context is correctly formatted and passed
             question: new RunnablePassthrough(),
         },
         prompt,
@@ -223,18 +161,17 @@ console.log('prompt:', prompt);
         new StringOutputParser(),
     ]);
 
-    console.log(req.body.question);
-
     try {
-        console.log("start invoking ragchain");
-        console.log('ragChain:', ragChain);
-        const result = await ragChain.invoke(req.body.question);
-        console.log('result:', result);
-        return res.status(200).json({ message: result });
+        console.log('inputted context:', context);
+        const result = await ragChain.invoke(context, question);
+        console.log('Result:', result);
+        res.status(200).json({ message: result });
     } catch (error) {
-        console.log('error');
-    };
+        console.error('Error during retrieval:', error);
+        res.status(500).json({ error: 'Failed to process your query.' });
+    }
 }
+
 
 
 var llmroutes = {

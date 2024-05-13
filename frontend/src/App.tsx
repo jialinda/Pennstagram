@@ -36,7 +36,7 @@ function App() {
         <Route path="/:username/:chatname/:chat_id/inviteIntoChat" element={<InviteIntoChat />} />
         <Route path="/:username/feed" element={<Feed />} />
         <Route path="/:username/createPost" element={<CreatePost />} />
-        <Route path="/search" element={<Search />} />
+        <Route path="/:username/search" element={<Search />} />
       </Routes>
     </BrowserRouter>
   )

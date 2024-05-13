@@ -71,7 +71,6 @@ const uploadPostsToS3 = async (file, postId, bucketName) => {
     Bucket: bucketName,
     Key: keyName,
     Body: fileContent,
-    ACL: "public-read",
   };
 
   try {
@@ -84,27 +83,10 @@ const uploadPostsToS3 = async (file, postId, bucketName) => {
   }
 };
 
-// const getS3Object = async (bucketName, fileKey) => {
-//   try {
-//     const data = await s3Client.send(
-//       new GetObjectCommand({
-//         Bucket: bucketName,
-//         Key: fileKey,
-//       })
-//     );
-//     const bodyContents = await streamToString(data.Body);
-//     console.log(bodyContents);
-//     return bodyContents;
-//   } catch (err) {
-//     console.error("Error", err);
-//     throw err;
-//   }
-// };
-
 
 // Database connection setup
 const db = dbsingleton;
-// let session_user_id;
+let session_user_id;
 
 var getHelloWorld = function (req, res) {
     res.status(200).send({ message: "Hello, world!" });
@@ -149,20 +131,18 @@ var postRegister = async function (req, res) {
             metadata: { "hnsw:space": "l2" },
         });
 
-        console.info("Looking for files");
-        const promises = [];
-        const files = await fs.promises.readdir("/nets2120/project-stream-team/models/images");
-        // const csvContent = fs.readFileSync('/nets2120/project-stream-team/names.csv', 'utf8');
-        // console.log('csvContent', csvContent);
+        // console.info("Looking for files");
+        // const promises = [];
+        // const files = await fs.promises.readdir("/nets2120/project-stream-team/models/images");
 
-        files.forEach(function (file) {
-            console.info("Adding task for " + file + " to index.");
-            promises.push(facehelper.indexAllFaces(path.join("/nets2120/project-stream-team/models/images", file), file, collection));
-        });
+        // files.forEach(function (file) {
+        //     console.info("Adding task for " + file + " to index.");
+        //     promises.push(facehelper.indexAllFaces(path.join("/nets2120/project-stream-team/models/images", file), file, collection));
+        // });
 
-        console.info("Done adding promises, waiting for completion.");
-        await Promise.all(promises);
-        console.log("All images indexed.");
+        // console.info("Done adding promises, waiting for completion.");
+        // await Promise.all(promises);
+        // console.log("All images indexed.");
 
         const topMatches = await facehelper.findTopKMatches(collection, req.file.path, 5);
         for (var item of topMatches) {
@@ -171,7 +151,7 @@ var postRegister = async function (req, res) {
             }
         }
     
-        console.log('example document', item.documents[0]);
+        //console.log('example document', item.documents[0]);
         actors = item.documents[0];
         const actornConst = actors.map(file => file.replace('.jpg', ''));
         parse(csvContent, { columns: true, skip_empty_lines: true }, function(err, records) {
@@ -313,7 +293,6 @@ var postLogin = async function (req, res) {
 };
 
 var postOnline = async function (req, res) {
-
     if (!session_user_id) {
         return res.status(403).json({ error: 'Not logged in.' });
     }
@@ -383,8 +362,9 @@ var getUserInfo = async function (req, res) {
             WHERE username = '${username}'
             GROUP BY users.user_id
         `;
+        
         const results = await db.send_sql(query);
-        console.log('getTophashtags result', results);
+        console.log('get user info result', results);
         res.status(200).json(results);
     } catch (error) {
         console.error('Error querying top hashtags:', error);
@@ -976,60 +956,48 @@ var leaveGroup = async function(req, res) {
 var createPost = async function (req, res) {
     console.log('creating post right now');
     if (!session_user_id) {
-      return res.status(403).json({ error: 'Not logged in.' });
+        return res.status(403).json({ error: 'Not logged in.' });
     }
-    // console.log(req.body);
 
     console.log('Received fields:', req.body);
     console.log('Received file:', req.file);
 
     const { title, hashtags } = req.body;
-    const content = req.file; // treating content as imageURL for now, TODO: create table field
+    const content = req.file;
 
-    // console.log(title);
-    console.log("hi");
-    console.log(hashtags);
-    // console.log(content);
-    // let content = req.file;  // Assuming content is a file uploaded and parsed by middleware like `multer`
-    // let parent_id = req.body.parent_post || null;
-  
-    console.log("Checking title: ", title);
-    // console.log("Checking original filename: ", content.originalname);
     if (!helper.isOK(title) || (content && !helper.isOK(content.originalname))) {
-        console.log("here");
-      return res.status(400).json({ error: 'Invalid characters in title or file name.' });
+        console.log("Invalid characters in title or file name.");
+        return res.status(400).json({ error: 'Invalid characters in title or file name.' });
     }
-
-    // if (content) {
-    //     console.log("Checking original filename: ", content.originalname);
-    //     if (!helper.isOK(content.originalname)) {  // Validate file name if content is a file)
-    //         return res.status(400).json({ error: 'Invalid characters in title or file name.' });
-    //     }
-    // }
 
     try {
-      const postQuery = `INSERT INTO posts (author_id, title, content, timestamp) VALUES (?, ?, ?, NOW())`;
-      const postResult = await db.send_sql(postQuery, [req.session.user_id, title, content.path]); // Assuming `content.path` is where the file is stored
-      const newPostId = postResult.insertId;
-      console.log("inputted");
-  
-      if (hashtags) {
-        const tags = hashtags.split(',').map(tag => tag.trim().startsWith('#') ? tag.trim() : `#${tag.trim()}`);
-        tags.forEach(async (tag) => {
-          let tagId = (await db.send_sql(`SELECT hashtag_id FROM hashtags WHERE hashtagname = ?`, [tag]))[0]?.hashtag_id;
-          if (!tagId) {
-            tagId = (await db.send_sql(`INSERT INTO hashtags (hashtagname) VALUES (?)`, [tag])).insertId;
-          }
-          await db.send_sql(`INSERT INTO post_tagged_with (post_id, hashtag_id) VALUES (?, ?)`, [newPostId, tagId]);
-        });
-      }
-  
-      res.status(200).send({ message: "Post created successfully." });
+        const imageUrl = await uploadPostsToS3(content, new Date().getTime(), 'nets-project-posts');
+        console.log("Image uploaded to S3:", imageUrl);
+        
+        const textContent = req.body.textContent || '';
+
+        const postQuery = `INSERT INTO posts (author_id, title, content, timestamp, image_url) VALUES (?, ?, ?, NOW(), ?)`;
+        const postResult = await db.send_sql(postQuery, [req.session.user_id, title, textContent, imageUrl]);
+        const newPostId = postResult.insertId;
+
+        if (hashtags) {
+            const tags = hashtags.split(',').map(tag => tag.trim().startsWith('#') ? tag.trim() : `#${tag.trim()}`);
+            tags.forEach(async (tag) => {
+                let tagId = (await db.send_sql(`SELECT hashtag_id FROM hashtags WHERE hashtagname = ?`, [tag]))[0]?.hashtagId;
+                if (!tagId) {
+                    tagId = (await db.send_sql(`INSERT INTO hashtags (hashtagname) VALUES (?)`, [tag])).insertId;
+                }
+                await db.send_sql(`INSERT INTO post_tagged_with (post_id, hashtag_id) VALUES (?, ?)`, [newPostId, tagId]);
+            });
+        }
+
+        res.status(200).send({ message: "Post created successfully.", imageUrl: imageUrl });
     } catch (error) {
-      console.error('Error querying database:', error);
-      return res.status(500).json({ error: 'Error querying database.' });
+        console.error('Error querying database:', error);
+        return res.status(500).json({ error: 'Error querying database.' });
     }
-  };
+};
+
 
 
 // GET /posts 
@@ -1039,23 +1007,13 @@ var createPost = async function (req, res) {
 var getFeed = async function (req, res) {
     console.log('getFeed is called', req.session.user_id);
 
-    // if (!req.session.user_id) {  // Ensuring user is logged in
-    //     return res.status(403).json({ error: 'Not logged in.' });
-    // }
-    // if (!req.session.user_id) {  // Ensuring user is logged in
     if (!session_user_id) {
         return res.status(403).json({ error: 'Not logged in.' });
     }
 
-    // const userId = req.session.user_id;
-    const userId = session_user_id;
-    console.log('curr id: ', userId);
+    //console.log('curr id: ', userId);
 
-    // ask if we need anything from comments_on)post_by
-    
     try {
-        console.log('trying to fetch feed');
-        //BELOW IS MY EDIT
         const feedQuery = `
             SELECT 
                 p.post_id AS post_id, 
@@ -1063,7 +1021,8 @@ var getFeed = async function (req, res) {
                 u.username AS post_author, 
                 p.parent_post AS parent_post, 
                 p.title AS title, 
-                p.content AS content, 
+                p.content AS content,
+                p.image_url AS image_url,
                 CONCAT_WS(' | ', h.hashtagname) AS hashtags,
                 COUNT(plb.liker_id) AS likes_count,
                 CONCAT_WS(' | ', GROUP_CONCAT(CONCAT(c.content, ',', c.timestamp, ',', cu.username) ORDER BY c.timestamp ASC SEPARATOR ' | ')) AS comments
@@ -1087,7 +1046,6 @@ var getFeed = async function (req, res) {
                 p.timestamp DESC;
         `;
         const feed = await db.send_sql(feedQuery);
-
         const results = feed.map(post => ({
             post_id: post.post_id,
             username: post.post_author,
@@ -1096,6 +1054,7 @@ var getFeed = async function (req, res) {
             post_timestamp: post.post_timestamp,
             title: post.title,
             content: post.content,
+            image_url: post.image_url,
             likes_count: post.likes_count,
             hashtags: post.hashtags.split(' | '),
             comments: post.comments ? post.comments.split(' | ').map(commentString => {
@@ -1109,55 +1068,12 @@ var getFeed = async function (req, res) {
         }));
 
         res.status(200).json({ results });
+        console.log('Feed results:', results);
     } catch (error) {
         console.error('Error querying database:', error);
         res.status(500).json({ error: 'Error querying database.' });
     }
 };
-
-
-
-// posting stuff onto the feed!!!!!!!!!!!!
-// PUT /updatePost
-// var updatePost = async function (req, res) {
-//     console.log('updatePost called', req.session.user_id);
-
-//     if (!req.session.user_id) {
-//         return res.status(403).json({ error: 'Not logged in.' });
-//     }
-
-//     const userId = req.session.user_id;
-//     const postId = req.body.postId;
-//     const newContent = req.body.newContent;
-
-//     // Check if the post belongs to the user or the user has the right to edit the post
-//     try {
-//         const postOwnerCheckQuery = `
-//             SELECT author_id FROM posts WHERE post_id = ?;
-//         `;
-//         const postOwnerCheckResult = await db.send_sql(postOwnerCheckQuery, [postId]);
-//         if (postOwnerCheckResult.length > 0 && postOwnerCheckResult[0].author_id === userId) {
-//             // User owns the post or has rights to edit it
-//             const updatePostQuery = `
-//                 UPDATE posts
-//                 SET content = ?
-//                 WHERE post_id = ?;
-//             `;
-//             await db.send_sql(updatePostQuery, [newContent, postId]);
-//             console.log('Post updated successfully.');
-//             res.status(200).json({ message: 'Post updated successfully.' });
-//         } else {
-//             console.log('Unauthorized attempt to edit post.');
-//             res.status(403).json({ error: 'Unauthorized attempt to edit post.' });
-//         }
-//     } catch (error) {
-//         console.error('Error updating post:', error);
-//         res.status(500).json({ error: 'Error updating post in database.' });
-//     }
-// };
-
-//module.exports = updatePost;
-
 
 var getMovie = async function (req, res) {
     const vs = await getVectorStore();

@@ -42,7 +42,7 @@ const HomePage = () => {
         <div className='flex space-x-6'>
           <button
             className='px-6 py-3 rounded-md bg-blue-500 text-white font-bold transition-colors duration-300 hover:bg-blue-600'
-            onClick={handleGetStarted} // Route to sign-up when clicked
+            onClick={handleGetStarted} 
           >
             Get Started
           </button>

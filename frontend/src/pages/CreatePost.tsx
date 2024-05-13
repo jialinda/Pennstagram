@@ -12,6 +12,7 @@ export default function CreatePost() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState<File | null>(null);
   const [hashtags, setHashtags] = useState('');
+  const [photo, setPhoto] = useState('');
 
   const handleCreatePost = async (e: React.FormEvent<HTMLFormElement>) => {
     console.log('creating post fe');
@@ -24,14 +25,20 @@ export default function CreatePost() {
     const formData = new FormData();
     formData.append('title', title);
     formData.append('hashtags', hashtags);
+    if (photo) formData.append('photo', photo);
 
     if (content) formData.append('content', content);
 
     try {
 
       console.log('b');
-
-      const response = await axios.post(`${rootURL}/${username}/createPost`, formData);
+      const response = await axios.post(`${config.serverRootURL}/${username}/createPost`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },
+        withCredentials: true
+      });
+      // const response = await axios.post(`${rootURL}/${username}/createPost`, formData);
 
       console.log(response.data);
 

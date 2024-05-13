@@ -421,10 +421,10 @@ var changeEmail = async function (req, res) {
     try {
         const query = `
             UPDATE users
-            SET email = '${newEmail}'
-            WHERE username = '${username}'
+            SET email = ?
+            WHERE username = ?
         `;
-        const result = await db.send_sql(query);
+        const result = await db.send_sql(query, [newEmail, username]);
 
         if (result.affectedRows === 0) {
             return res.status(404).json({ error: 'No user found with the given username.' });
@@ -1026,7 +1026,9 @@ var getFeed = async function (req, res) {
                 p.image_url AS image_url,
                 CONCAT_WS(' | ', h.hashtagname) AS hashtags,
                 COUNT(plb.liker_id) AS likes_count,
-                CONCAT_WS(' | ', GROUP_CONCAT(CONCAT(c.content, ',', c.timestamp, ',', cu.username) ORDER BY c.timestamp ASC SEPARATOR ' | ')) AS comments
+                CONCAT_WS(' | ', GROUP_CONCAT(CONCAT(c.content, ',', c.timestamp, ',', cu.username) ORDER BY c.timestamp ASC SEPARATOR ' | ')) AS comments,
+                IF(pr.post IS NOT NULL, TRUE, FALSE) AS is_recommended,
+                COALESCE(pr.rank, 999999) AS postRank
             FROM 
                 posts p
             JOIN 
@@ -1041,11 +1043,14 @@ var getFeed = async function (req, res) {
                 comments c ON c.post_id = p.post_id
             LEFT JOIN 
                 users cu ON c.author_id = cu.user_id
+            LEFT JOIN
+                PostRank pr ON pr.post = p.post_id AND pr.user = u.user_id
             GROUP BY
-                p.post_id
+                p.post_id, is_recommended, postRank
             ORDER BY 
-                p.timestamp DESC;
+                is_recommended DESC, postRank ASC, p.timestamp DESC;
         `;
+
         const feed = await db.send_sql(feedQuery);
         const results = feed.map(post => ({
             post_id: post.post_id,

@@ -90,24 +90,27 @@ export default function Profile() {
     }
   };
 
-  const handleEmailChange = async () => {
+  const handleEmailChange = async (event) => {
+    event.preventDefault();  // This prevents any default form submission behavior
+    console.log('Attempting to update email to:', userDetails.newEmail);
     try {
       await axios.post(`${config.serverRootURL}/${username}/changeEmail`, { newEmail: userDetails.newEmail });
       setUserDetails({ ...userDetails, email: userDetails.newEmail });
-      setStatusMessage('Email updated successfully.');  // Set success message
+      setStatusMessage('Email updated successfully.');
     } catch (error) {
       console.error('Failed to update email:', error);
-      setStatusMessage('Failed to update email.'); // Display error message
+      setStatusMessage('Failed to update email.');
     }
   };
   
-  const handlePasswordChange = async () => {
+  const handlePasswordChange = async (event) => {
+    event.preventDefault();  // Prevent the default form behavior
     try {
       await axios.post(`${config.serverRootURL}/${username}/changePassword`, { newPassword: userDetails.newPassword });
-      setStatusMessage('Password updated successfully.');  // Set success message
+      setStatusMessage('Password updated successfully.');
     } catch (error) {
       console.error('Failed to update password:', error);
-      setStatusMessage('Failed to update password.'); // Display error message
+      setStatusMessage('Failed to update password.');
     }
   };
 
@@ -206,10 +209,12 @@ export default function Profile() {
             Update Hashtags
           </button>
           <div className='space-x-2'>
-            <input type="text" placeholder="New email" onChange={e => setUserDetails({...userDetails, newEmail: e.target.value})} />
-            <button onClick={handleEmailChange} className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
+            <form onSubmit={handleEmailChange} className="space-x-2">
+            <input type="email" placeholder="New email" value={userDetails.newEmail} onChange={e => setUserDetails({...userDetails, newEmail: e.target.value})} className="input-standard-styles" />
+            <button type="submit" className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
               Update Email
             </button>
+          </form>
             <input type="password" placeholder="New password" onChange={e => setUserDetails({...userDetails, newPassword: e.target.value})} />
             <button onClick={handlePasswordChange} className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
               Update Password

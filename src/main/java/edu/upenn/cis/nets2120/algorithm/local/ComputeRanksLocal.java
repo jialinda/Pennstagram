@@ -47,11 +47,11 @@ public class ComputeRanksLocal {
 
         ComputeRanks job = new ComputeRanks(d_max, i_max, 1000, debug);
 
-        List<Tuple2<String, Double>> topK = job.mainLogic();
+        List<Tuple2<String, Tuple2<String, Double>>> topK = job.mainLogic();
         logger.info("*** Finished social network ranking! ***");
 
         try (PrintStream out = new PrintStream(new FileOutputStream("socialrank-local.csv"))) {
-            for (Tuple2<String, Double> item : topK) {
+            for (Tuple2<String, Tuple2<String, Double>> item : topK) {
                 out.println(item._1 + "," + item._2);
                 logger.info(item._1 + " " + item._2);
             }

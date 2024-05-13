@@ -50,7 +50,6 @@ public class SocialRankJob extends SparkJob<List<MyPair<String, Double>>> {
     JavaPairRDD<String, Double> labels;
     int MAX_ITERATIONS = 15;
     private String source;
-    Connection connection = null;
 
     int max_answers = 1000;
 
@@ -69,7 +68,7 @@ public class SocialRankJob extends SparkJob<List<MyPair<String, Double>>> {
      * @param filePath
      * @return JavaPairRDD: (followed: String, follower: String)
      */
-    public JavaPairRDD<String, Tuple2<String, Double>> getSocialNetworkFromJDBC() {
+    public JavaPairRDD<String, Tuple2<String, Double>> getSocialNetworkFromJDBC() throws SQLException {
         List<Tuple2<String, String>> hashtagEdges = new ArrayList<>(); //(h, *) -> 1
         List<Tuple2<String, String>> userHashtagEdges = new ArrayList<>(); // (u,h) -> 0.3
         List<Tuple2<String, String>> postEdges = new ArrayList<>(); //(p, *) -> 1
@@ -82,62 +81,60 @@ public class SocialRankJob extends SparkJob<List<MyPair<String, Double>>> {
         // Convert the list to a JavaPairRDD
         JavaPairRDD<String, Tuple2<String, Double>> test = context.parallelizePairs(sampleList);
 
-        try {
-            connection = DriverManager.getConnection(Config.DATABASE_CONNECTION, Config.DATABASE_USERNAME, Config.DATABASE_PASSWORD);
-            // Query for user-hashtag relationships
-            try (ResultSet rsUserHashtags = connection.createStatement().executeQuery(
+        String url = Config.DATABASE_CONNECTION;
+        String user = Config.DATABASE_USERNAME;
+        String password = Config.DATABASE_PASSWORD;
+
+        Connection connection = DriverManager.getConnection(url, user, password);
+
+        Statement stmt = connection.createStatement();
+
+        // Query for user-hashtag relationships
+        ResultSet rsUserHashtags = stmt.executeQuery(
                     "SELECT u.user_id, h.hashtag_id FROM hashtag_by hb " +
                     "JOIN users u ON hb.user_id = u.user_id " +
-                    "JOIN hashtags h ON hb.hashtag_id = h.hashtag_id")) {
-                while (rsUserHashtags.next()) {
-                    String userId = "u" + rsUserHashtags.getString("user_id");
-                    String hashtagId = rsUserHashtags.getString("hashtag_id");
-                    userHashtagEdges.add(new Tuple2<>(userId, hashtagId));
-                    hashtagEdges.add(new Tuple2<>(hashtagId, userId));
-                }
-            }
+                    "JOIN hashtags h ON hb.hashtag_id = h.hashtag_id");
 
-            // Query for post-hashtag relationships
-            try (ResultSet rsPostHashtags = connection.createStatement().executeQuery(
+        while (rsUserHashtags.next()) {
+            String userId = "u" + rsUserHashtags.getString("user_id");
+            String hashtagId = rsUserHashtags.getString("hashtag_id");
+            userHashtagEdges.add(new Tuple2<>(userId, hashtagId));
+            hashtagEdges.add(new Tuple2<>(hashtagId, userId));
+        }
+
+        // Query for post-hashtag relationships
+        ResultSet rsPostHashtags = stmt.executeQuery(
                     "SELECT p.post_id, h.hashtag_id FROM post_tagged_with pth " +
                     "JOIN posts p ON pth.post_id = p.post_id " +
-                    "JOIN hashtags h ON pth.hashtag_id = h.hashtag_id" )) { // "WHERE p.timestamp = CURRENT_DATE"
-                while (rsPostHashtags.next()) {
-                    String postId = "p" + rsPostHashtags.getString("post_id");
-                    String hashtagId = rsPostHashtags.getString("hashtag_id");
-                    postEdges.add(new Tuple2<>(postId, hashtagId));
-                    hashtagEdges.add(new Tuple2<>(hashtagId, postId));
-                }
-            }
+                    "JOIN hashtags h ON pth.hashtag_id = h.hashtag_id" );
+        
+        while (rsPostHashtags.next()) {
+            String postId = "p" + rsPostHashtags.getString("post_id");
+            String hashtagId = rsPostHashtags.getString("hashtag_id");
+            postEdges.add(new Tuple2<>(postId, hashtagId));
+            hashtagEdges.add(new Tuple2<>(hashtagId, postId));
+        }
 
-            // Query for user-post "like" relationships
-            try (ResultSet rsLikes = connection.createStatement().executeQuery(
+        // Query for user-post "like" relationships
+        ResultSet rsLikes = stmt.executeQuery(
                     "SELECT pl.liker_id, p.post_id FROM posts_liked_by pl " +
-                    "JOIN posts p ON pl.post_id = p.post_id")) { // "WHERE p.timestamp = CURRENT_DATE"
-                while (rsLikes.next()) {
-                    String userId = "u" + rsLikes.getString("liker_id");
-                    String postId = "p" + rsLikes.getString("post_id");
-                    userPostEdges.add(new Tuple2<>(userId, postId));
-                    postEdges.add(new Tuple2<>(postId, userId));
-                    System.err.println(userId);
-                }
-            }
+                    "JOIN posts p ON pl.post_id = p.post_id");
+        
+        while (rsLikes.next()) {
+            String userId = "u" + rsLikes.getString("liker_id");
+            String postId = "p" + rsLikes.getString("post_id");
+            userPostEdges.add(new Tuple2<>(userId, postId));
+            postEdges.add(new Tuple2<>(postId, userId));
+        }
 
-            // Query for user friendships
-            try (ResultSet rsFriends = connection.createStatement().executeQuery(
-                    "SELECT f.follower, f.followed FROM friends f")) {
-                while (rsFriends.next()) {
-                    String follower = "u" + rsFriends.getString("follower");
-                    String followed = "u" + rsFriends.getString("followed");
-                    userEdges.add(new Tuple2<>(follower, followed));
-                    userEdges.add(new Tuple2<>(followed, follower));
-                    System.err.println(follower);
-                }
-            }
-
-        } catch (SQLException e) {
-            logger.error(e.getMessage(), e);
-            return null;
+        ResultSet rsFriends = stmt.executeQuery(
+                    "SELECT f.follower, f.followed FROM friends f");
+        
+        while (rsFriends.next()) {
+            String follower = "u" + rsFriends.getString("follower");
+            String followed = "u" + rsFriends.getString("followed");
+            userEdges.add(new Tuple2<>(follower, followed));
+            userEdges.add(new Tuple2<>(followed, follower));
         }
 
         // Convert the list to a JavaRDD and then to a JavaPairRDD
@@ -295,26 +292,26 @@ public class SocialRankJob extends SparkJob<List<MyPair<String, Double>>> {
         // Collect the top 20 labels
         List<Tuple2<String, Double>> top20Labels = sortedLabels.take(20);
 
-        try (Connection connection = DriverManager.getConnection(Config.DATABASE_CONNECTION, Config.DATABASE_USERNAME, Config.DATABASE_PASSWORD)) {
-            if (!tableExists(connection, "RankResults")) {
-                try (Statement statement = connection.createStatement()) {
-                    String sqlCreate = "CREATE TABLE RankResults (" +
-                                       "id INT AUTO_INCREMENT PRIMARY KEY, " +
-                                       "node VARCHAR(255) NOT NULL, " +
-                                       "rank DOUBLE NOT NULL)";
-                    statement.executeUpdate(sqlCreate);
-                }
-            }
-        }
-        String query = "INSERT INTO RankResults (node, rank) VALUES (?, ?)";
-        try (Connection connection = DriverManager.getConnection(Config.DATABASE_CONNECTION, Config.DATABASE_USERNAME, Config.DATABASE_PASSWORD);
-             PreparedStatement statement = connection.prepareStatement(query)) {
-            for (Tuple2<String, Double> result : top20Labels) {
-                statement.setString(1, result._1);
-                statement.setDouble(2, result._2);
-                statement.executeUpdate();
-            }
-        }
+        // try (Connection connection = DriverManager.getConnection(Config.DATABASE_CONNECTION, Config.DATABASE_USERNAME, Config.DATABASE_PASSWORD)) {
+        //     if (!tableExists(connection, "RankResults")) {
+        //         try (Statement statement = connection.createStatement()) {
+        //             String sqlCreate = "CREATE TABLE RankResults (" +
+        //                                "id INT AUTO_INCREMENT PRIMARY KEY, " +
+        //                                "node VARCHAR(255) NOT NULL, " +
+        //                                "rank DOUBLE NOT NULL)";
+        //             statement.executeUpdate(sqlCreate);
+        //         }
+        //     }
+        // }
+        // String query = "INSERT INTO RankResults (node, rank) VALUES (?, ?)";
+        // try (Connection connection = DriverManager.getConnection(Config.DATABASE_CONNECTION, Config.DATABASE_USERNAME, Config.DATABASE_PASSWORD);
+        //      PreparedStatement statement = connection.prepareStatement(query)) {
+        //     for (Tuple2<String, Double> result : top20Labels) {
+        //         statement.setString(1, result._1);
+        //         statement.setDouble(2, result._2);
+        //         statement.executeUpdate();
+        //     }
+        // }
 
         List<Tuple2<String, Double>> modifiableTop20Labels = new ArrayList<>(top20Labels);
 

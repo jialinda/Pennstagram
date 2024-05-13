@@ -421,10 +421,10 @@ var changeEmail = async function (req, res) {
     try {
         const query = `
             UPDATE users
-            SET email = '${newEmail}'
-            WHERE username = '${username}'
+            SET email = ?
+            WHERE username = ?
         `;
-        const result = await db.send_sql(query);
+        const result = await db.send_sql(query, [newEmail, username]);
 
         if (result.affectedRows === 0) {
             return res.status(404).json({ error: 'No user found with the given username.' });

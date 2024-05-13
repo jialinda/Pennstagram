@@ -1032,10 +1032,12 @@ var getFeed = async function (req, res) {
                 u.username AS post_author, 
                 p.parent_post AS parent_post, 
                 p.title AS title, 
-                p.content AS content, 
+                p.content AS content,
                 CONCAT_WS(' | ', h.hashtagname) AS hashtags,
                 COUNT(plb.liker_id) AS likes_count,
-                CONCAT_WS(' | ', GROUP_CONCAT(CONCAT(c.content, ',', c.timestamp, ',', cu.username) ORDER BY c.timestamp ASC SEPARATOR ' | ')) AS comments
+                CONCAT_WS(' | ', GROUP_CONCAT(CONCAT(c.content, ',', c.timestamp, ',', cu.username) ORDER BY c.timestamp ASC SEPARATOR ' | ')) AS comments,
+                IF(pr.post IS NOT NULL, TRUE, FALSE) AS is_recommended,
+                COALESCE(pr.rank, 999999) AS postRank
             FROM 
                 posts p
             JOIN 
@@ -1050,11 +1052,14 @@ var getFeed = async function (req, res) {
                 comments c ON c.post_id = p.post_id
             LEFT JOIN 
                 users cu ON c.author_id = cu.user_id
+            LEFT JOIN
+                PostRank pr ON pr.post = p.post_id AND pr.user = u.user_id
             GROUP BY
-                p.post_id
+                p.post_id, is_recommended, postRank
             ORDER BY 
-                p.timestamp DESC;
+                is_recommended DESC, postRank ASC, p.timestamp DESC;
         `;
+
         const feed = await db.send_sql(feedQuery);
         const results = feed.map(post => ({
             post_id: post.post_id,

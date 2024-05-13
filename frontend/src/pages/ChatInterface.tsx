@@ -80,8 +80,8 @@ export default function ChatInterface() {
         console.log('chats', chats);
         // fetchCurrChat();
         // console.log('chats', chats);
-    }, []);
-    // }); // CHECK
+    // }, []);
+    }); // CHECK
     // check how I can change this part
 
     // ajax

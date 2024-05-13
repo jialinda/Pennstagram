@@ -721,13 +721,14 @@ var getFriendRecs = async function (req, res) {
         const q1 = `
             SELECT DISTINCT u.user_id, u.username
             FROM friends AS f1
-            JOIN friends AS f2 ON f1.followed = f2.follower_id
+            JOIN friends AS f2 ON f1.followed = f2.follower
             JOIN users AS u ON f2.followed = u.user_id
-            WHERE f1.follower_id = ${userId}
+            WHERE f1.follower = ${userId}
+            AND u.user_id != ${userId}
             AND f2.followed NOT IN (
                 SELECT followed
                 FROM friends
-                WHERE follower_id = ${userId}
+                WHERE follower = ${userId}
             )
         `;
 

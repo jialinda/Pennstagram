@@ -9,17 +9,34 @@ import NavBar from '../components/Navbar';
 
 const rootURL = config.serverRootURL;
 
-const FriendComponent = ({ friend, add = true, remove = true }) => {
+const FriendComponent = ({ friend, add = true, remove = true, isRec }) => {
     return (
         <div className='rounded-md bg-slate-100 p-3 flex space-x-2 items-center justify-between'>
             <div className='font-semibold text-base'>{friend.username}</div>
-            <button
+            {isRec ? (
+                <button
+                    type="button"
+                    className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
+                    onClick={() => handleSendInvite(friend)}
+                >
+                    Add friend
+                </button>
+            ) : (
+                <button
                     type="button"
                     className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
                     onClick={() => onRemove(friend)}
                 >
                     Remove friend
                 </button>
+            )}
+            {/* <button
+                    type="button"
+                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                    onClick={() => onRemove(friend)}
+                >
+                    Remove friend
+                </button> */}
         </div>
     );
 };
@@ -43,6 +60,29 @@ const onRemove = async (user) => {
           console.error('Error removing friend:', error);
     }
   };
+
+  const handleSendInvite = async (user) => {
+    // Add the user to the invitees list
+    console.log('f invite called 1');
+    // e.preventDefault();
+    console.log('user.user_id', user.userId);
+    try {
+      const response = await axios.post(`${rootURL}/postFInvite`, {
+        invitee_id: user.userId
+      }
+    );
+      if (response.status == 201) {
+        console.log('invite was successfully sent to username: ', user.username);   
+        alert('invite sent successfully!');     
+      } else {
+        alert("invite failed");
+    }
+    } catch (error) {
+          // For other errors, log the error to the console
+          console.error('Error sending invite:', error);
+  };
+}
+
 
 export default function Friends() {
     const navigate = useNavigate(); 
@@ -69,6 +109,17 @@ export default function Friends() {
                 }
             });
         };
+        const fetchRes = async () => {
+            console.log('fetching recs');
+            try {
+                const recs = await axios.get(`${rootURL}/recommendations`);
+                setUsersRecs(recs.data.results);
+                console.log('all recs here', recs);
+                
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
 
         const fetchData = async () => {
             try {
@@ -83,8 +134,9 @@ export default function Friends() {
 
         fetchInvites();
         fetchData();
-    }, [username, rootURL]);
-    // });
+        fetchRes();
+    // }, [username, rootURL]);
+    });
 
     const feed = () => navigate(`/${username}/feed`);
     const chat = () => navigate(`/${username}/chat`);
@@ -130,15 +182,15 @@ export default function Friends() {
                 </div> */}
                 <div>
                     <h2 className='font-bold text-xl mb-2'>Recommended Friends</h2>
-                    {/* <div className='space-y-2'>
-                        {usersRecs.map((rec, index) => (
-                            <FriendComponent key={index} friend={rec} />
-                        ))}
-                    </div> */}
+                    <div className='space-y-2'>
+                    {usersRecs.map((recs, index) => (
+                        <FriendComponent key={index} friend={recs} isRec ={1}/>
+                    ))}
+                    </div>
                 </div>
                 <div>
                     <h2 className='font-bold text-xl mb-2'>Search Friends</h2>
-                    <FindFriendComponent friends={usersFriends}/>
+                    <FindFriendComponent friends={usersFriends} isRec={0}/>
                 </div>
                 <div>
                     <h2 className='font-bold text-xl mb-2'>Invites</h2>

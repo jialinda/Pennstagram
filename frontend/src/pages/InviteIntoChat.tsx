@@ -84,7 +84,7 @@ function InviteIntoChat({ updatePosts }) {
                   username: searchQuery // check
               }
           });
-          console.log('username is ', username);
+          console.log('username is ', searchQuery);
           const allUsers = response.data.results;
           console.log('all friends with username', allUsers);
           if (allUsers.length === 0) {

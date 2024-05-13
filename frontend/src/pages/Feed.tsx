@@ -17,6 +17,7 @@ export interface Post {
   hashtags: string[];
   comments: Comment[];
   likes_count: number;
+  image_url: string;
 }
 
 export interface Comment {
@@ -59,6 +60,7 @@ const Feed = () => {
             content={post.content}
             comments={post.comments}
             likesCount={post.likes_count}
+            image_url={post.image_url}
           />
         ))}
       </div>

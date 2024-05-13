@@ -21,13 +21,23 @@ export default function Login() {
       });
 
       if (response.status === 200) {
-        navigate(`/${username}/home`);
+        // navigate(`/${username}/home`);
       } else {
         alert("Log in failed.");
       }
     } catch (error) {
       console.error("Log in error:", error);
-      alert("Log in failed. Please try again later.");
+      alert("Log in failed. Please try again later.h");
+    }
+
+    try {
+      const response = await axios.post(`${rootURL}/postOnline`);
+      if (response.status === 200) {
+        navigate(`/${username}/feed`); // changed
+      } 
+    } catch (error) {
+      console.error("Logging data in error:", error);
+      alert("Log in failed. Please try again later.h");
     }
   };
 

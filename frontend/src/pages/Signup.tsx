@@ -64,7 +64,7 @@ export default function Signup() {
   const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
       setPhoto(event.target.files[0]);
-      console.log("photo set to:",event.target.files[0] )
+      console.log("photo set to:",event.target.files[0]);
     } else {
       setPhoto(null);
     }
@@ -72,7 +72,7 @@ export default function Signup() {
 
   // Navigate back to home
   const handleBackToHome = () => {
-    navigate('/'); // Change '/' to the correct home route
+    navigate('/login'); // Change '/' to the correct home route
   };
 
   return (

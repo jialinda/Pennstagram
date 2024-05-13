@@ -11,7 +11,8 @@ export default function Profile() {
     email: '',
     actorsList: [],
     linkedActor: '',
-    hashtags: []
+    hashtags: [], 
+    imageURL: ''
   });
 
   useEffect(() => {
@@ -24,7 +25,8 @@ export default function Profile() {
           email: userData.email,
           actorsList: userData.actorsList.split(', '),
           linkedActor: userData.linkedActor,
-          hashtags: userData.hashtags ? userData.hashtags.split(', ') : []
+          hashtags: userData.hashtags ? userData.hashtags.split(', ') : [], 
+          imageURL: userData.imageURL
         });
       } catch (error) {
         console.error('Failed to fetch user details:', error);
@@ -68,6 +70,9 @@ export default function Profile() {
       <div className='flex-grow flex items-center justify-center p-4'>
         <div className='bg-white rounded-lg shadow-lg p-6 max-w-md w-full'>
           <div className='text-center space-y-4'>
+            {userDetails.imageURL && (
+              <img src={'/nets2120/project-stream-team/uploads/1714079672158-423944057_1461939054356673_4217162015685765151_n.png'} alt="Profile" className="w-40 h-40 rounded-full mx-auto" onError={(e) => e.target.style.display = 'none'}/>
+            )}
             <p className='text-md'><strong>Email:</strong> {userDetails.email}</p>
             <p className='text-md'><strong>Linked Actor:</strong> {userDetails.linkedActor}</p>
             <p className='text-md'><strong>Actors List:</strong> {userDetails.actorsList.join(', ')}</p>

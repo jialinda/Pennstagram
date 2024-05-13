@@ -1,83 +1,203 @@
-import {useState, useEffect} from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios'; 
 import config from '../../config.json';
-import { useNavigate } from 'react-router-dom';
+import $ from 'jquery';
+import FindFriendComponent from '../components/chats/FindFriendComponent';
+import FInvites from '../components/invites/FInvites';
+import NavBar from '../components/Navbar';
 
-const FriendComponent = ({ name, add=true, remove=true }: { name: string, add: boolean|undefined, remove: boolean|undefined}) => {
+const rootURL = config.serverRootURL;
+
+const FriendComponent = ({ friend, add = true, remove = true, isRec }) => {
     return (
-        <div className='rounded-md bg-slate-100 p-3 flex space-x-2 items-center flex-auto justify-between'>
-            <div className='font-semibold text-base'>
-                { name }
-            </div>
+        <div className='rounded-md bg-slate-100 p-3 flex space-x-2 items-center justify-between'>
+            <div className='font-semibold text-base'>{friend.username}</div>
+            {isRec ? (
+                <button
+                    type="button"
+                    className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
+                    onClick={() => handleSendInvite(friend)}
+                >
+                    Add friend
+                </button>
+            ) : (
+                <button
+                    type="button"
+                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                    onClick={() => onRemove(friend)}
+                >
+                    Remove friend
+                </button>
+            )}
+            {/* <button
+                    type="button"
+                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                    onClick={() => onRemove(friend)}
+                >
+                    Remove friend
+                </button> */}
         </div>
-    )
-}
-export default function Friends() {
+    );
+};
 
+const onRemove = async (user) => {
+    // Add the user to the invitees list
+    console.log('removing user', user);
+    // e.preventDefault();
+    try {
+      const response = await axios.post(`${rootURL}/removeFriend`, {
+        friendId: user.followed
+      }
+    );
+      if (response.status == 200) {
+        alert(`You successfully unfriended!`);
+        console.log('remove friend was successfully sent to username: ', user.username);        
+      } 
+
+    } catch (error) {
+          // For other errors, log the error to the console
+          console.error('Error removing friend:', error);
+    }
+  };
+
+  const handleSendInvite = async (user) => {
+    // Add the user to the invitees list
+    console.log('f invite called 1');
+    // e.preventDefault();
+    console.log('user.user_id', user.userId);
+    try {
+      const response = await axios.post(`${rootURL}/postFInvite`, {
+        invitee_id: user.userId
+      }
+    );
+      if (response.status == 201) {
+        console.log('invite was successfully sent to username: ', user.username);   
+        alert('invite sent successfully!');     
+      } else {
+        alert("invite failed");
+    }
+    } catch (error) {
+          // For other errors, log the error to the console
+          console.error('Error sending invite:', error);
+  };
+}
+
+
+export default function Friends() {
     const navigate = useNavigate(); 
     const { username } = useParams();
     const rootURL = config.serverRootURL;
     
-    // TODO: add state variables for friends and recommendations
-    // changed to array
     const [usersFriends, setUsersFriends] = useState([]);
     const [usersRecs, setUsersRecs] = useState([]);
+    const [invites, setInvites] = useState([]);
 
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchInvites = async () => {
+            $.ajax({
+                url: `${rootURL}/getFInviteAll`,
+                method: 'GET',
+                data: {
+                    user_id: 0 // Adjust accordingly
+                },
+                success: function(response) {
+                    setInvites(response.results);
+                },
+                error: function(error) {
+                    console.error('Error fetching invites:', error);
+                }
+            });
+        };
+        const fetchRes = async () => {
+            console.log('fetching recs');
             try {
-                // TODO: fetch the friends and recommendations data and set the appropriate state variables 
-                const friendsRes = await axios.get(`${rootURL}/${username}/friends`);
-                setUsersFriends(friendsRes.data.results);
-
-                const recRes = await axios.get(`${rootURL}/${username}/recommendations`);
-                setUsersRecs(recRes.data.results);
-
+                const recs = await axios.get(`${rootURL}/recommendations`);
+                setUsersRecs(recs.data.results);
+                console.log('all recs here', recs);
+                
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
         };
 
+        const fetchData = async () => {
+            try {
+                const friendsRes = await axios.get(`${rootURL}/${username}/friends`);
+                setUsersFriends(friendsRes.data.results);
+                console.log('all friends here', usersFriends);
+                
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+
+        fetchInvites();
         fetchData();
-        
-    }, []);
-    
+        fetchRes();
+    // }, [username, rootURL]);
+    });
+
+    const feed = () => navigate(`/${username}/feed`);
+    const chat = () => navigate(`/${username}/chat`);
+    const onlineFriends = usersFriends.filter(friend => friend.is_online);
+    const offlineFriends = usersFriends.filter(friend => !friend.is_online);
+
     return (
         <div>
-            <div className='w-full h-16 bg-slate-50 flex justify-center mb-2'>
-                <div className='text-2xl max-w-[1800px] w-full flex items-center'>
-                Pennstagram - {username} &nbsp;
-                <button type="button" className='px-2 py-2 rounded-md bg-gray-500 outline-none text-white'
-                onClick={feed}>Feed</button>&nbsp;
-                <button type="button" className='px-2 py-2 rounded-md bg-gray-500 outline-none text-white'
-                onClick={chat}>Chat</button>
+            <NavBar username={username}></NavBar>
+        <div className='w-full max-w-7xl mx-auto px-4'>
+            {/* <div className='text-2xl flex justify-between items-center my-4'>
+                <span>Pennstagram - {username}</span>
+                <div>
+                    <button onClick={feed} className='mx-2 px-2 py-2 rounded-md bg-gray-500 text-white'>
+                        Feed
+                    </button>
+                    <button onClick={chat} className='px-2 py-2 rounded-md bg-gray-500 text-white'>
+                        Chat
+                    </button>
                 </div>
-            </div>
-            <div className='h-full w-full mx-auto max-w-[1800px] flex space-x-4 p-3'>
-                <div className='font-bold text-2xl'>
-                    { `${ username }'s friends` }
+            </div> */}
+            <div className='grid grid-cols-4 gap-4'>
+                <div>
+                    <h2 className='font-bold text-xl mb-2'>Friends</h2>
                     <div className='space-y-2'>
-                        {
-                            // TODO: map each friend of the user to a FriendComponent 
-                            usersFriends.map((friend, index) => (
-                                <FriendComponent key={index} name={friend.primaryName}/>
-                            ))
-                        }
+                        <div className='font-bold text-lg text-green-500'>Online</div>
+                        {onlineFriends.map((friend, index) => (
+                            <FriendComponent key={index} friend={friend} />
+                        ))}
+                        <div className='font-bold text-lg text-gray-500'>Offline</div>
+                        {offlineFriends.map((friend, index) => (
+                            <FriendComponent key={index} friend={friend} />
+                        ))}
                     </div>
                 </div>
-                <div className='font-bold text-2xl'>
-                    { `${ username }'s recommended friends` }
+                {/* <div>
+                    <h2 className='font-bold text-xl mb-2'>Friends</h2>
                     <div className='space-y-2'>
-                        {
-                            // TODO: map each recommendation of the user to a FriendComponent 
-                            usersRecs.map((rec, index) => (
-                                <FriendComponent key={index} name={rec.primaryName} />
-                            ))
-                        }
+                        {usersFriends.map((friend, index) => (
+                            <FriendComponent key={index} friend={friend} />
+                        ))}
                     </div>
+                </div> */}
+                <div>
+                    <h2 className='font-bold text-xl mb-2'>Recommended Friends</h2>
+                    <div className='space-y-2'>
+                    {usersRecs.map((recs, index) => (
+                        <FriendComponent key={index} friend={recs} isRec ={1}/>
+                    ))}
+                    </div>
+                </div>
+                <div>
+                    <h2 className='font-bold text-xl mb-2'>Search Friends</h2>
+                    <FindFriendComponent friends={usersFriends} isRec={0}/>
+                </div>
+                <div>
+                    <h2 className='font-bold text-xl mb-2'>Invites</h2>
+                    <FInvites invites={invites} />
                 </div>
             </div>
         </div>
-    )
+        </div>
+    );
 }

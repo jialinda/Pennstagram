@@ -8,9 +8,10 @@
     },
     "serverPort": "8080",
     "kafka": {
-      "groupId": "nets-2120-group-a",
+      "groupId": "nets-2120-group-a:2",
       "bootstrapServers": ["localhost:9092"],
-      "topic": "FederatedPosts",
+      "topics": ["FederatedPosts", "Twitter-Kafka"],
+      "s3BucketName": "nets-project-posts",
       "port": 4567
     }
   }
